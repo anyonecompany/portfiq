@@ -1,0 +1,92 @@
+[
+  {
+    "group": "나스닥",
+    "tickers": ["QQQ", "QQQM", "TQQQ"],
+    "summary": "QQQ는 나스닥 100 기본형, QQQM은 저보수 버전(0.15%), TQQQ는 3배 레버리지로 단기 트레이딩용. 장기 투자는 QQQM, 단기 방향성 베팅은 TQQQ."
+  },
+  {
+    "group": "S&P 500",
+    "tickers": ["VOO", "SPY", "IVV", "SPLG"],
+    "summary": "VOO(0.03%)와 IVV(0.03%)는 저보수, SPY(0.09%)는 유동성 최대. SPLG(0.02%)는 최저 보수. 장기 투자는 VOO/IVV/SPLG, 옵션 트레이딩은 SPY."
+  },
+  {
+    "group": "배당성장",
+    "tickers": ["SCHD", "VIG", "DGRO"],
+    "summary": "SCHD는 배당수익률+가치주 중심, VIG는 10년 연속 배당증가 기업만, DGRO는 5년 연속 배당증가+재무건전성. SCHD가 배당률 높고 VIG/DGRO는 성장성 우위."
+  },
+  {
+    "group": "커버드콜 배당",
+    "tickers": ["JEPI", "JEPQ", "QYLD", "DIVO"],
+    "summary": "JEPI는 S&P500 기반 월배당 7-8%, JEPQ는 나스닥 기반 월배당 9-10%. QYLD는 나스닥 커버드콜 순수형(성장 제한), DIVO는 대형 우량주+옵션 프리미엄."
+  },
+  {
+    "group": "반도체",
+    "tickers": ["SOXX", "SMH", "SOXL"],
+    "summary": "SOXX와 SMH는 반도체 섹터 추종(SOXX가 더 분산, SMH는 대형주 집중), SOXL은 3배 레버리지. 장기는 SOXX/SMH, 단기 방향성 베팅은 SOXL."
+  },
+  {
+    "group": "채권",
+    "tickers": ["TLT", "IEF", "AGG", "BND"],
+    "summary": "TLT는 20년+ 장기채(금리 민감도 최대), IEF는 7-10년 중기채, AGG/BND는 미국 전체 채권시장 추종. 금리 하락 베팅은 TLT, 안정적 인컴은 AGG/BND."
+  },
+  {
+    "group": "금/귀금속",
+    "tickers": ["GLD", "IAU", "SLV", "GDX"],
+    "summary": "GLD(0.40%)와 IAU(0.25%)는 금 현물 추종(IAU가 저보수), SLV는 은 현물, GDX는 금광업체 주식. 안전자산은 GLD/IAU, 레버리지 효과는 GDX."
+  },
+  {
+    "group": "에너지",
+    "tickers": ["XLE", "USO", "AMLP"],
+    "summary": "XLE는 에너지 섹터 대형주(엑손/셰브론), USO는 원유 선물 직접 추종, AMLP는 MLP 파이프라인 기업 배당형. 섹터 투자는 XLE, 유가 베팅은 USO, 배당은 AMLP."
+  },
+  {
+    "group": "크립토",
+    "tickers": ["IBIT", "BITO", "FBTC", "GBTC"],
+    "summary": "IBIT(BlackRock)와 FBTC(Fidelity)는 현물 비트코인 ETF(보수 0.25%), BITO는 선물 기반(롤오버 비용 발생), GBTC는 전환형(보수 1.5% 고비용). 신규 진입은 IBIT/FBTC."
+  },
+  {
+    "group": "신흥국",
+    "tickers": ["EEM", "VWO", "IEMG"],
+    "summary": "EEM(0.68%)은 가장 유동적, VWO(0.08%)는 최저 보수+소형주 포함, IEMG(0.09%)는 저보수+대형/중형주. 장기 투자는 VWO/IEMG, 트레이딩은 EEM."
+  },
+  {
+    "group": "중국",
+    "tickers": ["KWEB", "MCHI", "FXI"],
+    "summary": "KWEB는 중국 인터넷 기업 집중(알리바바/텐센트/핀둬둬), MCHI는 중국 대형주 전반, FXI는 홍콩 상장 중국 대형 50개. 테크 베팅은 KWEB, 분산은 MCHI."
+  },
+  {
+    "group": "리츠/부동산",
+    "tickers": ["VNQ", "SCHH", "XLRE"],
+    "summary": "VNQ는 미국 전체 리츠(170개+), SCHH는 저보수 미국 리츠, XLRE는 S&P500 내 부동산 섹터만. 분산은 VNQ, 대형주 집중은 XLRE, 저보수는 SCHH."
+  },
+  {
+    "group": "테크 성장",
+    "tickers": ["XLK", "VGT", "FTEC"],
+    "summary": "XLK는 S&P500 테크 섹터(Apple/MSFT 비중 40%+), VGT는 넓은 테크 커버리지, FTEC(0.08%)는 최저 보수. 저보수 장기투자는 FTEC, 유동성은 XLK."
+  },
+  {
+    "group": "레버리지 대표",
+    "tickers": ["TQQQ", "SOXL", "SPXL", "UPRO"],
+    "summary": "TQQQ(나스닥3x), SOXL(반도체3x), SPXL/UPRO(S&P500 3x). 모두 일일 수익률 3배 추종으로 장기보유 시 괴리 발생. 단기 트레이딩 전용, 장기보유 비권장."
+  },
+  {
+    "group": "가치주",
+    "tickers": ["VTV", "IWD", "COWZ"],
+    "summary": "VTV는 대형 가치주 전반, IWD는 Russell 1000 가치주, COWZ는 잉여현금흐름 상위 100 기업. 전통 가치투자는 VTV, 현금흐름 중심은 COWZ."
+  },
+  {
+    "group": "소형주",
+    "tickers": ["IWM", "VB", "IJR"],
+    "summary": "IWM은 Russell 2000(가장 유동적), VB는 뱅가드 소형주(0.05% 저보수), IJR은 S&P600 소형주(수익성 필터). 트레이딩은 IWM, 장기투자는 VB/IJR."
+  },
+  {
+    "group": "AI/로봇",
+    "tickers": ["BOTZ", "ROBO", "ARKW"],
+    "summary": "BOTZ는 로봇/AI 하드웨어 중심(엔비디아/키엔스), ROBO는 자동화+로봇 글로벌, ARKW는 ARK 차세대 인터넷(AI+핀테크+블록체인). 하드웨어는 BOTZ, 소프트웨어는 ARKW."
+  },
+  {
+    "group": "클린에너지",
+    "tickers": ["QCLN", "TAN", "ICLN"],
+    "summary": "QCLN은 미국 클린에너지+전기차, TAN은 태양광 집중, ICLN은 글로벌 클린에너지. 태양광 베팅은 TAN, 넓은 분산은 QCLN/ICLN."
+  }
+]

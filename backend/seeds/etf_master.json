@@ -1,0 +1,5579 @@
+[
+  {
+    "ticker": "QQQ",
+    "name": "Invesco QQQ Trust",
+    "name_kr": "나스닥 100 추종 ETF",
+    "category": "기술주",
+    "expense_ratio": 0.2,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 8.9
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 8.1
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 7.5
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 5.4
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 4.8
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 4.5
+      },
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 3.2
+      },
+      {
+        "name": "Costco",
+        "ticker": "COST",
+        "weight": 2.8
+      },
+      {
+        "name": "Alphabet A",
+        "ticker": "GOOGL",
+        "weight": 2.6
+      },
+      {
+        "name": "Alphabet C",
+        "ticker": "GOOG",
+        "weight": 2.5
+      }
+    ]
+  },
+  {
+    "ticker": "VOO",
+    "name": "Vanguard S&P 500 ETF",
+    "name_kr": "S&P 500 추종 ETF (뱅가드)",
+    "category": "대형주",
+    "expense_ratio": 0.03,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 7.2
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 6.8
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 6.1
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 3.8
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 2.7
+      },
+      {
+        "name": "Alphabet A",
+        "ticker": "GOOGL",
+        "weight": 2.1
+      },
+      {
+        "name": "Berkshire Hathaway",
+        "ticker": "BRK.B",
+        "weight": 1.9
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 1.8
+      },
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 1.7
+      },
+      {
+        "name": "JPMorgan Chase",
+        "ticker": "JPM",
+        "weight": 1.4
+      }
+    ]
+  },
+  {
+    "ticker": "SPY",
+    "name": "SPDR S&P 500 ETF Trust",
+    "name_kr": "S&P 500 추종 ETF (SPDR)",
+    "category": "대형주",
+    "expense_ratio": 0.09,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 7.2
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 6.8
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 6.1
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 3.8
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 2.7
+      },
+      {
+        "name": "Alphabet A",
+        "ticker": "GOOGL",
+        "weight": 2.1
+      },
+      {
+        "name": "Berkshire Hathaway",
+        "ticker": "BRK.B",
+        "weight": 1.9
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 1.8
+      },
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 1.7
+      },
+      {
+        "name": "JPMorgan Chase",
+        "ticker": "JPM",
+        "weight": 1.4
+      }
+    ]
+  },
+  {
+    "ticker": "SCHD",
+    "name": "Schwab U.S. Dividend Equity ETF",
+    "name_kr": "미국 배당주 ETF",
+    "category": "배당",
+    "expense_ratio": 0.06,
+    "top_holdings": [
+      {
+        "name": "AbbVie",
+        "ticker": "ABBV",
+        "weight": 4.5
+      },
+      {
+        "name": "Merck",
+        "ticker": "MRK",
+        "weight": 4.3
+      },
+      {
+        "name": "Home Depot",
+        "ticker": "HD",
+        "weight": 4.2
+      },
+      {
+        "name": "Cisco Systems",
+        "ticker": "CSCO",
+        "weight": 4.1
+      },
+      {
+        "name": "PepsiCo",
+        "ticker": "PEP",
+        "weight": 4.0
+      },
+      {
+        "name": "Coca-Cola",
+        "ticker": "KO",
+        "weight": 3.9
+      },
+      {
+        "name": "Verizon",
+        "ticker": "VZ",
+        "weight": 3.8
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 3.7
+      },
+      {
+        "name": "Texas Instruments",
+        "ticker": "TXN",
+        "weight": 3.5
+      },
+      {
+        "name": "Amgen",
+        "ticker": "AMGN",
+        "weight": 3.4
+      }
+    ]
+  },
+  {
+    "ticker": "TQQQ",
+    "name": "ProShares UltraPro QQQ",
+    "name_kr": "나스닥 100 3배 레버리지",
+    "category": "레버리지",
+    "expense_ratio": 0.86,
+    "top_holdings": [
+      {
+        "name": "Nasdaq-100 Swap",
+        "ticker": "QQQ",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "SOXL",
+    "name": "Direxion Daily Semiconductor Bull 3X",
+    "name_kr": "반도체 3배 레버리지",
+    "category": "레버리지",
+    "expense_ratio": 0.76,
+    "top_holdings": [
+      {
+        "name": "ICE Semiconductor Swap",
+        "ticker": "SOXX",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "JEPI",
+    "name": "JPMorgan Equity Premium Income ETF",
+    "name_kr": "JP모건 프리미엄 인컴 ETF",
+    "category": "배당",
+    "expense_ratio": 0.35,
+    "top_holdings": [
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 1.8
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 1.7
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 1.6
+      },
+      {
+        "name": "AbbVie",
+        "ticker": "ABBV",
+        "weight": 1.5
+      },
+      {
+        "name": "Procter & Gamble",
+        "ticker": "PG",
+        "weight": 1.5
+      },
+      {
+        "name": "Progressive",
+        "ticker": "PGR",
+        "weight": 1.4
+      },
+      {
+        "name": "Mastercard",
+        "ticker": "MA",
+        "weight": 1.4
+      },
+      {
+        "name": "Trane Technologies",
+        "ticker": "TT",
+        "weight": 1.3
+      },
+      {
+        "name": "Visa",
+        "ticker": "V",
+        "weight": 1.3
+      },
+      {
+        "name": "ELI Options Overlay",
+        "ticker": "ELN",
+        "weight": 15.0
+      }
+    ]
+  },
+  {
+    "ticker": "ARKK",
+    "name": "ARK Innovation ETF",
+    "name_kr": "ARK 혁신 성장 ETF",
+    "category": "기술주",
+    "expense_ratio": 0.75,
+    "top_holdings": [
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 11.5
+      },
+      {
+        "name": "Coinbase",
+        "ticker": "COIN",
+        "weight": 7.8
+      },
+      {
+        "name": "Roku",
+        "ticker": "ROKU",
+        "weight": 6.2
+      },
+      {
+        "name": "Block",
+        "ticker": "SQ",
+        "weight": 5.5
+      },
+      {
+        "name": "UiPath",
+        "ticker": "PATH",
+        "weight": 4.8
+      },
+      {
+        "name": "Palantir",
+        "ticker": "PLTR",
+        "weight": 4.5
+      },
+      {
+        "name": "Roblox",
+        "ticker": "RBLX",
+        "weight": 4.2
+      },
+      {
+        "name": "Shopify",
+        "ticker": "SHOP",
+        "weight": 3.9
+      },
+      {
+        "name": "Twilio",
+        "ticker": "TWLO",
+        "weight": 3.5
+      },
+      {
+        "name": "Unity Software",
+        "ticker": "U",
+        "weight": 3.1
+      }
+    ]
+  },
+  {
+    "ticker": "TLT",
+    "name": "iShares 20+ Year Treasury Bond ETF",
+    "name_kr": "미국 장기국채 ETF",
+    "category": "채권",
+    "expense_ratio": 0.15,
+    "top_holdings": [
+      {
+        "name": "U.S. Treasury Bond 2.25% 2046",
+        "ticker": "UST",
+        "weight": 3.2
+      },
+      {
+        "name": "U.S. Treasury Bond 2.875% 2049",
+        "ticker": "UST",
+        "weight": 3.0
+      },
+      {
+        "name": "U.S. Treasury Bond 1.875% 2051",
+        "ticker": "UST",
+        "weight": 2.9
+      },
+      {
+        "name": "U.S. Treasury Bond 2.0% 2050",
+        "ticker": "UST",
+        "weight": 2.8
+      },
+      {
+        "name": "U.S. Treasury Bond 3.0% 2048",
+        "ticker": "UST",
+        "weight": 2.7
+      }
+    ]
+  },
+  {
+    "ticker": "GLD",
+    "name": "SPDR Gold Shares",
+    "name_kr": "금 현물 ETF",
+    "category": "원자재",
+    "expense_ratio": 0.4,
+    "top_holdings": [
+      {
+        "name": "Physical Gold Bullion",
+        "ticker": "GOLD",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "XLE",
+    "name": "Energy Select Sector SPDR Fund",
+    "name_kr": "에너지 섹터 ETF",
+    "category": "에너지",
+    "expense_ratio": 0.09,
+    "top_holdings": [
+      {
+        "name": "ExxonMobil",
+        "ticker": "XOM",
+        "weight": 22.5
+      },
+      {
+        "name": "Chevron",
+        "ticker": "CVX",
+        "weight": 16.8
+      },
+      {
+        "name": "ConocoPhillips",
+        "ticker": "COP",
+        "weight": 7.2
+      },
+      {
+        "name": "Schlumberger",
+        "ticker": "SLB",
+        "weight": 4.8
+      },
+      {
+        "name": "EOG Resources",
+        "ticker": "EOG",
+        "weight": 4.5
+      },
+      {
+        "name": "Marathon Petroleum",
+        "ticker": "MPC",
+        "weight": 4.3
+      },
+      {
+        "name": "Phillips 66",
+        "ticker": "PSX",
+        "weight": 3.9
+      },
+      {
+        "name": "Valero Energy",
+        "ticker": "VLO",
+        "weight": 3.5
+      },
+      {
+        "name": "Williams Companies",
+        "ticker": "WMB",
+        "weight": 3.2
+      },
+      {
+        "name": "Pioneer Natural Resources",
+        "ticker": "PXD",
+        "weight": 2.8
+      }
+    ]
+  },
+  {
+    "ticker": "VTI",
+    "name": "Vanguard Total Stock Market ETF",
+    "name_kr": "미국 전체 주식시장 ETF",
+    "category": "대형주",
+    "expense_ratio": 0.03,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 6.5
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 6.1
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 5.5
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 3.4
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 2.4
+      },
+      {
+        "name": "Alphabet A",
+        "ticker": "GOOGL",
+        "weight": 1.9
+      },
+      {
+        "name": "Berkshire Hathaway",
+        "ticker": "BRK.B",
+        "weight": 1.7
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 1.6
+      },
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 1.5
+      },
+      {
+        "name": "JPMorgan Chase",
+        "ticker": "JPM",
+        "weight": 1.3
+      }
+    ]
+  },
+  {
+    "ticker": "IVV",
+    "name": "iShares Core S&P 500 ETF",
+    "name_kr": "S&P 500 추종 ETF (iShares)",
+    "category": "대형주",
+    "expense_ratio": 0.03,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 7.2
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 6.8
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 6.1
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 3.8
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 2.7
+      },
+      {
+        "name": "Alphabet A",
+        "ticker": "GOOGL",
+        "weight": 2.1
+      },
+      {
+        "name": "Berkshire Hathaway",
+        "ticker": "BRK.B",
+        "weight": 1.9
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 1.8
+      },
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 1.7
+      },
+      {
+        "name": "JPMorgan Chase",
+        "ticker": "JPM",
+        "weight": 1.4
+      }
+    ]
+  },
+  {
+    "ticker": "SOXX",
+    "name": "iShares Semiconductor ETF",
+    "name_kr": "반도체 섹터 ETF (iShares)",
+    "category": "반도체",
+    "expense_ratio": 0.35,
+    "top_holdings": [
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 10.2
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 9.8
+      },
+      {
+        "name": "AMD",
+        "ticker": "AMD",
+        "weight": 7.5
+      },
+      {
+        "name": "Qualcomm",
+        "ticker": "QCOM",
+        "weight": 6.8
+      },
+      {
+        "name": "Texas Instruments",
+        "ticker": "TXN",
+        "weight": 5.9
+      },
+      {
+        "name": "Applied Materials",
+        "ticker": "AMAT",
+        "weight": 5.2
+      },
+      {
+        "name": "Lam Research",
+        "ticker": "LRCX",
+        "weight": 4.8
+      },
+      {
+        "name": "Intel",
+        "ticker": "INTC",
+        "weight": 4.5
+      },
+      {
+        "name": "Marvell Technology",
+        "ticker": "MRVL",
+        "weight": 4.1
+      },
+      {
+        "name": "Micron Technology",
+        "ticker": "MU",
+        "weight": 3.9
+      }
+    ]
+  },
+  {
+    "ticker": "SMH",
+    "name": "VanEck Semiconductor ETF",
+    "name_kr": "반도체 섹터 ETF (VanEck)",
+    "category": "반도체",
+    "expense_ratio": 0.35,
+    "top_holdings": [
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 18.5
+      },
+      {
+        "name": "TSMC",
+        "ticker": "TSM",
+        "weight": 12.3
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 8.2
+      },
+      {
+        "name": "AMD",
+        "ticker": "AMD",
+        "weight": 5.8
+      },
+      {
+        "name": "ASML",
+        "ticker": "ASML",
+        "weight": 5.5
+      },
+      {
+        "name": "Qualcomm",
+        "ticker": "QCOM",
+        "weight": 4.9
+      },
+      {
+        "name": "Texas Instruments",
+        "ticker": "TXN",
+        "weight": 4.5
+      },
+      {
+        "name": "Applied Materials",
+        "ticker": "AMAT",
+        "weight": 4.2
+      },
+      {
+        "name": "Intel",
+        "ticker": "INTC",
+        "weight": 3.8
+      },
+      {
+        "name": "Lam Research",
+        "ticker": "LRCX",
+        "weight": 3.5
+      }
+    ]
+  },
+  {
+    "ticker": "EEM",
+    "name": "iShares MSCI Emerging Markets ETF",
+    "name_kr": "신흥국 주식 ETF",
+    "category": "신흥국",
+    "expense_ratio": 0.68,
+    "top_holdings": [
+      {
+        "name": "TSMC",
+        "ticker": "TSM",
+        "weight": 8.5
+      },
+      {
+        "name": "Tencent",
+        "ticker": "TCEHY",
+        "weight": 4.2
+      },
+      {
+        "name": "Samsung Electronics",
+        "ticker": "005930.KS",
+        "weight": 3.8
+      },
+      {
+        "name": "Alibaba",
+        "ticker": "BABA",
+        "weight": 3.1
+      },
+      {
+        "name": "Reliance Industries",
+        "ticker": "RELIANCE.NS",
+        "weight": 1.8
+      },
+      {
+        "name": "Infosys",
+        "ticker": "INFY",
+        "weight": 1.5
+      },
+      {
+        "name": "Meituan",
+        "ticker": "3690.HK",
+        "weight": 1.4
+      },
+      {
+        "name": "PDD Holdings",
+        "ticker": "PDD",
+        "weight": 1.3
+      },
+      {
+        "name": "JD.com",
+        "ticker": "JD",
+        "weight": 1.2
+      },
+      {
+        "name": "SK Hynix",
+        "ticker": "000660.KS",
+        "weight": 1.1
+      }
+    ]
+  },
+  {
+    "ticker": "KWEB",
+    "name": "KraneShares CSI China Internet ETF",
+    "name_kr": "중국 인터넷 ETF",
+    "category": "중국",
+    "expense_ratio": 0.69,
+    "top_holdings": [
+      {
+        "name": "Alibaba",
+        "ticker": "BABA",
+        "weight": 10.5
+      },
+      {
+        "name": "PDD Holdings",
+        "ticker": "PDD",
+        "weight": 9.8
+      },
+      {
+        "name": "Tencent",
+        "ticker": "TCEHY",
+        "weight": 9.2
+      },
+      {
+        "name": "JD.com",
+        "ticker": "JD",
+        "weight": 7.5
+      },
+      {
+        "name": "Baidu",
+        "ticker": "BIDU",
+        "weight": 6.8
+      },
+      {
+        "name": "Meituan",
+        "ticker": "3690.HK",
+        "weight": 5.5
+      },
+      {
+        "name": "NetEase",
+        "ticker": "NTES",
+        "weight": 5.2
+      },
+      {
+        "name": "Bilibili",
+        "ticker": "BILI",
+        "weight": 3.8
+      },
+      {
+        "name": "Trip.com",
+        "ticker": "TCOM",
+        "weight": 3.5
+      },
+      {
+        "name": "Kuaishou",
+        "ticker": "1024.HK",
+        "weight": 3.2
+      }
+    ]
+  },
+  {
+    "ticker": "VIG",
+    "name": "Vanguard Dividend Appreciation ETF",
+    "name_kr": "배당 성장 ETF",
+    "category": "배당",
+    "expense_ratio": 0.06,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 5.2
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 4.8
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 4.5
+      },
+      {
+        "name": "JPMorgan Chase",
+        "ticker": "JPM",
+        "weight": 3.8
+      },
+      {
+        "name": "UnitedHealth",
+        "ticker": "UNH",
+        "weight": 3.5
+      },
+      {
+        "name": "Visa",
+        "ticker": "V",
+        "weight": 3.2
+      },
+      {
+        "name": "Mastercard",
+        "ticker": "MA",
+        "weight": 2.9
+      },
+      {
+        "name": "Home Depot",
+        "ticker": "HD",
+        "weight": 2.7
+      },
+      {
+        "name": "Procter & Gamble",
+        "ticker": "PG",
+        "weight": 2.5
+      },
+      {
+        "name": "Johnson & Johnson",
+        "ticker": "JNJ",
+        "weight": 2.3
+      }
+    ]
+  },
+  {
+    "ticker": "DIVO",
+    "name": "Amplify CWP Enhanced Dividend Income ETF",
+    "name_kr": "커버드콜 배당 ETF",
+    "category": "배당",
+    "expense_ratio": 0.55,
+    "top_holdings": [
+      {
+        "name": "UnitedHealth",
+        "ticker": "UNH",
+        "weight": 5.5
+      },
+      {
+        "name": "JPMorgan Chase",
+        "ticker": "JPM",
+        "weight": 5.2
+      },
+      {
+        "name": "Home Depot",
+        "ticker": "HD",
+        "weight": 4.8
+      },
+      {
+        "name": "Caterpillar",
+        "ticker": "CAT",
+        "weight": 4.5
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 4.2
+      },
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 4.0
+      },
+      {
+        "name": "Visa",
+        "ticker": "V",
+        "weight": 3.8
+      },
+      {
+        "name": "Goldman Sachs",
+        "ticker": "GS",
+        "weight": 3.5
+      },
+      {
+        "name": "Chevron",
+        "ticker": "CVX",
+        "weight": 3.2
+      },
+      {
+        "name": "McDonald's",
+        "ticker": "MCD",
+        "weight": 3.0
+      }
+    ]
+  },
+  {
+    "ticker": "QYLD",
+    "name": "Global X NASDAQ 100 Covered Call ETF",
+    "name_kr": "나스닥 100 커버드콜 ETF",
+    "category": "배당",
+    "expense_ratio": 0.6,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 8.9
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 8.1
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 7.5
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 5.4
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 4.8
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 4.5
+      },
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 3.2
+      },
+      {
+        "name": "Costco",
+        "ticker": "COST",
+        "weight": 2.8
+      },
+      {
+        "name": "Alphabet A",
+        "ticker": "GOOGL",
+        "weight": 2.6
+      },
+      {
+        "name": "Covered Call Options Overlay",
+        "ticker": "NDX",
+        "weight": 10.0
+      }
+    ]
+  },
+  {
+    "ticker": "VNQ",
+    "name": "Vanguard Real Estate ETF",
+    "name_kr": "미국 부동산 리츠 ETF",
+    "category": "부동산",
+    "expense_ratio": 0.12,
+    "top_holdings": [
+      {
+        "name": "Prologis",
+        "ticker": "PLD",
+        "weight": 7.8
+      },
+      {
+        "name": "American Tower",
+        "ticker": "AMT",
+        "weight": 6.5
+      },
+      {
+        "name": "Equinix",
+        "ticker": "EQIX",
+        "weight": 5.2
+      },
+      {
+        "name": "Crown Castle",
+        "ticker": "CCI",
+        "weight": 4.1
+      },
+      {
+        "name": "Public Storage",
+        "ticker": "PSA",
+        "weight": 3.8
+      },
+      {
+        "name": "Simon Property",
+        "ticker": "SPG",
+        "weight": 3.5
+      },
+      {
+        "name": "Realty Income",
+        "ticker": "O",
+        "weight": 3.2
+      },
+      {
+        "name": "Digital Realty",
+        "ticker": "DLR",
+        "weight": 2.9
+      },
+      {
+        "name": "VICI Properties",
+        "ticker": "VICI",
+        "weight": 2.7
+      },
+      {
+        "name": "Welltower",
+        "ticker": "WELL",
+        "weight": 2.5
+      }
+    ]
+  },
+  {
+    "ticker": "DIA",
+    "name": "SPDR Dow Jones Industrial Average ETF",
+    "name_kr": "다우존스 30 추종 ETF",
+    "category": "대형주",
+    "expense_ratio": 0.16,
+    "top_holdings": [
+      {
+        "name": "UnitedHealth",
+        "ticker": "UNH",
+        "weight": 9.2
+      },
+      {
+        "name": "Goldman Sachs",
+        "ticker": "GS",
+        "weight": 7.8
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 6.5
+      },
+      {
+        "name": "Home Depot",
+        "ticker": "HD",
+        "weight": 5.8
+      },
+      {
+        "name": "Amgen",
+        "ticker": "AMGN",
+        "weight": 5.2
+      },
+      {
+        "name": "Caterpillar",
+        "ticker": "CAT",
+        "weight": 4.8
+      },
+      {
+        "name": "Visa",
+        "ticker": "V",
+        "weight": 4.5
+      },
+      {
+        "name": "McDonald's",
+        "ticker": "MCD",
+        "weight": 4.2
+      },
+      {
+        "name": "Salesforce",
+        "ticker": "CRM",
+        "weight": 3.9
+      },
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 3.5
+      }
+    ]
+  },
+  {
+    "ticker": "IWM",
+    "name": "iShares Russell 2000 ETF",
+    "name_kr": "러셀 2000 소형주 ETF",
+    "category": "대형주",
+    "expense_ratio": 0.19,
+    "top_holdings": [
+      {
+        "name": "Super Micro Computer",
+        "ticker": "SMCI",
+        "weight": 0.6
+      },
+      {
+        "name": "Celsius Holdings",
+        "ticker": "CELH",
+        "weight": 0.4
+      },
+      {
+        "name": "Comfort Systems",
+        "ticker": "FIX",
+        "weight": 0.4
+      },
+      {
+        "name": "FTAI Aviation",
+        "ticker": "FTAI",
+        "weight": 0.4
+      },
+      {
+        "name": "Insmed",
+        "ticker": "INSM",
+        "weight": 0.3
+      },
+      {
+        "name": "Sprouts Farmers",
+        "ticker": "SFM",
+        "weight": 0.3
+      },
+      {
+        "name": "Mueller Water",
+        "ticker": "MWA",
+        "weight": 0.3
+      },
+      {
+        "name": "Fabrinet",
+        "ticker": "FN",
+        "weight": 0.3
+      },
+      {
+        "name": "Vaxcyte",
+        "ticker": "PCVX",
+        "weight": 0.3
+      },
+      {
+        "name": "Chart Industries",
+        "ticker": "GTLS",
+        "weight": 0.3
+      }
+    ]
+  },
+  {
+    "ticker": "XLK",
+    "name": "Technology Select Sector SPDR Fund",
+    "name_kr": "기술 섹터 ETF",
+    "category": "기술주",
+    "expense_ratio": 0.09,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 16.5
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 15.8
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 14.2
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 5.5
+      },
+      {
+        "name": "Salesforce",
+        "ticker": "CRM",
+        "weight": 2.8
+      },
+      {
+        "name": "Adobe",
+        "ticker": "ADBE",
+        "weight": 2.5
+      },
+      {
+        "name": "AMD",
+        "ticker": "AMD",
+        "weight": 2.3
+      },
+      {
+        "name": "Oracle",
+        "ticker": "ORCL",
+        "weight": 2.1
+      },
+      {
+        "name": "Accenture",
+        "ticker": "ACN",
+        "weight": 1.9
+      },
+      {
+        "name": "Cisco Systems",
+        "ticker": "CSCO",
+        "weight": 1.8
+      }
+    ]
+  },
+  {
+    "ticker": "XLF",
+    "name": "Financial Select Sector SPDR Fund",
+    "name_kr": "금융 섹터 ETF",
+    "category": "금융",
+    "expense_ratio": 0.09,
+    "top_holdings": [
+      {
+        "name": "Berkshire Hathaway",
+        "ticker": "BRK.B",
+        "weight": 13.8
+      },
+      {
+        "name": "JPMorgan Chase",
+        "ticker": "JPM",
+        "weight": 10.5
+      },
+      {
+        "name": "Visa",
+        "ticker": "V",
+        "weight": 8.2
+      },
+      {
+        "name": "Mastercard",
+        "ticker": "MA",
+        "weight": 7.1
+      },
+      {
+        "name": "Bank of America",
+        "ticker": "BAC",
+        "weight": 4.5
+      },
+      {
+        "name": "Wells Fargo",
+        "ticker": "WFC",
+        "weight": 3.2
+      },
+      {
+        "name": "Goldman Sachs",
+        "ticker": "GS",
+        "weight": 3.0
+      },
+      {
+        "name": "S&P Global",
+        "ticker": "SPGI",
+        "weight": 2.8
+      },
+      {
+        "name": "Morgan Stanley",
+        "ticker": "MS",
+        "weight": 2.5
+      },
+      {
+        "name": "BlackRock",
+        "ticker": "BLK",
+        "weight": 2.3
+      }
+    ]
+  },
+  {
+    "ticker": "IBIT",
+    "name": "iShares Bitcoin Trust ETF",
+    "name_kr": "비트코인 현물 ETF",
+    "category": "암호화폐",
+    "expense_ratio": 0.25,
+    "top_holdings": [
+      {
+        "name": "Bitcoin",
+        "ticker": "BTC",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "BITO",
+    "name": "ProShares Bitcoin Strategy ETF",
+    "name_kr": "비트코인 선물 ETF",
+    "category": "암호화폐",
+    "expense_ratio": 0.95,
+    "top_holdings": [
+      {
+        "name": "Bitcoin Futures (CME)",
+        "ticker": "BTC-FUT",
+        "weight": 95.0
+      },
+      {
+        "name": "U.S. Treasury Bills",
+        "ticker": "TBILL",
+        "weight": 5.0
+      }
+    ]
+  },
+  {
+    "ticker": "MSTR",
+    "name": "MicroStrategy Inc.",
+    "name_kr": "마이크로스트래티지 (비트코인 기업)",
+    "category": "개별종목",
+    "expense_ratio": 0.0,
+    "top_holdings": [
+      {
+        "name": "MicroStrategy (Self)",
+        "ticker": "MSTR",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "PLTR",
+    "name": "Palantir Technologies Inc.",
+    "name_kr": "팔란티어 (빅데이터 분석)",
+    "category": "개별종목",
+    "expense_ratio": 0.0,
+    "top_holdings": [
+      {
+        "name": "Palantir (Self)",
+        "ticker": "PLTR",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "NVDA",
+    "name": "NVIDIA Corporation",
+    "name_kr": "엔비디아 (AI 반도체)",
+    "category": "개별종목",
+    "expense_ratio": 0.0,
+    "top_holdings": [
+      {
+        "name": "NVIDIA (Self)",
+        "ticker": "NVDA",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "JEPQ",
+    "name": "JPMorgan Nasdaq Equity Premium Income ETF",
+    "name_kr": "나스닥 커버드콜 ETF",
+    "category": "배당",
+    "expense_ratio": 0.35,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 8.5
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 7.8
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 7.2
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 5.1
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 4.5
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 4.2
+      },
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 3.0
+      },
+      {
+        "name": "Alphabet A",
+        "ticker": "GOOGL",
+        "weight": 2.5
+      },
+      {
+        "name": "Costco",
+        "ticker": "COST",
+        "weight": 2.3
+      },
+      {
+        "name": "ELI Options Overlay",
+        "ticker": "ELN",
+        "weight": 12.0
+      }
+    ]
+  },
+  {
+    "ticker": "QQQM",
+    "name": "Invesco NASDAQ 100 ETF",
+    "name_kr": "나스닥 100 저비용 ETF",
+    "category": "기술주",
+    "expense_ratio": 0.15,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 8.9
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 8.1
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 7.5
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 5.4
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 4.8
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 4.5
+      },
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 3.2
+      },
+      {
+        "name": "Costco",
+        "ticker": "COST",
+        "weight": 2.8
+      },
+      {
+        "name": "Alphabet A",
+        "ticker": "GOOGL",
+        "weight": 2.6
+      },
+      {
+        "name": "Alphabet C",
+        "ticker": "GOOG",
+        "weight": 2.5
+      }
+    ]
+  },
+  {
+    "ticker": "SPLG",
+    "name": "SPDR Portfolio S&P 500 ETF",
+    "name_kr": "S&P 500 저비용 ETF",
+    "category": "대형주",
+    "expense_ratio": 0.02,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 7.2
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 6.8
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 6.1
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 3.8
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 2.7
+      },
+      {
+        "name": "Alphabet A",
+        "ticker": "GOOGL",
+        "weight": 2.1
+      },
+      {
+        "name": "Berkshire Hathaway",
+        "ticker": "BRK.B",
+        "weight": 1.9
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 1.8
+      },
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 1.7
+      },
+      {
+        "name": "JPMorgan Chase",
+        "ticker": "JPM",
+        "weight": 1.4
+      }
+    ]
+  },
+  {
+    "ticker": "XLV",
+    "name": "Health Care Select Sector SPDR Fund",
+    "name_kr": "헬스케어 섹터 ETF",
+    "category": "헬스케어",
+    "expense_ratio": 0.09,
+    "top_holdings": [
+      {
+        "name": "UnitedHealth",
+        "ticker": "UNH",
+        "weight": 10.8
+      },
+      {
+        "name": "Eli Lilly",
+        "ticker": "LLY",
+        "weight": 10.2
+      },
+      {
+        "name": "Johnson & Johnson",
+        "ticker": "JNJ",
+        "weight": 7.5
+      },
+      {
+        "name": "AbbVie",
+        "ticker": "ABBV",
+        "weight": 6.8
+      },
+      {
+        "name": "Merck",
+        "ticker": "MRK",
+        "weight": 5.9
+      },
+      {
+        "name": "Thermo Fisher",
+        "ticker": "TMO",
+        "weight": 4.2
+      },
+      {
+        "name": "Abbott Laboratories",
+        "ticker": "ABT",
+        "weight": 3.8
+      },
+      {
+        "name": "Amgen",
+        "ticker": "AMGN",
+        "weight": 3.5
+      },
+      {
+        "name": "Pfizer",
+        "ticker": "PFE",
+        "weight": 3.1
+      },
+      {
+        "name": "Danaher",
+        "ticker": "DHR",
+        "weight": 2.8
+      }
+    ]
+  },
+  {
+    "ticker": "SLV",
+    "name": "iShares Silver Trust",
+    "name_kr": "은 현물 ETF",
+    "category": "원자재",
+    "expense_ratio": 0.5,
+    "top_holdings": [
+      {
+        "name": "Physical Silver Bullion",
+        "ticker": "SILVER",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "IEF",
+    "name": "iShares 7-10 Year Treasury Bond ETF",
+    "name_kr": "미국 중기국채 ETF",
+    "category": "채권",
+    "expense_ratio": 0.15,
+    "top_holdings": [
+      {
+        "name": "U.S. Treasury Note 2.875% 2032",
+        "ticker": "UST",
+        "weight": 4.5
+      },
+      {
+        "name": "U.S. Treasury Note 3.5% 2033",
+        "ticker": "UST",
+        "weight": 4.2
+      },
+      {
+        "name": "U.S. Treasury Note 4.0% 2034",
+        "ticker": "UST",
+        "weight": 3.9
+      },
+      {
+        "name": "U.S. Treasury Note 3.875% 2033",
+        "ticker": "UST",
+        "weight": 3.7
+      },
+      {
+        "name": "U.S. Treasury Note 4.125% 2032",
+        "ticker": "UST",
+        "weight": 3.5
+      }
+    ]
+  },
+  {
+    "ticker": "HYG",
+    "name": "iShares iBoxx $ High Yield Corporate Bond ETF",
+    "name_kr": "하이일드 채권 ETF",
+    "category": "채권",
+    "expense_ratio": 0.49,
+    "top_holdings": [
+      {
+        "name": "TransDigm 6.75% 2028",
+        "ticker": "TDG",
+        "weight": 0.5
+      },
+      {
+        "name": "CCO Holdings 5.125% 2027",
+        "ticker": "CHTR",
+        "weight": 0.4
+      },
+      {
+        "name": "Tenet Healthcare 6.125% 2028",
+        "ticker": "THC",
+        "weight": 0.4
+      },
+      {
+        "name": "Ford Motor 6.625% 2028",
+        "ticker": "F",
+        "weight": 0.3
+      },
+      {
+        "name": "Carnival Corp 5.75% 2027",
+        "ticker": "CCL",
+        "weight": 0.3
+      },
+      {
+        "name": "Occidental Petroleum 6.125% 2031",
+        "ticker": "OXY",
+        "weight": 0.3
+      },
+      {
+        "name": "Venture Global 8.125% 2028",
+        "ticker": "VG",
+        "weight": 0.3
+      },
+      {
+        "name": "Medline 5.25% 2029",
+        "ticker": "MDLN",
+        "weight": 0.3
+      },
+      {
+        "name": "US Foods 6.25% 2028",
+        "ticker": "USFD",
+        "weight": 0.3
+      },
+      {
+        "name": "Various High Yield Bonds",
+        "ticker": "HY-AGG",
+        "weight": 96.9
+      }
+    ]
+  },
+  {
+    "ticker": "LQD",
+    "name": "iShares iBoxx $ Investment Grade Corporate Bond ETF",
+    "name_kr": "투자등급 회사채 ETF",
+    "category": "채권",
+    "expense_ratio": 0.14,
+    "top_holdings": [
+      {
+        "name": "JPMorgan Chase 4.25% 2034",
+        "ticker": "JPM",
+        "weight": 0.5
+      },
+      {
+        "name": "Bank of America 4.375% 2033",
+        "ticker": "BAC",
+        "weight": 0.4
+      },
+      {
+        "name": "Goldman Sachs 4.5% 2031",
+        "ticker": "GS",
+        "weight": 0.4
+      },
+      {
+        "name": "Morgan Stanley 4.125% 2032",
+        "ticker": "MS",
+        "weight": 0.3
+      },
+      {
+        "name": "Apple 3.85% 2043",
+        "ticker": "AAPL",
+        "weight": 0.3
+      },
+      {
+        "name": "Microsoft 3.5% 2042",
+        "ticker": "MSFT",
+        "weight": 0.3
+      },
+      {
+        "name": "AT&T 4.35% 2045",
+        "ticker": "T",
+        "weight": 0.3
+      },
+      {
+        "name": "Verizon 4.5% 2033",
+        "ticker": "VZ",
+        "weight": 0.3
+      },
+      {
+        "name": "Amazon 3.875% 2037",
+        "ticker": "AMZN",
+        "weight": 0.2
+      },
+      {
+        "name": "Various IG Corporate Bonds",
+        "ticker": "IG-AGG",
+        "weight": 97.0
+      }
+    ]
+  },
+  {
+    "ticker": "IEFA",
+    "name": "iShares Core MSCI EAFE ETF",
+    "name_kr": "선진국(미국제외) 주식 ETF",
+    "category": "선진국",
+    "expense_ratio": 0.07,
+    "top_holdings": [
+      {
+        "name": "Nestle",
+        "ticker": "NSRGY",
+        "weight": 1.8
+      },
+      {
+        "name": "ASML",
+        "ticker": "ASML",
+        "weight": 1.7
+      },
+      {
+        "name": "Novo Nordisk",
+        "ticker": "NVO",
+        "weight": 1.6
+      },
+      {
+        "name": "LVMH",
+        "ticker": "LVMUY",
+        "weight": 1.4
+      },
+      {
+        "name": "Samsung Electronics",
+        "ticker": "005930.KS",
+        "weight": 1.3
+      },
+      {
+        "name": "Toyota Motor",
+        "ticker": "TM",
+        "weight": 1.2
+      },
+      {
+        "name": "Shell",
+        "ticker": "SHEL",
+        "weight": 1.1
+      },
+      {
+        "name": "AstraZeneca",
+        "ticker": "AZN",
+        "weight": 1.0
+      },
+      {
+        "name": "Roche",
+        "ticker": "RHHBY",
+        "weight": 0.9
+      },
+      {
+        "name": "SAP",
+        "ticker": "SAP",
+        "weight": 0.9
+      }
+    ]
+  },
+  {
+    "ticker": "VGT",
+    "name": "Vanguard Information Technology ETF",
+    "name_kr": "정보기술 섹터 ETF",
+    "category": "기술주",
+    "expense_ratio": 0.1,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 16.2
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 15.5
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 13.8
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 5.3
+      },
+      {
+        "name": "Salesforce",
+        "ticker": "CRM",
+        "weight": 2.7
+      },
+      {
+        "name": "Adobe",
+        "ticker": "ADBE",
+        "weight": 2.4
+      },
+      {
+        "name": "AMD",
+        "ticker": "AMD",
+        "weight": 2.2
+      },
+      {
+        "name": "Oracle",
+        "ticker": "ORCL",
+        "weight": 2.0
+      },
+      {
+        "name": "Accenture",
+        "ticker": "ACN",
+        "weight": 1.8
+      },
+      {
+        "name": "Intuit",
+        "ticker": "INTU",
+        "weight": 1.7
+      }
+    ]
+  },
+  {
+    "ticker": "MCHI",
+    "name": "iShares MSCI China ETF",
+    "name_kr": "중국 대형주 ETF",
+    "category": "중국",
+    "expense_ratio": 0.59,
+    "top_holdings": [
+      {
+        "name": "Tencent",
+        "ticker": "TCEHY",
+        "weight": 14.5
+      },
+      {
+        "name": "Alibaba",
+        "ticker": "BABA",
+        "weight": 9.8
+      },
+      {
+        "name": "PDD Holdings",
+        "ticker": "PDD",
+        "weight": 5.2
+      },
+      {
+        "name": "China Construction Bank",
+        "ticker": "CICHY",
+        "weight": 3.8
+      },
+      {
+        "name": "Meituan",
+        "ticker": "3690.HK",
+        "weight": 3.5
+      },
+      {
+        "name": "JD.com",
+        "ticker": "JD",
+        "weight": 3.1
+      },
+      {
+        "name": "Baidu",
+        "ticker": "BIDU",
+        "weight": 2.8
+      },
+      {
+        "name": "NetEase",
+        "ticker": "NTES",
+        "weight": 2.5
+      },
+      {
+        "name": "BYD",
+        "ticker": "BYDDY",
+        "weight": 2.2
+      },
+      {
+        "name": "Industrial & Commercial Bank",
+        "ticker": "IDCBY",
+        "weight": 1.9
+      }
+    ]
+  },
+  {
+    "ticker": "FXI",
+    "name": "iShares China Large-Cap ETF",
+    "name_kr": "중국 대형주 ETF (H주)",
+    "category": "중국",
+    "expense_ratio": 0.74,
+    "top_holdings": [
+      {
+        "name": "Alibaba",
+        "ticker": "BABA",
+        "weight": 10.2
+      },
+      {
+        "name": "Tencent",
+        "ticker": "TCEHY",
+        "weight": 9.5
+      },
+      {
+        "name": "China Construction Bank",
+        "ticker": "CICHY",
+        "weight": 7.8
+      },
+      {
+        "name": "Meituan",
+        "ticker": "3690.HK",
+        "weight": 6.5
+      },
+      {
+        "name": "JD.com",
+        "ticker": "JD",
+        "weight": 5.2
+      },
+      {
+        "name": "PDD Holdings",
+        "ticker": "PDD",
+        "weight": 4.8
+      },
+      {
+        "name": "Baidu",
+        "ticker": "BIDU",
+        "weight": 4.1
+      },
+      {
+        "name": "Industrial & Commercial Bank",
+        "ticker": "IDCBY",
+        "weight": 3.5
+      },
+      {
+        "name": "BYD",
+        "ticker": "BYDDY",
+        "weight": 3.2
+      },
+      {
+        "name": "NetEase",
+        "ticker": "NTES",
+        "weight": 2.8
+      }
+    ]
+  },
+  {
+    "ticker": "VWO",
+    "name": "Vanguard FTSE Emerging Markets ETF",
+    "name_kr": "신흥국 주식 ETF (뱅가드)",
+    "category": "신흥국",
+    "expense_ratio": 0.08,
+    "top_holdings": [
+      {
+        "name": "TSMC",
+        "ticker": "TSM",
+        "weight": 8.2
+      },
+      {
+        "name": "Tencent",
+        "ticker": "TCEHY",
+        "weight": 3.8
+      },
+      {
+        "name": "Alibaba",
+        "ticker": "BABA",
+        "weight": 2.9
+      },
+      {
+        "name": "Reliance Industries",
+        "ticker": "RELIANCE.NS",
+        "weight": 1.7
+      },
+      {
+        "name": "Samsung Electronics",
+        "ticker": "005930.KS",
+        "weight": 1.5
+      },
+      {
+        "name": "Meituan",
+        "ticker": "3690.HK",
+        "weight": 1.3
+      },
+      {
+        "name": "PDD Holdings",
+        "ticker": "PDD",
+        "weight": 1.2
+      },
+      {
+        "name": "Infosys",
+        "ticker": "INFY",
+        "weight": 1.1
+      },
+      {
+        "name": "China Construction Bank",
+        "ticker": "CICHY",
+        "weight": 1.0
+      },
+      {
+        "name": "JD.com",
+        "ticker": "JD",
+        "weight": 0.9
+      }
+    ]
+  },
+  {
+    "ticker": "DGRO",
+    "name": "iShares Core Dividend Growth ETF",
+    "name_kr": "배당 성장 ETF (iShares)",
+    "category": "배당",
+    "expense_ratio": 0.08,
+    "top_holdings": [
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 3.8
+      },
+      {
+        "name": "JPMorgan Chase",
+        "ticker": "JPM",
+        "weight": 3.5
+      },
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 3.2
+      },
+      {
+        "name": "AbbVie",
+        "ticker": "ABBV",
+        "weight": 2.9
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 2.7
+      },
+      {
+        "name": "ExxonMobil",
+        "ticker": "XOM",
+        "weight": 2.5
+      },
+      {
+        "name": "Johnson & Johnson",
+        "ticker": "JNJ",
+        "weight": 2.3
+      },
+      {
+        "name": "Procter & Gamble",
+        "ticker": "PG",
+        "weight": 2.1
+      },
+      {
+        "name": "Home Depot",
+        "ticker": "HD",
+        "weight": 2.0
+      },
+      {
+        "name": "Chevron",
+        "ticker": "CVX",
+        "weight": 1.8
+      }
+    ]
+  },
+  {
+    "ticker": "DGRW",
+    "name": "WisdomTree U.S. Quality Dividend Growth Fund",
+    "name_kr": "퀄리티 배당 성장 ETF",
+    "category": "배당",
+    "expense_ratio": 0.28,
+    "top_holdings": [
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 6.5
+      },
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 5.8
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 4.2
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 3.5
+      },
+      {
+        "name": "Johnson & Johnson",
+        "ticker": "JNJ",
+        "weight": 2.8
+      },
+      {
+        "name": "AbbVie",
+        "ticker": "ABBV",
+        "weight": 2.5
+      },
+      {
+        "name": "Procter & Gamble",
+        "ticker": "PG",
+        "weight": 2.3
+      },
+      {
+        "name": "Coca-Cola",
+        "ticker": "KO",
+        "weight": 2.1
+      },
+      {
+        "name": "PepsiCo",
+        "ticker": "PEP",
+        "weight": 2.0
+      },
+      {
+        "name": "Merck",
+        "ticker": "MRK",
+        "weight": 1.9
+      }
+    ]
+  },
+  {
+    "ticker": "FTEC",
+    "name": "Fidelity MSCI Information Technology Index ETF",
+    "name_kr": "정보기술 ETF (피델리티)",
+    "category": "기술주",
+    "expense_ratio": 0.08,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 16.0
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 15.3
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 13.5
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 5.1
+      },
+      {
+        "name": "Salesforce",
+        "ticker": "CRM",
+        "weight": 2.6
+      },
+      {
+        "name": "Adobe",
+        "ticker": "ADBE",
+        "weight": 2.3
+      },
+      {
+        "name": "AMD",
+        "ticker": "AMD",
+        "weight": 2.1
+      },
+      {
+        "name": "Oracle",
+        "ticker": "ORCL",
+        "weight": 1.9
+      },
+      {
+        "name": "Accenture",
+        "ticker": "ACN",
+        "weight": 1.7
+      },
+      {
+        "name": "Cisco Systems",
+        "ticker": "CSCO",
+        "weight": 1.6
+      }
+    ]
+  },
+  {
+    "ticker": "BOTZ",
+    "name": "Global X Robotics & Artificial Intelligence ETF",
+    "name_kr": "로봇/AI ETF",
+    "category": "기술주",
+    "expense_ratio": 0.69,
+    "top_holdings": [
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 11.2
+      },
+      {
+        "name": "Intuitive Surgical",
+        "ticker": "ISRG",
+        "weight": 9.5
+      },
+      {
+        "name": "ABB Ltd",
+        "ticker": "ABB",
+        "weight": 7.8
+      },
+      {
+        "name": "Keyence",
+        "ticker": "KYCCF",
+        "weight": 7.2
+      },
+      {
+        "name": "Fanuc",
+        "ticker": "FANUY",
+        "weight": 5.8
+      },
+      {
+        "name": "Rockwell Automation",
+        "ticker": "ROK",
+        "weight": 5.2
+      },
+      {
+        "name": "Cognex",
+        "ticker": "CGNX",
+        "weight": 4.5
+      },
+      {
+        "name": "Teradyne",
+        "ticker": "TER",
+        "weight": 4.1
+      },
+      {
+        "name": "SMC Corporation",
+        "ticker": "SMCAY",
+        "weight": 3.8
+      },
+      {
+        "name": "Brooks Automation",
+        "ticker": "AZTA",
+        "weight": 3.2
+      }
+    ]
+  },
+  {
+    "ticker": "HACK",
+    "name": "ETFMG Prime Cyber Security ETF",
+    "name_kr": "사이버보안 ETF",
+    "category": "기술주",
+    "expense_ratio": 0.6,
+    "top_holdings": [
+      {
+        "name": "CrowdStrike",
+        "ticker": "CRWD",
+        "weight": 6.8
+      },
+      {
+        "name": "Palo Alto Networks",
+        "ticker": "PANW",
+        "weight": 6.5
+      },
+      {
+        "name": "Fortinet",
+        "ticker": "FTNT",
+        "weight": 5.9
+      },
+      {
+        "name": "CyberArk Software",
+        "ticker": "CYBR",
+        "weight": 5.2
+      },
+      {
+        "name": "Zscaler",
+        "ticker": "ZS",
+        "weight": 4.8
+      },
+      {
+        "name": "SentinelOne",
+        "ticker": "S",
+        "weight": 4.2
+      },
+      {
+        "name": "Cloudflare",
+        "ticker": "NET",
+        "weight": 3.9
+      },
+      {
+        "name": "Varonis Systems",
+        "ticker": "VRNS",
+        "weight": 3.5
+      },
+      {
+        "name": "Qualys",
+        "ticker": "QLYS",
+        "weight": 3.2
+      },
+      {
+        "name": "Check Point Software",
+        "ticker": "CHKP",
+        "weight": 3.0
+      }
+    ]
+  },
+  {
+    "ticker": "SKYY",
+    "name": "First Trust Cloud Computing ETF",
+    "name_kr": "클라우드 컴퓨팅 ETF",
+    "category": "기술주",
+    "expense_ratio": 0.6,
+    "top_holdings": [
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 5.2
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 4.8
+      },
+      {
+        "name": "Alphabet A",
+        "ticker": "GOOGL",
+        "weight": 4.5
+      },
+      {
+        "name": "Oracle",
+        "ticker": "ORCL",
+        "weight": 3.9
+      },
+      {
+        "name": "Salesforce",
+        "ticker": "CRM",
+        "weight": 3.5
+      },
+      {
+        "name": "ServiceNow",
+        "ticker": "NOW",
+        "weight": 3.2
+      },
+      {
+        "name": "Snowflake",
+        "ticker": "SNOW",
+        "weight": 2.8
+      },
+      {
+        "name": "Datadog",
+        "ticker": "DDOG",
+        "weight": 2.5
+      },
+      {
+        "name": "MongoDB",
+        "ticker": "MDB",
+        "weight": 2.3
+      },
+      {
+        "name": "Cloudflare",
+        "ticker": "NET",
+        "weight": 2.1
+      }
+    ]
+  },
+  {
+    "ticker": "WCLD",
+    "name": "WisdomTree Cloud Computing Fund",
+    "name_kr": "클라우드 ETF (WisdomTree)",
+    "category": "기술주",
+    "expense_ratio": 0.45,
+    "top_holdings": [
+      {
+        "name": "Datadog",
+        "ticker": "DDOG",
+        "weight": 3.5
+      },
+      {
+        "name": "Monday.com",
+        "ticker": "MNDY",
+        "weight": 3.2
+      },
+      {
+        "name": "HubSpot",
+        "ticker": "HUBS",
+        "weight": 3.0
+      },
+      {
+        "name": "Cloudflare",
+        "ticker": "NET",
+        "weight": 2.8
+      },
+      {
+        "name": "Zscaler",
+        "ticker": "ZS",
+        "weight": 2.6
+      },
+      {
+        "name": "CrowdStrike",
+        "ticker": "CRWD",
+        "weight": 2.5
+      },
+      {
+        "name": "Confluent",
+        "ticker": "CFLT",
+        "weight": 2.3
+      },
+      {
+        "name": "SentinelOne",
+        "ticker": "S",
+        "weight": 2.2
+      },
+      {
+        "name": "Gitlab",
+        "ticker": "GTLB",
+        "weight": 2.1
+      },
+      {
+        "name": "DigitalOcean",
+        "ticker": "DOCN",
+        "weight": 2.0
+      }
+    ]
+  },
+  {
+    "ticker": "CIBR",
+    "name": "First Trust NASDAQ Cybersecurity ETF",
+    "name_kr": "사이버보안 ETF (나스닥)",
+    "category": "기술주",
+    "expense_ratio": 0.6,
+    "top_holdings": [
+      {
+        "name": "CrowdStrike",
+        "ticker": "CRWD",
+        "weight": 7.5
+      },
+      {
+        "name": "Palo Alto Networks",
+        "ticker": "PANW",
+        "weight": 7.2
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 6.5
+      },
+      {
+        "name": "Cisco Systems",
+        "ticker": "CSCO",
+        "weight": 5.8
+      },
+      {
+        "name": "Fortinet",
+        "ticker": "FTNT",
+        "weight": 5.5
+      },
+      {
+        "name": "CyberArk Software",
+        "ticker": "CYBR",
+        "weight": 4.8
+      },
+      {
+        "name": "Zscaler",
+        "ticker": "ZS",
+        "weight": 4.2
+      },
+      {
+        "name": "Cloudflare",
+        "ticker": "NET",
+        "weight": 3.9
+      },
+      {
+        "name": "Check Point Software",
+        "ticker": "CHKP",
+        "weight": 3.5
+      },
+      {
+        "name": "Varonis Systems",
+        "ticker": "VRNS",
+        "weight": 3.2
+      }
+    ]
+  },
+  {
+    "ticker": "DRIV",
+    "name": "Global X Autonomous & Electric Vehicles ETF",
+    "name_kr": "자율주행/전기차 ETF",
+    "category": "기술주",
+    "expense_ratio": 0.68,
+    "top_holdings": [
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 5.5
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 5.2
+      },
+      {
+        "name": "Toyota Motor",
+        "ticker": "TM",
+        "weight": 4.8
+      },
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 4.5
+      },
+      {
+        "name": "Alphabet A",
+        "ticker": "GOOGL",
+        "weight": 4.2
+      },
+      {
+        "name": "Qualcomm",
+        "ticker": "QCOM",
+        "weight": 3.8
+      },
+      {
+        "name": "NXP Semiconductors",
+        "ticker": "NXPI",
+        "weight": 3.5
+      },
+      {
+        "name": "BYD",
+        "ticker": "BYDDY",
+        "weight": 3.2
+      },
+      {
+        "name": "ON Semiconductor",
+        "ticker": "ON",
+        "weight": 2.9
+      },
+      {
+        "name": "Aptiv",
+        "ticker": "APTV",
+        "weight": 2.5
+      }
+    ]
+  },
+  {
+    "ticker": "IDRV",
+    "name": "iShares Self-Driving EV and Tech ETF",
+    "name_kr": "자율주행/EV ETF (iShares)",
+    "category": "기술주",
+    "expense_ratio": 0.47,
+    "top_holdings": [
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 5.8
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 4.5
+      },
+      {
+        "name": "Toyota Motor",
+        "ticker": "TM",
+        "weight": 4.2
+      },
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 3.9
+      },
+      {
+        "name": "Alphabet A",
+        "ticker": "GOOGL",
+        "weight": 3.5
+      },
+      {
+        "name": "BYD",
+        "ticker": "BYDDY",
+        "weight": 3.2
+      },
+      {
+        "name": "Qualcomm",
+        "ticker": "QCOM",
+        "weight": 3.0
+      },
+      {
+        "name": "NXP Semiconductors",
+        "ticker": "NXPI",
+        "weight": 2.8
+      },
+      {
+        "name": "General Motors",
+        "ticker": "GM",
+        "weight": 2.5
+      },
+      {
+        "name": "ON Semiconductor",
+        "ticker": "ON",
+        "weight": 2.2
+      }
+    ]
+  },
+  {
+    "ticker": "QCLN",
+    "name": "First Trust NASDAQ Clean Edge Green Energy Index Fund",
+    "name_kr": "클린에너지 ETF",
+    "category": "에너지",
+    "expense_ratio": 0.58,
+    "top_holdings": [
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 8.5
+      },
+      {
+        "name": "ON Semiconductor",
+        "ticker": "ON",
+        "weight": 6.2
+      },
+      {
+        "name": "First Solar",
+        "ticker": "FSLR",
+        "weight": 5.8
+      },
+      {
+        "name": "Enphase Energy",
+        "ticker": "ENPH",
+        "weight": 5.2
+      },
+      {
+        "name": "Rivian Automotive",
+        "ticker": "RIVN",
+        "weight": 4.5
+      },
+      {
+        "name": "Albemarle",
+        "ticker": "ALB",
+        "weight": 4.0
+      },
+      {
+        "name": "SolarEdge Technologies",
+        "ticker": "SEDG",
+        "weight": 3.5
+      },
+      {
+        "name": "Lucid Group",
+        "ticker": "LCID",
+        "weight": 3.0
+      },
+      {
+        "name": "Plug Power",
+        "ticker": "PLUG",
+        "weight": 2.5
+      },
+      {
+        "name": "ChargePoint",
+        "ticker": "CHPT",
+        "weight": 2.2
+      }
+    ]
+  },
+  {
+    "ticker": "TAN",
+    "name": "Invesco Solar ETF",
+    "name_kr": "태양광 ETF",
+    "category": "에너지",
+    "expense_ratio": 0.67,
+    "top_holdings": [
+      {
+        "name": "First Solar",
+        "ticker": "FSLR",
+        "weight": 11.5
+      },
+      {
+        "name": "Enphase Energy",
+        "ticker": "ENPH",
+        "weight": 9.8
+      },
+      {
+        "name": "SolarEdge Technologies",
+        "ticker": "SEDG",
+        "weight": 7.5
+      },
+      {
+        "name": "Sunrun",
+        "ticker": "RUN",
+        "weight": 5.8
+      },
+      {
+        "name": "GCL Technology",
+        "ticker": "3800.HK",
+        "weight": 4.5
+      },
+      {
+        "name": "Maxeon Solar Technologies",
+        "ticker": "MAXN",
+        "weight": 3.8
+      },
+      {
+        "name": "Array Technologies",
+        "ticker": "ARRY",
+        "weight": 3.5
+      },
+      {
+        "name": "Shoals Technologies",
+        "ticker": "SHLS",
+        "weight": 3.2
+      },
+      {
+        "name": "Daqo New Energy",
+        "ticker": "DQ",
+        "weight": 2.8
+      },
+      {
+        "name": "Jinko Solar",
+        "ticker": "JKS",
+        "weight": 2.5
+      }
+    ]
+  },
+  {
+    "ticker": "ICLN",
+    "name": "iShares Global Clean Energy ETF",
+    "name_kr": "글로벌 클린에너지 ETF",
+    "category": "에너지",
+    "expense_ratio": 0.4,
+    "top_holdings": [
+      {
+        "name": "First Solar",
+        "ticker": "FSLR",
+        "weight": 8.2
+      },
+      {
+        "name": "Enphase Energy",
+        "ticker": "ENPH",
+        "weight": 6.5
+      },
+      {
+        "name": "Iberdrola",
+        "ticker": "IBDRY",
+        "weight": 5.8
+      },
+      {
+        "name": "Vestas Wind Systems",
+        "ticker": "VWDRY",
+        "weight": 5.2
+      },
+      {
+        "name": "SolarEdge Technologies",
+        "ticker": "SEDG",
+        "weight": 4.5
+      },
+      {
+        "name": "Plug Power",
+        "ticker": "PLUG",
+        "weight": 3.8
+      },
+      {
+        "name": "Orsted",
+        "ticker": "DNNGY",
+        "weight": 3.5
+      },
+      {
+        "name": "Sunrun",
+        "ticker": "RUN",
+        "weight": 3.2
+      },
+      {
+        "name": "EDP Renovaveis",
+        "ticker": "EDRVF",
+        "weight": 2.8
+      },
+      {
+        "name": "Brookfield Renewable",
+        "ticker": "BEP",
+        "weight": 2.5
+      }
+    ]
+  },
+  {
+    "ticker": "AMLP",
+    "name": "Alerian MLP ETF",
+    "name_kr": "MLP 에너지 인프라 ETF",
+    "category": "에너지",
+    "expense_ratio": 0.85,
+    "top_holdings": [
+      {
+        "name": "Energy Transfer",
+        "ticker": "ET",
+        "weight": 14.5
+      },
+      {
+        "name": "Enterprise Products Partners",
+        "ticker": "EPD",
+        "weight": 12.8
+      },
+      {
+        "name": "MPLX",
+        "ticker": "MPLX",
+        "weight": 10.2
+      },
+      {
+        "name": "Plains All American Pipeline",
+        "ticker": "PAA",
+        "weight": 8.5
+      },
+      {
+        "name": "Western Midstream Partners",
+        "ticker": "WES",
+        "weight": 7.8
+      },
+      {
+        "name": "Magellan Midstream Partners",
+        "ticker": "MMP",
+        "weight": 6.5
+      },
+      {
+        "name": "Crestwood Equity Partners",
+        "ticker": "CEQP",
+        "weight": 5.2
+      },
+      {
+        "name": "DCP Midstream",
+        "ticker": "DCP",
+        "weight": 4.8
+      },
+      {
+        "name": "Enviva Partners",
+        "ticker": "EVA",
+        "weight": 3.5
+      },
+      {
+        "name": "Hess Midstream Partners",
+        "ticker": "HESM",
+        "weight": 3.2
+      }
+    ]
+  },
+  {
+    "ticker": "VUG",
+    "name": "Vanguard Growth ETF",
+    "name_kr": "뱅가드 성장주 ETF",
+    "category": "대형주",
+    "expense_ratio": 0.04,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 12.5
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 11.8
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 10.2
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 6.1
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 4.5
+      }
+    ]
+  },
+  {
+    "ticker": "VTV",
+    "name": "Vanguard Value ETF",
+    "name_kr": "뱅가드 가치주 ETF",
+    "category": "대형주",
+    "expense_ratio": 0.04,
+    "top_holdings": [
+      {
+        "name": "Berkshire Hathaway",
+        "ticker": "BRK.B",
+        "weight": 3.5
+      },
+      {
+        "name": "JPMorgan Chase",
+        "ticker": "JPM",
+        "weight": 2.8
+      },
+      {
+        "name": "UnitedHealth",
+        "ticker": "UNH",
+        "weight": 2.5
+      },
+      {
+        "name": "ExxonMobil",
+        "ticker": "XOM",
+        "weight": 2.3
+      },
+      {
+        "name": "Johnson & Johnson",
+        "ticker": "JNJ",
+        "weight": 2.1
+      }
+    ]
+  },
+  {
+    "ticker": "MGK",
+    "name": "Vanguard Mega Cap Growth ETF",
+    "name_kr": "메가캡 성장주 ETF",
+    "category": "대형주",
+    "expense_ratio": 0.07,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 13.2
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 12.5
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 11.0
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 6.5
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 4.8
+      }
+    ]
+  },
+  {
+    "ticker": "SCHX",
+    "name": "Schwab U.S. Large-Cap ETF",
+    "name_kr": "슈왑 대형주 ETF",
+    "category": "대형주",
+    "expense_ratio": 0.03,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 7.0
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 6.6
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 5.9
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 3.6
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 2.6
+      }
+    ]
+  },
+  {
+    "ticker": "IWB",
+    "name": "iShares Russell 1000 ETF",
+    "name_kr": "러셀 1000 대형주 ETF",
+    "category": "대형주",
+    "expense_ratio": 0.15,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 7.0
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 6.5
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 5.8
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 3.5
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 2.5
+      }
+    ]
+  },
+  {
+    "ticker": "IWF",
+    "name": "iShares Russell 1000 Growth ETF",
+    "name_kr": "러셀 1000 성장주 ETF",
+    "category": "성장주",
+    "expense_ratio": 0.19,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 11.5
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 10.8
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 9.5
+      },
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 5.8
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 4.2
+      }
+    ]
+  },
+  {
+    "ticker": "IWD",
+    "name": "iShares Russell 1000 Value ETF",
+    "name_kr": "러셀 1000 가치주 ETF",
+    "category": "가치주",
+    "expense_ratio": 0.19,
+    "top_holdings": [
+      {
+        "name": "Berkshire Hathaway",
+        "ticker": "BRK.B",
+        "weight": 3.2
+      },
+      {
+        "name": "JPMorgan Chase",
+        "ticker": "JPM",
+        "weight": 2.5
+      },
+      {
+        "name": "UnitedHealth",
+        "ticker": "UNH",
+        "weight": 2.3
+      },
+      {
+        "name": "ExxonMobil",
+        "ticker": "XOM",
+        "weight": 2.1
+      },
+      {
+        "name": "Procter & Gamble",
+        "ticker": "PG",
+        "weight": 1.9
+      }
+    ]
+  },
+  {
+    "ticker": "MDY",
+    "name": "SPDR S&P Midcap 400 ETF Trust",
+    "name_kr": "S&P 중형주 400 ETF",
+    "category": "중형주",
+    "expense_ratio": 0.23,
+    "top_holdings": [
+      {
+        "name": "Carlisle Companies",
+        "ticker": "CSL",
+        "weight": 0.8
+      },
+      {
+        "name": "Targa Resources",
+        "ticker": "TRGP",
+        "weight": 0.7
+      },
+      {
+        "name": "Reliance Steel",
+        "ticker": "RS",
+        "weight": 0.7
+      },
+      {
+        "name": "Jabil",
+        "ticker": "JBL",
+        "weight": 0.6
+      },
+      {
+        "name": "Steel Dynamics",
+        "ticker": "STLD",
+        "weight": 0.6
+      }
+    ]
+  },
+  {
+    "ticker": "IJR",
+    "name": "iShares Core S&P Small-Cap ETF",
+    "name_kr": "S&P 소형주 ETF",
+    "category": "소형주",
+    "expense_ratio": 0.06,
+    "top_holdings": [
+      {
+        "name": "SPS Commerce",
+        "ticker": "SPSC",
+        "weight": 0.5
+      },
+      {
+        "name": "Fabrinet",
+        "ticker": "FN",
+        "weight": 0.5
+      },
+      {
+        "name": "Mueller Water",
+        "ticker": "MWA",
+        "weight": 0.4
+      },
+      {
+        "name": "Comfort Systems",
+        "ticker": "FIX",
+        "weight": 0.4
+      },
+      {
+        "name": "Onto Innovation",
+        "ticker": "ONTO",
+        "weight": 0.4
+      }
+    ]
+  },
+  {
+    "ticker": "IJH",
+    "name": "iShares Core S&P Mid-Cap ETF",
+    "name_kr": "S&P 중형주 ETF (iShares)",
+    "category": "중형주",
+    "expense_ratio": 0.05,
+    "top_holdings": [
+      {
+        "name": "Carlisle Companies",
+        "ticker": "CSL",
+        "weight": 0.7
+      },
+      {
+        "name": "Reliance Steel",
+        "ticker": "RS",
+        "weight": 0.7
+      },
+      {
+        "name": "Targa Resources",
+        "ticker": "TRGP",
+        "weight": 0.6
+      },
+      {
+        "name": "Jabil",
+        "ticker": "JBL",
+        "weight": 0.6
+      },
+      {
+        "name": "Williams-Sonoma",
+        "ticker": "WSM",
+        "weight": 0.5
+      }
+    ]
+  },
+  {
+    "ticker": "VB",
+    "name": "Vanguard Small-Cap ETF",
+    "name_kr": "뱅가드 소형주 ETF",
+    "category": "소형주",
+    "expense_ratio": 0.05,
+    "top_holdings": [
+      {
+        "name": "Super Micro Computer",
+        "ticker": "SMCI",
+        "weight": 0.5
+      },
+      {
+        "name": "Comfort Systems",
+        "ticker": "FIX",
+        "weight": 0.4
+      },
+      {
+        "name": "FTAI Aviation",
+        "ticker": "FTAI",
+        "weight": 0.4
+      },
+      {
+        "name": "Sprouts Farmers",
+        "ticker": "SFM",
+        "weight": 0.4
+      },
+      {
+        "name": "Fabrinet",
+        "ticker": "FN",
+        "weight": 0.3
+      }
+    ]
+  },
+  {
+    "ticker": "VBK",
+    "name": "Vanguard Small-Cap Growth ETF",
+    "name_kr": "소형 성장주 ETF",
+    "category": "소형주",
+    "expense_ratio": 0.07,
+    "top_holdings": [
+      {
+        "name": "Celsius Holdings",
+        "ticker": "CELH",
+        "weight": 0.5
+      },
+      {
+        "name": "Sprouts Farmers",
+        "ticker": "SFM",
+        "weight": 0.4
+      },
+      {
+        "name": "Insmed",
+        "ticker": "INSM",
+        "weight": 0.4
+      },
+      {
+        "name": "Vaxcyte",
+        "ticker": "PCVX",
+        "weight": 0.4
+      },
+      {
+        "name": "Chart Industries",
+        "ticker": "GTLS",
+        "weight": 0.3
+      }
+    ]
+  },
+  {
+    "ticker": "SCHA",
+    "name": "Schwab U.S. Small-Cap ETF",
+    "name_kr": "슈왑 소형주 ETF",
+    "category": "소형주",
+    "expense_ratio": 0.04,
+    "top_holdings": [
+      {
+        "name": "Super Micro Computer",
+        "ticker": "SMCI",
+        "weight": 0.5
+      },
+      {
+        "name": "Celsius Holdings",
+        "ticker": "CELH",
+        "weight": 0.4
+      },
+      {
+        "name": "Comfort Systems",
+        "ticker": "FIX",
+        "weight": 0.4
+      },
+      {
+        "name": "FTAI Aviation",
+        "ticker": "FTAI",
+        "weight": 0.3
+      },
+      {
+        "name": "Insmed",
+        "ticker": "INSM",
+        "weight": 0.3
+      }
+    ]
+  },
+  {
+    "ticker": "SLYV",
+    "name": "SPDR S&P 600 Small Cap Value ETF",
+    "name_kr": "소형 가치주 ETF",
+    "category": "소형주",
+    "expense_ratio": 0.15,
+    "top_holdings": [
+      {
+        "name": "Meritage Homes",
+        "ticker": "MTH",
+        "weight": 0.6
+      },
+      {
+        "name": "Jackson Financial",
+        "ticker": "JXN",
+        "weight": 0.5
+      },
+      {
+        "name": "Warrior Met Coal",
+        "ticker": "HCC",
+        "weight": 0.5
+      },
+      {
+        "name": "Dillard's",
+        "ticker": "DDS",
+        "weight": 0.4
+      },
+      {
+        "name": "Abercrombie & Fitch",
+        "ticker": "ANF",
+        "weight": 0.4
+      }
+    ]
+  },
+  {
+    "ticker": "QUAL",
+    "name": "iShares MSCI USA Quality Factor ETF",
+    "name_kr": "MSCI USA 퀄리티 팩터 ETF",
+    "category": "팩터",
+    "expense_ratio": 0.15,
+    "top_holdings": [
+      {
+        "name": "Apple",
+        "ticker": "AAPL",
+        "weight": 5.8
+      },
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 5.5
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 4.8
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 3.5
+      },
+      {
+        "name": "Visa",
+        "ticker": "V",
+        "weight": 2.8
+      }
+    ]
+  },
+  {
+    "ticker": "MTUM",
+    "name": "iShares MSCI USA Momentum Factor ETF",
+    "name_kr": "MSCI USA 모멘텀 팩터 ETF",
+    "category": "팩터",
+    "expense_ratio": 0.15,
+    "top_holdings": [
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 6.2
+      },
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 5.5
+      },
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 4.8
+      },
+      {
+        "name": "Eli Lilly",
+        "ticker": "LLY",
+        "weight": 4.2
+      },
+      {
+        "name": "JPMorgan Chase",
+        "ticker": "JPM",
+        "weight": 3.5
+      }
+    ]
+  },
+  {
+    "ticker": "VLUE",
+    "name": "iShares MSCI USA Value Factor ETF",
+    "name_kr": "MSCI USA 밸류 팩터 ETF",
+    "category": "팩터",
+    "expense_ratio": 0.15,
+    "top_holdings": [
+      {
+        "name": "Intel",
+        "ticker": "INTC",
+        "weight": 3.2
+      },
+      {
+        "name": "Cisco Systems",
+        "ticker": "CSCO",
+        "weight": 2.8
+      },
+      {
+        "name": "Comcast",
+        "ticker": "CMCSA",
+        "weight": 2.5
+      },
+      {
+        "name": "Verizon",
+        "ticker": "VZ",
+        "weight": 2.3
+      },
+      {
+        "name": "AT&T",
+        "ticker": "T",
+        "weight": 2.1
+      }
+    ]
+  },
+  {
+    "ticker": "SIZE",
+    "name": "iShares MSCI USA Size Factor ETF",
+    "name_kr": "MSCI USA 사이즈 팩터 ETF",
+    "category": "팩터",
+    "expense_ratio": 0.15,
+    "top_holdings": [
+      {
+        "name": "Hershey",
+        "ticker": "HSY",
+        "weight": 0.3
+      },
+      {
+        "name": "Lamb Weston",
+        "ticker": "LW",
+        "weight": 0.3
+      },
+      {
+        "name": "Brown & Brown",
+        "ticker": "BRO",
+        "weight": 0.3
+      },
+      {
+        "name": "Packaging Corp",
+        "ticker": "PKG",
+        "weight": 0.3
+      },
+      {
+        "name": "Snap-on",
+        "ticker": "SNA",
+        "weight": 0.3
+      }
+    ]
+  },
+  {
+    "ticker": "USMV",
+    "name": "iShares MSCI USA Min Vol Factor ETF",
+    "name_kr": "최소 변동성 ETF",
+    "category": "팩터",
+    "expense_ratio": 0.15,
+    "top_holdings": [
+      {
+        "name": "Waste Management",
+        "ticker": "WM",
+        "weight": 1.8
+      },
+      {
+        "name": "T-Mobile",
+        "ticker": "TMUS",
+        "weight": 1.7
+      },
+      {
+        "name": "Coca-Cola",
+        "ticker": "KO",
+        "weight": 1.6
+      },
+      {
+        "name": "PepsiCo",
+        "ticker": "PEP",
+        "weight": 1.5
+      },
+      {
+        "name": "Visa",
+        "ticker": "V",
+        "weight": 1.4
+      }
+    ]
+  },
+  {
+    "ticker": "SPLV",
+    "name": "Invesco S&P 500 Low Volatility ETF",
+    "name_kr": "S&P 500 저변동성 ETF",
+    "category": "팩터",
+    "expense_ratio": 0.25,
+    "top_holdings": [
+      {
+        "name": "Berkshire Hathaway",
+        "ticker": "BRK.B",
+        "weight": 1.2
+      },
+      {
+        "name": "Coca-Cola",
+        "ticker": "KO",
+        "weight": 1.1
+      },
+      {
+        "name": "PepsiCo",
+        "ticker": "PEP",
+        "weight": 1.1
+      },
+      {
+        "name": "Procter & Gamble",
+        "ticker": "PG",
+        "weight": 1.0
+      },
+      {
+        "name": "Waste Management",
+        "ticker": "WM",
+        "weight": 1.0
+      }
+    ]
+  },
+  {
+    "ticker": "DVY",
+    "name": "iShares Select Dividend ETF",
+    "name_kr": "셀렉트 배당 ETF",
+    "category": "배당",
+    "expense_ratio": 0.38,
+    "top_holdings": [
+      {
+        "name": "Altria Group",
+        "ticker": "MO",
+        "weight": 2.5
+      },
+      {
+        "name": "Verizon",
+        "ticker": "VZ",
+        "weight": 2.3
+      },
+      {
+        "name": "AT&T",
+        "ticker": "T",
+        "weight": 2.1
+      },
+      {
+        "name": "International Paper",
+        "ticker": "IP",
+        "weight": 1.8
+      },
+      {
+        "name": "Philip Morris",
+        "ticker": "PM",
+        "weight": 1.7
+      }
+    ]
+  },
+  {
+    "ticker": "SDY",
+    "name": "SPDR S&P Dividend ETF",
+    "name_kr": "S&P 배당 귀족 ETF",
+    "category": "배당",
+    "expense_ratio": 0.35,
+    "top_holdings": [
+      {
+        "name": "Realty Income",
+        "ticker": "O",
+        "weight": 2.5
+      },
+      {
+        "name": "National Fuel Gas",
+        "ticker": "NFG",
+        "weight": 2.2
+      },
+      {
+        "name": "Exxon Mobil",
+        "ticker": "XOM",
+        "weight": 2.0
+      },
+      {
+        "name": "AbbVie",
+        "ticker": "ABBV",
+        "weight": 1.9
+      },
+      {
+        "name": "Chevron",
+        "ticker": "CVX",
+        "weight": 1.8
+      }
+    ]
+  },
+  {
+    "ticker": "NOBL",
+    "name": "ProShares S&P 500 Dividend Aristocrats ETF",
+    "name_kr": "배당 귀족 ETF",
+    "category": "배당",
+    "expense_ratio": 0.35,
+    "top_holdings": [
+      {
+        "name": "Exxon Mobil",
+        "ticker": "XOM",
+        "weight": 1.8
+      },
+      {
+        "name": "Chevron",
+        "ticker": "CVX",
+        "weight": 1.7
+      },
+      {
+        "name": "AbbVie",
+        "ticker": "ABBV",
+        "weight": 1.6
+      },
+      {
+        "name": "Johnson & Johnson",
+        "ticker": "JNJ",
+        "weight": 1.5
+      },
+      {
+        "name": "Coca-Cola",
+        "ticker": "KO",
+        "weight": 1.5
+      }
+    ]
+  },
+  {
+    "ticker": "HDV",
+    "name": "iShares Core High Dividend ETF",
+    "name_kr": "고배당 ETF (iShares)",
+    "category": "배당",
+    "expense_ratio": 0.08,
+    "top_holdings": [
+      {
+        "name": "ExxonMobil",
+        "ticker": "XOM",
+        "weight": 9.5
+      },
+      {
+        "name": "Johnson & Johnson",
+        "ticker": "JNJ",
+        "weight": 6.8
+      },
+      {
+        "name": "Verizon",
+        "ticker": "VZ",
+        "weight": 6.2
+      },
+      {
+        "name": "AbbVie",
+        "ticker": "ABBV",
+        "weight": 5.8
+      },
+      {
+        "name": "Chevron",
+        "ticker": "CVX",
+        "weight": 5.5
+      }
+    ]
+  },
+  {
+    "ticker": "SPYD",
+    "name": "SPDR Portfolio S&P 500 High Dividend ETF",
+    "name_kr": "S&P 500 고배당 ETF",
+    "category": "배당",
+    "expense_ratio": 0.07,
+    "top_holdings": [
+      {
+        "name": "Iron Mountain",
+        "ticker": "IRM",
+        "weight": 1.8
+      },
+      {
+        "name": "Kinder Morgan",
+        "ticker": "KMI",
+        "weight": 1.6
+      },
+      {
+        "name": "Hasbro",
+        "ticker": "HAS",
+        "weight": 1.5
+      },
+      {
+        "name": "Verizon",
+        "ticker": "VZ",
+        "weight": 1.4
+      },
+      {
+        "name": "AT&T",
+        "ticker": "T",
+        "weight": 1.3
+      }
+    ]
+  },
+  {
+    "ticker": "VYM",
+    "name": "Vanguard High Dividend Yield ETF",
+    "name_kr": "뱅가드 고배당 ETF",
+    "category": "배당",
+    "expense_ratio": 0.06,
+    "top_holdings": [
+      {
+        "name": "Broadcom",
+        "ticker": "AVGO",
+        "weight": 4.2
+      },
+      {
+        "name": "JPMorgan Chase",
+        "ticker": "JPM",
+        "weight": 3.5
+      },
+      {
+        "name": "ExxonMobil",
+        "ticker": "XOM",
+        "weight": 3.0
+      },
+      {
+        "name": "Home Depot",
+        "ticker": "HD",
+        "weight": 2.5
+      },
+      {
+        "name": "Procter & Gamble",
+        "ticker": "PG",
+        "weight": 2.3
+      }
+    ]
+  },
+  {
+    "ticker": "IGV",
+    "name": "iShares Expanded Tech-Software Sector ETF",
+    "name_kr": "소프트웨어 섹터 ETF",
+    "category": "기술주",
+    "expense_ratio": 0.4,
+    "top_holdings": [
+      {
+        "name": "Microsoft",
+        "ticker": "MSFT",
+        "weight": 9.2
+      },
+      {
+        "name": "Salesforce",
+        "ticker": "CRM",
+        "weight": 5.5
+      },
+      {
+        "name": "Adobe",
+        "ticker": "ADBE",
+        "weight": 5.0
+      },
+      {
+        "name": "Oracle",
+        "ticker": "ORCL",
+        "weight": 4.8
+      },
+      {
+        "name": "ServiceNow",
+        "ticker": "NOW",
+        "weight": 4.5
+      }
+    ]
+  },
+  {
+    "ticker": "ROBO",
+    "name": "Robo Global Robotics and Automation Index ETF",
+    "name_kr": "글로벌 로봇/자동화 ETF",
+    "category": "기술주",
+    "expense_ratio": 0.95,
+    "top_holdings": [
+      {
+        "name": "Intuitive Surgical",
+        "ticker": "ISRG",
+        "weight": 3.5
+      },
+      {
+        "name": "Rockwell Automation",
+        "ticker": "ROK",
+        "weight": 3.2
+      },
+      {
+        "name": "Brooks Automation",
+        "ticker": "AZTA",
+        "weight": 2.8
+      },
+      {
+        "name": "Cognex",
+        "ticker": "CGNX",
+        "weight": 2.5
+      },
+      {
+        "name": "iRobot",
+        "ticker": "IRBT",
+        "weight": 2.2
+      }
+    ]
+  },
+  {
+    "ticker": "ARKW",
+    "name": "ARK Next Generation Internet ETF",
+    "name_kr": "ARK 차세대 인터넷 ETF",
+    "category": "기술주",
+    "expense_ratio": 0.75,
+    "top_holdings": [
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 9.5
+      },
+      {
+        "name": "Coinbase",
+        "ticker": "COIN",
+        "weight": 7.2
+      },
+      {
+        "name": "Block",
+        "ticker": "SQ",
+        "weight": 5.8
+      },
+      {
+        "name": "Roku",
+        "ticker": "ROKU",
+        "weight": 5.5
+      },
+      {
+        "name": "Shopify",
+        "ticker": "SHOP",
+        "weight": 4.2
+      }
+    ]
+  },
+  {
+    "ticker": "ARKG",
+    "name": "ARK Genomic Revolution ETF",
+    "name_kr": "ARK 유전체 혁명 ETF",
+    "category": "헬스케어",
+    "expense_ratio": 0.75,
+    "top_holdings": [
+      {
+        "name": "Exact Sciences",
+        "ticker": "EXAS",
+        "weight": 8.5
+      },
+      {
+        "name": "Twist Bioscience",
+        "ticker": "TWST",
+        "weight": 6.2
+      },
+      {
+        "name": "CRISPR Therapeutics",
+        "ticker": "CRSP",
+        "weight": 5.8
+      },
+      {
+        "name": "Ionis Pharmaceuticals",
+        "ticker": "IONS",
+        "weight": 5.2
+      },
+      {
+        "name": "Recursion Pharmaceuticals",
+        "ticker": "RXRX",
+        "weight": 4.5
+      }
+    ]
+  },
+  {
+    "ticker": "XLI",
+    "name": "Industrial Select Sector SPDR Fund",
+    "name_kr": "산업재 섹터 ETF",
+    "category": "산업재",
+    "expense_ratio": 0.09,
+    "top_holdings": [
+      {
+        "name": "GE Aerospace",
+        "ticker": "GE",
+        "weight": 5.2
+      },
+      {
+        "name": "Caterpillar",
+        "ticker": "CAT",
+        "weight": 4.8
+      },
+      {
+        "name": "RTX Corporation",
+        "ticker": "RTX",
+        "weight": 4.5
+      },
+      {
+        "name": "Union Pacific",
+        "ticker": "UNP",
+        "weight": 4.2
+      },
+      {
+        "name": "Honeywell",
+        "ticker": "HON",
+        "weight": 3.8
+      }
+    ]
+  },
+  {
+    "ticker": "XLC",
+    "name": "Communication Services Select Sector SPDR Fund",
+    "name_kr": "커뮤니케이션 섹터 ETF",
+    "category": "커뮤니케이션",
+    "expense_ratio": 0.09,
+    "top_holdings": [
+      {
+        "name": "Meta Platforms",
+        "ticker": "META",
+        "weight": 22.5
+      },
+      {
+        "name": "Alphabet A",
+        "ticker": "GOOGL",
+        "weight": 12.8
+      },
+      {
+        "name": "Alphabet C",
+        "ticker": "GOOG",
+        "weight": 11.5
+      },
+      {
+        "name": "Netflix",
+        "ticker": "NFLX",
+        "weight": 5.2
+      },
+      {
+        "name": "Walt Disney",
+        "ticker": "DIS",
+        "weight": 4.5
+      }
+    ]
+  },
+  {
+    "ticker": "XLY",
+    "name": "Consumer Discretionary Select Sector SPDR Fund",
+    "name_kr": "경기소비재 섹터 ETF",
+    "category": "경기소비재",
+    "expense_ratio": 0.09,
+    "top_holdings": [
+      {
+        "name": "Amazon",
+        "ticker": "AMZN",
+        "weight": 22.5
+      },
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 12.8
+      },
+      {
+        "name": "Home Depot",
+        "ticker": "HD",
+        "weight": 8.5
+      },
+      {
+        "name": "McDonald's",
+        "ticker": "MCD",
+        "weight": 4.2
+      },
+      {
+        "name": "Lowe's",
+        "ticker": "LOW",
+        "weight": 3.8
+      }
+    ]
+  },
+  {
+    "ticker": "XLP",
+    "name": "Consumer Staples Select Sector SPDR Fund",
+    "name_kr": "필수소비재 섹터 ETF",
+    "category": "필수소비재",
+    "expense_ratio": 0.09,
+    "top_holdings": [
+      {
+        "name": "Procter & Gamble",
+        "ticker": "PG",
+        "weight": 14.5
+      },
+      {
+        "name": "Costco",
+        "ticker": "COST",
+        "weight": 11.2
+      },
+      {
+        "name": "Coca-Cola",
+        "ticker": "KO",
+        "weight": 9.8
+      },
+      {
+        "name": "PepsiCo",
+        "ticker": "PEP",
+        "weight": 8.5
+      },
+      {
+        "name": "Walmart",
+        "ticker": "WMT",
+        "weight": 7.2
+      }
+    ]
+  },
+  {
+    "ticker": "XLU",
+    "name": "Utilities Select Sector SPDR Fund",
+    "name_kr": "유틸리티 섹터 ETF",
+    "category": "유틸리티",
+    "expense_ratio": 0.09,
+    "top_holdings": [
+      {
+        "name": "NextEra Energy",
+        "ticker": "NEE",
+        "weight": 15.2
+      },
+      {
+        "name": "Southern Company",
+        "ticker": "SO",
+        "weight": 8.5
+      },
+      {
+        "name": "Duke Energy",
+        "ticker": "DUK",
+        "weight": 7.2
+      },
+      {
+        "name": "Sempra",
+        "ticker": "SRE",
+        "weight": 4.8
+      },
+      {
+        "name": "Dominion Energy",
+        "ticker": "D",
+        "weight": 4.5
+      }
+    ]
+  },
+  {
+    "ticker": "XLB",
+    "name": "Materials Select Sector SPDR Fund",
+    "name_kr": "소재 섹터 ETF",
+    "category": "소재",
+    "expense_ratio": 0.09,
+    "top_holdings": [
+      {
+        "name": "Linde",
+        "ticker": "LIN",
+        "weight": 18.5
+      },
+      {
+        "name": "Sherwin-Williams",
+        "ticker": "SHW",
+        "weight": 8.2
+      },
+      {
+        "name": "Air Products",
+        "ticker": "APD",
+        "weight": 5.8
+      },
+      {
+        "name": "Freeport-McMoRan",
+        "ticker": "FCX",
+        "weight": 5.5
+      },
+      {
+        "name": "Ecolab",
+        "ticker": "ECL",
+        "weight": 5.2
+      }
+    ]
+  },
+  {
+    "ticker": "XLRE",
+    "name": "Real Estate Select Sector SPDR Fund",
+    "name_kr": "부동산 섹터 ETF",
+    "category": "부동산",
+    "expense_ratio": 0.09,
+    "top_holdings": [
+      {
+        "name": "Prologis",
+        "ticker": "PLD",
+        "weight": 10.5
+      },
+      {
+        "name": "American Tower",
+        "ticker": "AMT",
+        "weight": 8.8
+      },
+      {
+        "name": "Equinix",
+        "ticker": "EQIX",
+        "weight": 7.2
+      },
+      {
+        "name": "Crown Castle",
+        "ticker": "CCI",
+        "weight": 5.5
+      },
+      {
+        "name": "Public Storage",
+        "ticker": "PSA",
+        "weight": 5.0
+      }
+    ]
+  },
+  {
+    "ticker": "AGG",
+    "name": "iShares Core U.S. Aggregate Bond ETF",
+    "name_kr": "미국 종합 채권 ETF",
+    "category": "채권",
+    "expense_ratio": 0.03,
+    "top_holdings": [
+      {
+        "name": "U.S. Treasury Bond 4.0% 2042",
+        "ticker": "UST",
+        "weight": 5.2
+      },
+      {
+        "name": "U.S. Treasury Note 3.5% 2033",
+        "ticker": "UST",
+        "weight": 4.8
+      },
+      {
+        "name": "GNMA Pass-Through 4.0%",
+        "ticker": "GNMA",
+        "weight": 3.5
+      },
+      {
+        "name": "FHLMC 3.5% MBS",
+        "ticker": "FHLMC",
+        "weight": 3.2
+      },
+      {
+        "name": "FNMA 4.0% MBS",
+        "ticker": "FNMA",
+        "weight": 2.8
+      }
+    ]
+  },
+  {
+    "ticker": "BND",
+    "name": "Vanguard Total Bond Market ETF",
+    "name_kr": "뱅가드 종합 채권 ETF",
+    "category": "채권",
+    "expense_ratio": 0.03,
+    "top_holdings": [
+      {
+        "name": "U.S. Treasury Bond 4.25% 2045",
+        "ticker": "UST",
+        "weight": 4.8
+      },
+      {
+        "name": "U.S. Treasury Note 3.875% 2033",
+        "ticker": "UST",
+        "weight": 4.5
+      },
+      {
+        "name": "GNMA 3.5% MBS",
+        "ticker": "GNMA",
+        "weight": 3.2
+      },
+      {
+        "name": "FHLMC 4.0% MBS",
+        "ticker": "FHLMC",
+        "weight": 2.9
+      },
+      {
+        "name": "FNMA 3.5% MBS",
+        "ticker": "FNMA",
+        "weight": 2.5
+      }
+    ]
+  },
+  {
+    "ticker": "SHY",
+    "name": "iShares 1-3 Year Treasury Bond ETF",
+    "name_kr": "미국 단기국채 ETF",
+    "category": "채권",
+    "expense_ratio": 0.15,
+    "top_holdings": [
+      {
+        "name": "U.S. Treasury Note 4.625% 2026",
+        "ticker": "UST",
+        "weight": 6.5
+      },
+      {
+        "name": "U.S. Treasury Note 4.5% 2026",
+        "ticker": "UST",
+        "weight": 6.2
+      },
+      {
+        "name": "U.S. Treasury Note 4.875% 2025",
+        "ticker": "UST",
+        "weight": 5.8
+      },
+      {
+        "name": "U.S. Treasury Note 4.25% 2026",
+        "ticker": "UST",
+        "weight": 5.5
+      },
+      {
+        "name": "U.S. Treasury Note 3.875% 2025",
+        "ticker": "UST",
+        "weight": 5.2
+      }
+    ]
+  },
+  {
+    "ticker": "VCIT",
+    "name": "Vanguard Intermediate-Term Corporate Bond ETF",
+    "name_kr": "중기 회사채 ETF",
+    "category": "채권",
+    "expense_ratio": 0.04,
+    "top_holdings": [
+      {
+        "name": "Goldman Sachs 3.5% 2030",
+        "ticker": "GS",
+        "weight": 0.4
+      },
+      {
+        "name": "Bank of America 4.0% 2031",
+        "ticker": "BAC",
+        "weight": 0.4
+      },
+      {
+        "name": "JPMorgan 3.875% 2029",
+        "ticker": "JPM",
+        "weight": 0.3
+      },
+      {
+        "name": "Morgan Stanley 4.125% 2032",
+        "ticker": "MS",
+        "weight": 0.3
+      },
+      {
+        "name": "Apple 2.65% 2030",
+        "ticker": "AAPL",
+        "weight": 0.3
+      }
+    ]
+  },
+  {
+    "ticker": "MUB",
+    "name": "iShares National Muni Bond ETF",
+    "name_kr": "지방채 ETF",
+    "category": "채권",
+    "expense_ratio": 0.07,
+    "top_holdings": [
+      {
+        "name": "California State GO",
+        "ticker": "MUNI-CA",
+        "weight": 2.5
+      },
+      {
+        "name": "New York City GO",
+        "ticker": "MUNI-NY",
+        "weight": 2.2
+      },
+      {
+        "name": "Texas State GO",
+        "ticker": "MUNI-TX",
+        "weight": 1.8
+      },
+      {
+        "name": "Illinois State GO",
+        "ticker": "MUNI-IL",
+        "weight": 1.5
+      },
+      {
+        "name": "Florida State GO",
+        "ticker": "MUNI-FL",
+        "weight": 1.2
+      }
+    ]
+  },
+  {
+    "ticker": "TIP",
+    "name": "iShares TIPS Bond ETF",
+    "name_kr": "물가연동채 ETF",
+    "category": "채권",
+    "expense_ratio": 0.19,
+    "top_holdings": [
+      {
+        "name": "U.S. TIPS 0.625% 2043",
+        "ticker": "TIPS",
+        "weight": 5.5
+      },
+      {
+        "name": "U.S. TIPS 1.0% 2049",
+        "ticker": "TIPS",
+        "weight": 5.2
+      },
+      {
+        "name": "U.S. TIPS 0.75% 2042",
+        "ticker": "TIPS",
+        "weight": 4.8
+      },
+      {
+        "name": "U.S. TIPS 0.125% 2032",
+        "ticker": "TIPS",
+        "weight": 4.5
+      },
+      {
+        "name": "U.S. TIPS 1.375% 2044",
+        "ticker": "TIPS",
+        "weight": 4.2
+      }
+    ]
+  },
+  {
+    "ticker": "BNDX",
+    "name": "Vanguard Total International Bond ETF",
+    "name_kr": "글로벌 채권 ETF (미국 제외)",
+    "category": "채권",
+    "expense_ratio": 0.07,
+    "top_holdings": [
+      {
+        "name": "Japan Govt Bond 0.1% 2031",
+        "ticker": "JGB",
+        "weight": 3.5
+      },
+      {
+        "name": "German Bund 0.5% 2030",
+        "ticker": "BUND",
+        "weight": 3.2
+      },
+      {
+        "name": "French OAT 1.25% 2032",
+        "ticker": "OAT",
+        "weight": 2.8
+      },
+      {
+        "name": "UK Gilt 1.0% 2032",
+        "ticker": "GILT",
+        "weight": 2.5
+      },
+      {
+        "name": "Italian BTP 1.5% 2031",
+        "ticker": "BTP",
+        "weight": 2.2
+      }
+    ]
+  },
+  {
+    "ticker": "GOVT",
+    "name": "iShares U.S. Treasury Bond ETF",
+    "name_kr": "미국 국채 ETF",
+    "category": "채권",
+    "expense_ratio": 0.05,
+    "top_holdings": [
+      {
+        "name": "U.S. Treasury Note 4.0% 2032",
+        "ticker": "UST",
+        "weight": 5.8
+      },
+      {
+        "name": "U.S. Treasury Note 3.5% 2029",
+        "ticker": "UST",
+        "weight": 5.5
+      },
+      {
+        "name": "U.S. Treasury Bond 4.25% 2051",
+        "ticker": "UST",
+        "weight": 5.2
+      },
+      {
+        "name": "U.S. Treasury Note 4.625% 2026",
+        "ticker": "UST",
+        "weight": 4.8
+      },
+      {
+        "name": "U.S. Treasury Bond 3.0% 2048",
+        "ticker": "UST",
+        "weight": 4.5
+      }
+    ]
+  },
+  {
+    "ticker": "IGSB",
+    "name": "iShares 1-5 Year Investment Grade Corporate Bond ETF",
+    "name_kr": "단기 투자등급 회사채 ETF",
+    "category": "채권",
+    "expense_ratio": 0.04,
+    "top_holdings": [
+      {
+        "name": "JPMorgan 4.25% 2027",
+        "ticker": "JPM",
+        "weight": 0.5
+      },
+      {
+        "name": "Bank of America 3.875% 2026",
+        "ticker": "BAC",
+        "weight": 0.5
+      },
+      {
+        "name": "Goldman Sachs 3.5% 2027",
+        "ticker": "GS",
+        "weight": 0.4
+      },
+      {
+        "name": "Morgan Stanley 3.625% 2026",
+        "ticker": "MS",
+        "weight": 0.4
+      },
+      {
+        "name": "Apple 2.85% 2026",
+        "ticker": "AAPL",
+        "weight": 0.3
+      }
+    ]
+  },
+  {
+    "ticker": "SQQQ",
+    "name": "ProShares UltraPro Short QQQ",
+    "name_kr": "나스닥 100 3배 인버스",
+    "category": "인버스",
+    "expense_ratio": 0.95,
+    "top_holdings": [
+      {
+        "name": "Nasdaq-100 Swap (Short)",
+        "ticker": "QQQ",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "SPXL",
+    "name": "Direxion Daily S&P 500 Bull 3X Shares",
+    "name_kr": "S&P 500 3배 레버리지",
+    "category": "레버리지",
+    "expense_ratio": 0.97,
+    "top_holdings": [
+      {
+        "name": "S&P 500 Swap",
+        "ticker": "SPX",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "UPRO",
+    "name": "ProShares UltraPro S&P 500",
+    "name_kr": "S&P 500 3배 레버리지 (ProShares)",
+    "category": "레버리지",
+    "expense_ratio": 0.91,
+    "top_holdings": [
+      {
+        "name": "S&P 500 Swap",
+        "ticker": "SPX",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "QLD",
+    "name": "ProShares Ultra QQQ",
+    "name_kr": "나스닥 100 2배 레버리지",
+    "category": "레버리지",
+    "expense_ratio": 0.95,
+    "top_holdings": [
+      {
+        "name": "Nasdaq-100 Swap",
+        "ticker": "QQQ",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "UDOW",
+    "name": "ProShares UltraPro Dow30",
+    "name_kr": "다우존스 3배 레버리지",
+    "category": "레버리지",
+    "expense_ratio": 0.95,
+    "top_holdings": [
+      {
+        "name": "DJIA Swap",
+        "ticker": "DJI",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "SOXS",
+    "name": "Direxion Daily Semiconductor Bear 3X",
+    "name_kr": "반도체 3배 인버스",
+    "category": "인버스",
+    "expense_ratio": 0.76,
+    "top_holdings": [
+      {
+        "name": "ICE Semiconductor Swap (Short)",
+        "ticker": "SOXX",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "LABU",
+    "name": "Direxion Daily S&P Biotech Bull 3X",
+    "name_kr": "바이오테크 3배 레버리지",
+    "category": "레버리지",
+    "expense_ratio": 0.96,
+    "top_holdings": [
+      {
+        "name": "S&P Biotech Swap",
+        "ticker": "XBI",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "TMF",
+    "name": "Direxion Daily 20+ Year Treasury Bull 3X",
+    "name_kr": "장기국채 3배 레버리지",
+    "category": "레버리지",
+    "expense_ratio": 1.01,
+    "top_holdings": [
+      {
+        "name": "20+ Year Treasury Swap",
+        "ticker": "TLT",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "EFA",
+    "name": "iShares MSCI EAFE ETF",
+    "name_kr": "선진국(미국 제외) ETF",
+    "category": "선진국",
+    "expense_ratio": 0.32,
+    "top_holdings": [
+      {
+        "name": "Nestle",
+        "ticker": "NSRGY",
+        "weight": 1.8
+      },
+      {
+        "name": "ASML",
+        "ticker": "ASML",
+        "weight": 1.7
+      },
+      {
+        "name": "Novo Nordisk",
+        "ticker": "NVO",
+        "weight": 1.6
+      },
+      {
+        "name": "LVMH",
+        "ticker": "LVMUY",
+        "weight": 1.4
+      },
+      {
+        "name": "Shell",
+        "ticker": "SHEL",
+        "weight": 1.2
+      }
+    ]
+  },
+  {
+    "ticker": "VEA",
+    "name": "Vanguard FTSE Developed Markets ETF",
+    "name_kr": "선진국 주식 ETF (뱅가드)",
+    "category": "선진국",
+    "expense_ratio": 0.05,
+    "top_holdings": [
+      {
+        "name": "Samsung Electronics",
+        "ticker": "005930.KS",
+        "weight": 1.5
+      },
+      {
+        "name": "Nestle",
+        "ticker": "NSRGY",
+        "weight": 1.3
+      },
+      {
+        "name": "ASML",
+        "ticker": "ASML",
+        "weight": 1.2
+      },
+      {
+        "name": "Novo Nordisk",
+        "ticker": "NVO",
+        "weight": 1.1
+      },
+      {
+        "name": "Toyota Motor",
+        "ticker": "TM",
+        "weight": 1.0
+      }
+    ]
+  },
+  {
+    "ticker": "VXUS",
+    "name": "Vanguard Total International Stock ETF",
+    "name_kr": "미국 제외 전세계 주식 ETF",
+    "category": "글로벌",
+    "expense_ratio": 0.07,
+    "top_holdings": [
+      {
+        "name": "TSMC",
+        "ticker": "TSM",
+        "weight": 1.8
+      },
+      {
+        "name": "Nestle",
+        "ticker": "NSRGY",
+        "weight": 1.2
+      },
+      {
+        "name": "Tencent",
+        "ticker": "TCEHY",
+        "weight": 1.1
+      },
+      {
+        "name": "Samsung Electronics",
+        "ticker": "005930.KS",
+        "weight": 1.0
+      },
+      {
+        "name": "ASML",
+        "ticker": "ASML",
+        "weight": 0.9
+      }
+    ]
+  },
+  {
+    "ticker": "IEMG",
+    "name": "iShares Core MSCI Emerging Markets ETF",
+    "name_kr": "신흥국 핵심 ETF",
+    "category": "신흥국",
+    "expense_ratio": 0.09,
+    "top_holdings": [
+      {
+        "name": "TSMC",
+        "ticker": "TSM",
+        "weight": 7.8
+      },
+      {
+        "name": "Tencent",
+        "ticker": "TCEHY",
+        "weight": 3.8
+      },
+      {
+        "name": "Samsung Electronics",
+        "ticker": "005930.KS",
+        "weight": 3.5
+      },
+      {
+        "name": "Alibaba",
+        "ticker": "BABA",
+        "weight": 2.8
+      },
+      {
+        "name": "Reliance Industries",
+        "ticker": "RELIANCE.NS",
+        "weight": 1.5
+      }
+    ]
+  },
+  {
+    "ticker": "EWJ",
+    "name": "iShares MSCI Japan ETF",
+    "name_kr": "일본 주식 ETF",
+    "category": "일본",
+    "expense_ratio": 0.5,
+    "top_holdings": [
+      {
+        "name": "Toyota Motor",
+        "ticker": "TM",
+        "weight": 5.5
+      },
+      {
+        "name": "Sony Group",
+        "ticker": "SONY",
+        "weight": 4.2
+      },
+      {
+        "name": "Keyence",
+        "ticker": "KYCCF",
+        "weight": 3.8
+      },
+      {
+        "name": "Mitsubishi UFJ",
+        "ticker": "MUFG",
+        "weight": 3.2
+      },
+      {
+        "name": "Hitachi",
+        "ticker": "HTHIY",
+        "weight": 2.8
+      }
+    ]
+  },
+  {
+    "ticker": "EWZ",
+    "name": "iShares MSCI Brazil ETF",
+    "name_kr": "브라질 주식 ETF",
+    "category": "브라질",
+    "expense_ratio": 0.58,
+    "top_holdings": [
+      {
+        "name": "Vale",
+        "ticker": "VALE",
+        "weight": 12.5
+      },
+      {
+        "name": "Petrobras",
+        "ticker": "PBR",
+        "weight": 10.8
+      },
+      {
+        "name": "Itau Unibanco",
+        "ticker": "ITUB",
+        "weight": 7.5
+      },
+      {
+        "name": "Banco Bradesco",
+        "ticker": "BBD",
+        "weight": 5.2
+      },
+      {
+        "name": "Nu Holdings",
+        "ticker": "NU",
+        "weight": 4.8
+      }
+    ]
+  },
+  {
+    "ticker": "EWY",
+    "name": "iShares MSCI South Korea ETF",
+    "name_kr": "한국 주식 ETF",
+    "category": "한국",
+    "expense_ratio": 0.59,
+    "top_holdings": [
+      {
+        "name": "Samsung Electronics",
+        "ticker": "005930.KS",
+        "weight": 22.5
+      },
+      {
+        "name": "SK Hynix",
+        "ticker": "000660.KS",
+        "weight": 8.5
+      },
+      {
+        "name": "Samsung SDI",
+        "ticker": "006400.KS",
+        "weight": 3.2
+      },
+      {
+        "name": "Hyundai Motor",
+        "ticker": "005380.KS",
+        "weight": 2.8
+      },
+      {
+        "name": "KB Financial",
+        "ticker": "KB",
+        "weight": 2.5
+      }
+    ]
+  },
+  {
+    "ticker": "EWT",
+    "name": "iShares MSCI Taiwan ETF",
+    "name_kr": "대만 주식 ETF",
+    "category": "대만",
+    "expense_ratio": 0.59,
+    "top_holdings": [
+      {
+        "name": "TSMC",
+        "ticker": "TSM",
+        "weight": 22.5
+      },
+      {
+        "name": "Hon Hai Precision",
+        "ticker": "HNHPF",
+        "weight": 5.2
+      },
+      {
+        "name": "MediaTek",
+        "ticker": "MDTKF",
+        "weight": 4.5
+      },
+      {
+        "name": "Delta Electronics",
+        "ticker": "DLTEF",
+        "weight": 2.8
+      },
+      {
+        "name": "United Microelectronics",
+        "ticker": "UMC",
+        "weight": 2.5
+      }
+    ]
+  },
+  {
+    "ticker": "INDA",
+    "name": "iShares MSCI India ETF",
+    "name_kr": "인도 주식 ETF",
+    "category": "인도",
+    "expense_ratio": 0.64,
+    "top_holdings": [
+      {
+        "name": "Reliance Industries",
+        "ticker": "RELIANCE.NS",
+        "weight": 10.5
+      },
+      {
+        "name": "Infosys",
+        "ticker": "INFY",
+        "weight": 6.8
+      },
+      {
+        "name": "ICICI Bank",
+        "ticker": "IBN",
+        "weight": 5.5
+      },
+      {
+        "name": "HDFC Bank",
+        "ticker": "HDB",
+        "weight": 5.2
+      },
+      {
+        "name": "Tata Consultancy",
+        "ticker": "TCS.NS",
+        "weight": 4.0
+      }
+    ]
+  },
+  {
+    "ticker": "IAU",
+    "name": "iShares Gold Trust",
+    "name_kr": "금 ETF (iShares)",
+    "category": "원자재",
+    "expense_ratio": 0.25,
+    "top_holdings": [
+      {
+        "name": "Physical Gold Bullion",
+        "ticker": "GOLD",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "GDX",
+    "name": "VanEck Gold Miners ETF",
+    "name_kr": "금광업체 ETF",
+    "category": "원자재",
+    "expense_ratio": 0.51,
+    "top_holdings": [
+      {
+        "name": "Newmont Corporation",
+        "ticker": "NEM",
+        "weight": 12.5
+      },
+      {
+        "name": "Barrick Gold",
+        "ticker": "GOLD",
+        "weight": 9.8
+      },
+      {
+        "name": "Franco-Nevada",
+        "ticker": "FNV",
+        "weight": 7.5
+      },
+      {
+        "name": "Agnico Eagle Mines",
+        "ticker": "AEM",
+        "weight": 7.2
+      },
+      {
+        "name": "Wheaton Precious Metals",
+        "ticker": "WPM",
+        "weight": 5.8
+      }
+    ]
+  },
+  {
+    "ticker": "GDXJ",
+    "name": "VanEck Junior Gold Miners ETF",
+    "name_kr": "중소형 금광업체 ETF",
+    "category": "원자재",
+    "expense_ratio": 0.52,
+    "top_holdings": [
+      {
+        "name": "Pan American Silver",
+        "ticker": "PAAS",
+        "weight": 5.5
+      },
+      {
+        "name": "Kinross Gold",
+        "ticker": "KGC",
+        "weight": 5.2
+      },
+      {
+        "name": "Alamos Gold",
+        "ticker": "AGI",
+        "weight": 4.8
+      },
+      {
+        "name": "B2Gold",
+        "ticker": "BTG",
+        "weight": 4.5
+      },
+      {
+        "name": "Hecla Mining",
+        "ticker": "HL",
+        "weight": 4.2
+      }
+    ]
+  },
+  {
+    "ticker": "USO",
+    "name": "United States Oil Fund",
+    "name_kr": "원유 ETF",
+    "category": "원자재",
+    "expense_ratio": 0.81,
+    "top_holdings": [
+      {
+        "name": "WTI Crude Oil Futures",
+        "ticker": "CL",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "UNG",
+    "name": "United States Natural Gas Fund",
+    "name_kr": "천연가스 ETF",
+    "category": "원자재",
+    "expense_ratio": 1.06,
+    "top_holdings": [
+      {
+        "name": "Natural Gas Futures",
+        "ticker": "NG",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "DBA",
+    "name": "Invesco DB Agriculture Fund",
+    "name_kr": "농산물 ETF",
+    "category": "원자재",
+    "expense_ratio": 0.93,
+    "top_holdings": [
+      {
+        "name": "Corn Futures",
+        "ticker": "ZC",
+        "weight": 12.5
+      },
+      {
+        "name": "Soybean Futures",
+        "ticker": "ZS",
+        "weight": 12.5
+      },
+      {
+        "name": "Sugar Futures",
+        "ticker": "SB",
+        "weight": 12.5
+      },
+      {
+        "name": "Cocoa Futures",
+        "ticker": "CC",
+        "weight": 11.0
+      },
+      {
+        "name": "Live Cattle Futures",
+        "ticker": "LE",
+        "weight": 10.5
+      }
+    ]
+  },
+  {
+    "ticker": "DBC",
+    "name": "Invesco DB Commodity Index Tracking Fund",
+    "name_kr": "종합 원자재 ETF",
+    "category": "원자재",
+    "expense_ratio": 0.87,
+    "top_holdings": [
+      {
+        "name": "WTI Crude Oil Futures",
+        "ticker": "CL",
+        "weight": 14.0
+      },
+      {
+        "name": "Brent Crude Futures",
+        "ticker": "BZ",
+        "weight": 13.0
+      },
+      {
+        "name": "Gold Futures",
+        "ticker": "GC",
+        "weight": 8.0
+      },
+      {
+        "name": "Natural Gas Futures",
+        "ticker": "NG",
+        "weight": 5.5
+      },
+      {
+        "name": "Corn Futures",
+        "ticker": "ZC",
+        "weight": 5.5
+      }
+    ]
+  },
+  {
+    "ticker": "PDBC",
+    "name": "Invesco Optimum Yield Diversified Commodity Strategy No K-1 ETF",
+    "name_kr": "분산 원자재 ETF (K-1 면제)",
+    "category": "원자재",
+    "expense_ratio": 0.59,
+    "top_holdings": [
+      {
+        "name": "WTI Crude Oil Futures",
+        "ticker": "CL",
+        "weight": 13.0
+      },
+      {
+        "name": "Brent Crude Futures",
+        "ticker": "BZ",
+        "weight": 12.0
+      },
+      {
+        "name": "Gold Futures",
+        "ticker": "GC",
+        "weight": 7.5
+      },
+      {
+        "name": "Copper Futures",
+        "ticker": "HG",
+        "weight": 6.0
+      },
+      {
+        "name": "Natural Gas Futures",
+        "ticker": "NG",
+        "weight": 5.0
+      }
+    ]
+  },
+  {
+    "ticker": "IYR",
+    "name": "iShares U.S. Real Estate ETF",
+    "name_kr": "미국 부동산 ETF (iShares)",
+    "category": "부동산",
+    "expense_ratio": 0.39,
+    "top_holdings": [
+      {
+        "name": "Prologis",
+        "ticker": "PLD",
+        "weight": 8.2
+      },
+      {
+        "name": "American Tower",
+        "ticker": "AMT",
+        "weight": 6.8
+      },
+      {
+        "name": "Equinix",
+        "ticker": "EQIX",
+        "weight": 5.5
+      },
+      {
+        "name": "Crown Castle",
+        "ticker": "CCI",
+        "weight": 4.2
+      },
+      {
+        "name": "Public Storage",
+        "ticker": "PSA",
+        "weight": 3.9
+      }
+    ]
+  },
+  {
+    "ticker": "SCHH",
+    "name": "Schwab U.S. REIT ETF",
+    "name_kr": "슈왑 리츠 ETF",
+    "category": "부동산",
+    "expense_ratio": 0.07,
+    "top_holdings": [
+      {
+        "name": "Prologis",
+        "ticker": "PLD",
+        "weight": 9.5
+      },
+      {
+        "name": "American Tower",
+        "ticker": "AMT",
+        "weight": 7.8
+      },
+      {
+        "name": "Equinix",
+        "ticker": "EQIX",
+        "weight": 6.2
+      },
+      {
+        "name": "Public Storage",
+        "ticker": "PSA",
+        "weight": 4.5
+      },
+      {
+        "name": "Simon Property",
+        "ticker": "SPG",
+        "weight": 4.2
+      }
+    ]
+  },
+  {
+    "ticker": "RWR",
+    "name": "SPDR Dow Jones REIT ETF",
+    "name_kr": "DJIA 리츠 ETF",
+    "category": "부동산",
+    "expense_ratio": 0.25,
+    "top_holdings": [
+      {
+        "name": "Prologis",
+        "ticker": "PLD",
+        "weight": 9.8
+      },
+      {
+        "name": "Equinix",
+        "ticker": "EQIX",
+        "weight": 6.5
+      },
+      {
+        "name": "American Tower",
+        "ticker": "AMT",
+        "weight": 6.2
+      },
+      {
+        "name": "Public Storage",
+        "ticker": "PSA",
+        "weight": 4.8
+      },
+      {
+        "name": "Welltower",
+        "ticker": "WELL",
+        "weight": 4.5
+      }
+    ]
+  },
+  {
+    "ticker": "PBW",
+    "name": "Invesco WilderHill Clean Energy ETF",
+    "name_kr": "와일더힐 클린에너지 ETF",
+    "category": "에너지",
+    "expense_ratio": 0.62,
+    "top_holdings": [
+      {
+        "name": "Plug Power",
+        "ticker": "PLUG",
+        "weight": 4.5
+      },
+      {
+        "name": "SolarEdge Technologies",
+        "ticker": "SEDG",
+        "weight": 3.8
+      },
+      {
+        "name": "Enphase Energy",
+        "ticker": "ENPH",
+        "weight": 3.5
+      },
+      {
+        "name": "ChargePoint",
+        "ticker": "CHPT",
+        "weight": 3.2
+      },
+      {
+        "name": "Bloom Energy",
+        "ticker": "BE",
+        "weight": 3.0
+      }
+    ]
+  },
+  {
+    "ticker": "LIT",
+    "name": "Global X Lithium & Battery Tech ETF",
+    "name_kr": "리튬/배터리 ETF",
+    "category": "원자재",
+    "expense_ratio": 0.75,
+    "top_holdings": [
+      {
+        "name": "Albemarle",
+        "ticker": "ALB",
+        "weight": 8.5
+      },
+      {
+        "name": "Tesla",
+        "ticker": "TSLA",
+        "weight": 7.2
+      },
+      {
+        "name": "Eve Energy",
+        "ticker": "300014.SZ",
+        "weight": 5.8
+      },
+      {
+        "name": "Samsung SDI",
+        "ticker": "006400.KS",
+        "weight": 5.5
+      },
+      {
+        "name": "BYD",
+        "ticker": "BYDDY",
+        "weight": 5.2
+      }
+    ]
+  },
+  {
+    "ticker": "REMX",
+    "name": "VanEck Rare Earth/Strategic Metals ETF",
+    "name_kr": "희토류/전략 금속 ETF",
+    "category": "원자재",
+    "expense_ratio": 0.56,
+    "top_holdings": [
+      {
+        "name": "Zijin Mining",
+        "ticker": "ZIJMF",
+        "weight": 8.5
+      },
+      {
+        "name": "Pilbara Minerals",
+        "ticker": "PILBF",
+        "weight": 7.2
+      },
+      {
+        "name": "Allkem",
+        "ticker": "AKE.AX",
+        "weight": 5.8
+      },
+      {
+        "name": "MP Materials",
+        "ticker": "MP",
+        "weight": 5.5
+      },
+      {
+        "name": "Lynas Rare Earths",
+        "ticker": "LYSDY",
+        "weight": 5.0
+      }
+    ]
+  },
+  {
+    "ticker": "URA",
+    "name": "Global X Uranium ETF",
+    "name_kr": "우라늄 ETF",
+    "category": "원자재",
+    "expense_ratio": 0.69,
+    "top_holdings": [
+      {
+        "name": "Cameco Corporation",
+        "ticker": "CCJ",
+        "weight": 22.5
+      },
+      {
+        "name": "Sprott Physical Uranium",
+        "ticker": "SRUUF",
+        "weight": 8.5
+      },
+      {
+        "name": "NexGen Energy",
+        "ticker": "NXE",
+        "weight": 6.2
+      },
+      {
+        "name": "Denison Mines",
+        "ticker": "DNN",
+        "weight": 4.8
+      },
+      {
+        "name": "Uranium Energy Corp",
+        "ticker": "UEC",
+        "weight": 4.5
+      }
+    ]
+  },
+  {
+    "ticker": "ARKF",
+    "name": "ARK Fintech Innovation ETF",
+    "name_kr": "ARK 핀테크 혁신 ETF",
+    "category": "기술주",
+    "expense_ratio": 0.75,
+    "top_holdings": [
+      {
+        "name": "Coinbase",
+        "ticker": "COIN",
+        "weight": 10.5
+      },
+      {
+        "name": "Block",
+        "ticker": "SQ",
+        "weight": 8.2
+      },
+      {
+        "name": "Shopify",
+        "ticker": "SHOP",
+        "weight": 7.5
+      },
+      {
+        "name": "Adyen",
+        "ticker": "ADYEY",
+        "weight": 5.8
+      },
+      {
+        "name": "Mercado Libre",
+        "ticker": "MELI",
+        "weight": 5.5
+      }
+    ]
+  },
+  {
+    "ticker": "FBTC",
+    "name": "Fidelity Wise Origin Bitcoin Fund",
+    "name_kr": "피델리티 비트코인 ETF",
+    "category": "암호화폐",
+    "expense_ratio": 0.25,
+    "top_holdings": [
+      {
+        "name": "Bitcoin",
+        "ticker": "BTC",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "GBTC",
+    "name": "Grayscale Bitcoin Trust ETF",
+    "name_kr": "그레이스케일 비트코인 ETF",
+    "category": "암호화폐",
+    "expense_ratio": 1.5,
+    "top_holdings": [
+      {
+        "name": "Bitcoin",
+        "ticker": "BTC",
+        "weight": 100.0
+      }
+    ]
+  },
+  {
+    "ticker": "RSP",
+    "name": "Invesco S&P 500 Equal Weight ETF",
+    "name_kr": "S&P 500 동일가중 ETF",
+    "category": "대형주",
+    "expense_ratio": 0.2,
+    "top_holdings": [
+      {
+        "name": "Vistra Corp",
+        "ticker": "VST",
+        "weight": 0.25
+      },
+      {
+        "name": "Palantir",
+        "ticker": "PLTR",
+        "weight": 0.24
+      },
+      {
+        "name": "NVIDIA",
+        "ticker": "NVDA",
+        "weight": 0.23
+      },
+      {
+        "name": "GE Aerospace",
+        "ticker": "GE",
+        "weight": 0.22
+      },
+      {
+        "name": "United Airlines",
+        "ticker": "UAL",
+        "weight": 0.22
+      }
+    ]
+  },
+  {
+    "ticker": "COWZ",
+    "name": "Pacer US Cash Cows 100 ETF",
+    "name_kr": "캐시카우 100 ETF",
+    "category": "가치주",
+    "expense_ratio": 0.49,
+    "top_holdings": [
+      {
+        "name": "Moderna",
+        "ticker": "MRNA",
+        "weight": 2.5
+      },
+      {
+        "name": "Valero Energy",
+        "ticker": "VLO",
+        "weight": 2.3
+      },
+      {
+        "name": "CF Industries",
+        "ticker": "CF",
+        "weight": 2.1
+      },
+      {
+        "name": "Marathon Petroleum",
+        "ticker": "MPC",
+        "weight": 2.0
+      },
+      {
+        "name": "HP Inc",
+        "ticker": "HPQ",
+        "weight": 1.9
+      }
+    ]
+  },
+  {
+    "ticker": "MOAT",
+    "name": "VanEck Morningstar Wide Moat ETF",
+    "name_kr": "와이드 모트 ETF",
+    "category": "가치주",
+    "expense_ratio": 0.46,
+    "top_holdings": [
+      {
+        "name": "Emerson Electric",
+        "ticker": "EMR",
+        "weight": 3.5
+      },
+      {
+        "name": "Tyler Technologies",
+        "ticker": "TYL",
+        "weight": 3.2
+      },
+      {
+        "name": "TransDigm",
+        "ticker": "TDG",
+        "weight": 3.0
+      },
+      {
+        "name": "MarketAxess",
+        "ticker": "MKTX",
+        "weight": 2.8
+      },
+      {
+        "name": "Veeva Systems",
+        "ticker": "VEEV",
+        "weight": 2.5
+      }
+    ]
+  },
+  {
+    "ticker": "BIL",
+    "name": "SPDR Bloomberg 1-3 Month T-Bill ETF",
+    "name_kr": "초단기 국채 ETF",
+    "category": "채권",
+    "expense_ratio": 0.14,
+    "top_holdings": [
+      {
+        "name": "U.S. T-Bill 2025-04",
+        "ticker": "TBILL",
+        "weight": 25.0
+      },
+      {
+        "name": "U.S. T-Bill 2025-05",
+        "ticker": "TBILL",
+        "weight": 25.0
+      },
+      {
+        "name": "U.S. T-Bill 2025-06",
+        "ticker": "TBILL",
+        "weight": 25.0
+      },
+      {
+        "name": "U.S. T-Bill 2025-07",
+        "ticker": "TBILL",
+        "weight": 15.0
+      },
+      {
+        "name": "Cash & Equivalents",
+        "ticker": "CASH",
+        "weight": 10.0
+      }
+    ]
+  },
+  {
+    "ticker": "MINT",
+    "name": "PIMCO Enhanced Short Maturity Active ETF",
+    "name_kr": "초단기 액티브 채권 ETF",
+    "category": "채권",
+    "expense_ratio": 0.36,
+    "top_holdings": [
+      {
+        "name": "U.S. Treasury Note 4.5% 2025",
+        "ticker": "UST",
+        "weight": 8.5
+      },
+      {
+        "name": "JPMorgan 3.5% 2025 CP",
+        "ticker": "JPM",
+        "weight": 3.2
+      },
+      {
+        "name": "Goldman Sachs 4.0% 2025 CP",
+        "ticker": "GS",
+        "weight": 2.8
+      },
+      {
+        "name": "Bank of America 3.75% 2025",
+        "ticker": "BAC",
+        "weight": 2.5
+      },
+      {
+        "name": "Various CP & CD",
+        "ticker": "CP-AGG",
+        "weight": 83.0
+      }
+    ]
+  }
+]

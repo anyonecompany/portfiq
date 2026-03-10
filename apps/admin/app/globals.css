@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0D0E14;
+  --foreground: #F9FAFB;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0D0E14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2D2F3A;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3D3F4A;
+}
+
+/* Recharts tooltip override */
+.recharts-default-tooltip {
+  background-color: #16181F !important;
+  border: 1px solid #2D2F3A !important;
+  border-radius: 8px !important;
+}
