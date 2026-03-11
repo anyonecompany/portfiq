@@ -28,7 +28,7 @@ def _key_func(request: Request) -> str:
 limiter = Limiter(key_func=_key_func)
 
 # 엔드포인트별 rate limit 상수
-RATE_LOGIN = "5/minute"
+RATE_LOGIN = "30/minute"
 RATE_DEPLOY = "10/minute"
 RATE_ANALYTICS = "100/minute"
 RATE_ADMIN_READ = "30/minute"
