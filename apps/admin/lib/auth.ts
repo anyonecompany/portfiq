@@ -14,5 +14,8 @@ export async function getAccessToken(): Promise<string | null> {
 export async function signOut(): Promise<void> {
   await supabase.auth.signOut();
   localStorage.removeItem("portfiq_admin_user");
-  window.location.href = "/login";
+  // full page reload로 상태 완전 초기화
+  if (typeof window !== "undefined") {
+    window.location.replace("/login");
+  }
 }
