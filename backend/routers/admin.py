@@ -72,6 +72,37 @@ class DeployExecuteRequest(BaseModel):
 
 
 # ──────────────────────────────────────────────
+# 0. Trigger News Collection (수동 트리거)
+# ──────────────────────────────────────────────
+
+@router.post("/trigger-collection")
+async def trigger_collection(
+    admin: dict[str, Any] = Depends(get_current_admin),
+) -> dict[str, Any]:
+    """뉴스 수집을 수동으로 트리거한다.
+
+    RSS 피드에서 뉴스를 수집하고, 영향 분류 및 번역을 수행한 뒤
+    Supabase에 저장하고 인메모리 캐시를 갱신한다.
+
+    Returns:
+        수집 결과 (상태, 수집 건수).
+    """
+    from jobs.news_collector import collect_news
+
+    try:
+        count = await collect_news()
+        logger.info(
+            "수동 뉴스 수집 완료: admin=%s, count=%d",
+            admin.get("email", "unknown"),
+            count,
+        )
+        return {"status": "ok", "collected": count}
+    except Exception as e:
+        logger.error("수동 뉴스 수집 실패: %s", e)
+        return {"status": "error", "detail": str(e)}
+
+
+# ──────────────────────────────────────────────
 # 1. Dashboard KPI
 # ──────────────────────────────────────────────
 

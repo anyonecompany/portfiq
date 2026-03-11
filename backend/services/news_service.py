@@ -544,16 +544,38 @@ async def fetch_and_store_news() -> int:
 
             for article in unique:
                 try:
-                    sb.table("news").upsert(
-                        {
-                            "headline": article["headline"],
-                            "summary": article.get("summary", ""),
-                            "source": article["source"],
-                            "source_url": article["source_url"],
-                            "published_at": article["published_at"],
+                    row: dict[str, object] = {
+                        "headline": article["headline"],
+                        "impact_reason": article.get("summary", ""),
+                        "source": article["source"],
+                        "source_url": article["source_url"],
+                        "published_at": article["published_at"],
+                        "raw_data": {
+                            "headline_en": article.get("headline_en", ""),
+                            "impacts": article.get("impacts", []),
                         },
-                        on_conflict="source_url",
-                    ).execute()
+                    }
+                    try:
+                        # upsert 시도 (source_url UNIQUE 제약 필요)
+                        sb.table("news").upsert(
+                            row,
+                            on_conflict="source_url",
+                        ).execute()
+                    except Exception:
+                        # UNIQUE 제약이 없으면 중복 체크 후 insert
+                        existing = (
+                            sb.table("news")
+                            .select("id")
+                            .eq("source_url", article["source_url"])
+                            .limit(1)
+                            .execute()
+                        )
+                        if not existing.data:
+                            sb.table("news").insert(row).execute()
+                        else:
+                            sb.table("news").update(row).eq(
+                                "source_url", article["source_url"]
+                            ).execute()
                     stored += 1
                 except Exception as e:
                     logger.warning("Supabase 저장 실패 (개별): %s", e)
@@ -601,6 +623,37 @@ async def fetch_and_store_news() -> int:
             translated_count = sum(1 for a in unique if a.get("translated"))
             logger.info("번역 완료: %d / %d건", translated_count, len(unique))
 
+            # 번역된 헤드라인을 Supabase에 업데이트
+            try:
+                from services.supabase_client import get_supabase
+                sb_update = get_supabase()
+                update_count = 0
+                for article in unique:
+                    if article.get("translated") and article.get("source_url"):
+                        try:
+                            # 기본 컬럼만 업데이트 (migration 전에도 동작)
+                            update_row: dict[str, str] = {
+                                "headline": article["headline"],
+                                "impact_reason": article.get("summary", ""),
+                            }
+                            sb_update.table("news").update(
+                                update_row
+                            ).eq("source_url", article["source_url"]).execute()
+                            update_count += 1
+                        except Exception:
+                            pass  # 개별 업데이트 실패는 무시
+                logger.info("Supabase 번역 업데이트: %d건", update_count)
+            except Exception as e:
+                logger.warning("Supabase 번역 업데이트 실패: %s", e)
+
+        # 피드 캐시 무효화 (새 뉴스 수집 후 즉시 반영)
+        try:
+            from services.cache import clear_cache as _clear
+            _clear()
+            logger.info("피드 캐시 무효화 완료 (새 뉴스 반영)")
+        except Exception:
+            pass
+
         # 캐시 갱신 (번역 완료 후)
         _news_cache = unique
         return len(unique)
@@ -634,8 +687,11 @@ class NewsService:
     async def get_all_news(self) -> list[FeedItem]:
         """Return news items from the last 24 hours, sorted by published_at (newest first).
 
-        RSS 캐시가 있으면 캐시 기반 FeedItem을 반환하고 (keyword 기반 impact 포함),
-        없으면 mock 데이터를 반환한다. FeedItem 변환 결과는 15분간 캐싱된다.
+        데이터 소스 우선순위:
+        1. 인메모리 캐시 (TTL 15분)
+        2. _news_cache (RSS 수집 결과, 번역 여부 무관)
+        3. Supabase news 테이블 (서버 재시작 후 복구용)
+        4. Mock 데이터 (최후 fallback)
         """
         from services.cache import get_cached, set_cached
 
@@ -645,52 +701,20 @@ class NewsService:
             return cached
 
         if _news_cache:
-            from services.impact_service import impact_service
+            result = self._build_feed_items_from_cache(_news_cache)
+            if result:
+                set_cached(cache_key, result)
+                return result
 
-            items: list[FeedItem] = []
-            for i, a in enumerate(_news_cache):
-                pub_at = a.get("published_at")
-                if not _is_within_24h(pub_at):
-                    continue
+        # Supabase fallback: 서버 재시작 후 _news_cache가 비어있을 때
+        sb_articles = await self._load_from_supabase()
+        if sb_articles:
+            result = self._build_feed_items_from_cache(sb_articles)
+            if result:
+                set_cached(cache_key, result)
+                return result
 
-                # 번역 안 된 기사는 건너뛰기 (번역 완료 후 자동 표시)
-                if not a.get("translated", False):
-                    continue
-
-                # Build impacts from cached data or classify on the fly
-                cached_impacts = a.get("impacts", [])
-                if cached_impacts:
-                    impacts = [
-                        ETFImpact(etf_ticker=imp["etf_ticker"], level=imp["level"])
-                        for imp in cached_impacts
-                    ]
-                else:
-                    headline = a.get("headline", "")
-                    summary = a.get("summary", "")
-                    impacts = impact_service.classify(f"{headline} {summary}")
-
-                # ETF 관련 뉴스만 표시 (impacts 없으면 제외)
-                if not impacts:
-                    continue
-
-                items.append(
-                    FeedItem(
-                        id=f"rss-{i}",
-                        headline=a["headline"],
-                        impact_reason=a.get("summary", ""),
-                        summary_3line=a.get("summary_3line", ""),
-                        sentiment=a.get("sentiment", "중립"),
-                        source=a.get("source"),
-                        source_url=a.get("source_url"),
-                        published_at=pub_at,
-                        impacts=impacts,
-                    )
-                )
-            result = sorted(items, key=lambda n: n.published_at or "", reverse=True)
-            set_cached(cache_key, result)
-            return result
-
-        # Fallback: mock data (always fresh due to dynamic timestamps)
+        # 최후 fallback: mock data (always fresh due to dynamic timestamps)
         mock = _build_mock_news()
         result = sorted(
             [m for m in mock if _is_within_24h(m.published_at)],
@@ -699,6 +723,105 @@ class NewsService:
         )
         set_cached(cache_key, result)
         return result
+
+    def _build_feed_items_from_cache(self, articles: list[dict]) -> list[FeedItem]:
+        """캐시된 뉴스 기사 목록을 FeedItem 리스트로 변환한다.
+
+        번역되지 않은 기사도 영문 원문으로 포함한다.
+
+        Args:
+            articles: RSS 수집 또는 Supabase에서 로드한 기사 딕셔너리 리스트.
+
+        Returns:
+            최신순으로 정렬된 FeedItem 리스트.
+        """
+        from services.impact_service import impact_service
+
+        items: list[FeedItem] = []
+        for i, a in enumerate(articles):
+            pub_at = a.get("published_at")
+            if not _is_within_24h(pub_at):
+                continue
+
+            # Build impacts from cached data or classify on the fly
+            cached_impacts = a.get("impacts", [])
+            if cached_impacts:
+                impacts = [
+                    ETFImpact(etf_ticker=imp["etf_ticker"], level=imp["level"])
+                    for imp in cached_impacts
+                ]
+            else:
+                headline = a.get("headline", "")
+                summary = a.get("summary", "")
+                impacts = impact_service.classify(f"{headline} {summary}")
+
+            # ETF 관련 뉴스만 표시 (impacts 없으면 제외)
+            if not impacts:
+                continue
+
+            items.append(
+                FeedItem(
+                    id=f"rss-{i}",
+                    headline=a["headline"],
+                    impact_reason=a.get("summary", ""),
+                    summary_3line=a.get("summary_3line", ""),
+                    sentiment=a.get("sentiment", "중립"),
+                    source=a.get("source"),
+                    source_url=a.get("source_url"),
+                    published_at=pub_at,
+                    impacts=impacts,
+                )
+            )
+        return sorted(items, key=lambda n: n.published_at or "", reverse=True)
+
+    async def _load_from_supabase(self) -> list[dict]:
+        """Supabase news 테이블에서 최근 24시간 뉴스를 로드한다.
+
+        서버 재시작 후 인메모리 캐시가 비어있을 때 사용한다.
+
+        Returns:
+            뉴스 기사 딕셔너리 리스트. 실패 시 빈 리스트.
+        """
+        try:
+            from services.supabase_client import get_supabase
+            sb = get_supabase()
+
+            cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+            resp = (
+                sb.table("news")
+                .select("id,headline,impact_reason,source,source_url,published_at,raw_data")
+                .gte("published_at", cutoff)
+                .order("published_at", desc=True)
+                .limit(100)
+                .execute()
+            )
+
+            if not resp.data:
+                logger.info("Supabase news 테이블에 최근 24시간 데이터 없음")
+                return []
+
+            articles: list[dict] = []
+            for row in resp.data:
+                # impacts는 raw_data JSONB 안에 저장됨
+                raw_data = row.get("raw_data") or {}
+                impacts = raw_data.get("impacts", []) if isinstance(raw_data, dict) else []
+
+                articles.append({
+                    "headline": row.get("headline", ""),
+                    "summary": row.get("impact_reason", ""),
+                    "source": row.get("source", ""),
+                    "source_url": row.get("source_url", ""),
+                    "published_at": row.get("published_at", ""),
+                    "impacts": impacts,
+                    "translated": True,  # Supabase에 저장된 건은 표시 가능
+                })
+
+            logger.info("Supabase에서 뉴스 %d건 로드 (서버 재시작 복구)", len(articles))
+            return articles
+
+        except Exception as e:
+            logger.warning("Supabase 뉴스 로드 실패: %s", e)
+            return []
 
     async def get_news_for_etfs(self, tickers: list[str]) -> list[FeedItem]:
         """Filter news items that impact any of the given ETF tickers."""
