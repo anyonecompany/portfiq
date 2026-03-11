@@ -334,6 +334,10 @@ class _EtfDetailScreenState extends ConsumerState<EtfDetailScreen> {
           ),
           const SizedBox(height: 16),
 
+          // ──── CTA: 해부 리포트 보기 ────
+          _buildReportButton(context),
+          const SizedBox(height: 16),
+
           // ──── NEW: Analysis sections (sector, macro, comparison) ────
           _buildAnalysisSections(context),
 
@@ -355,6 +359,35 @@ class _EtfDetailScreenState extends ConsumerState<EtfDetailScreen> {
             ),
           const SizedBox(height: 32),
         ],
+      ),
+    );
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  // CTA: Report button
+  // ──────────────────────────────────────────────────────────────
+
+  Widget _buildReportButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          EventTracker.instance.track('etf_report_button_tapped', properties: {
+            'ticker': widget.ticker,
+            'source': 'etf_detail',
+          });
+          context.push('/etf/${widget.ticker}/report');
+        },
+        icon: const Icon(LucideIcons.fileBarChart, size: 18),
+        label: const Text('해부 리포트 보기'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: PortfiqTheme.accent,
+          foregroundColor: PortfiqTheme.textPrimary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(PortfiqTheme.radiusButton),
+          ),
+        ),
       ),
     );
   }

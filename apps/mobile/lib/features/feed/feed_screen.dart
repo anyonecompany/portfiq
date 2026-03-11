@@ -25,11 +25,24 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     with SingleTickerProviderStateMixin {
   AnimationController? _staggerController;
   int _maxScrolledIndex = 0;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     EventTracker.instance.track('screen_viewed', properties: {'screen_name': 'feed'});
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    // Trigger load more when within 200px of the bottom
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final feedState = ref.read(feedProvider);
+      if (!feedState.isLoadingMore && feedState.hasMore) {
+        ref.read(feedProvider.notifier).loadMore();
+      }
+    }
   }
 
   void _initStaggerAnimation(int itemCount) {
@@ -42,6 +55,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _staggerController?.dispose();
     super.dispose();
   }
@@ -95,13 +109,15 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                 });
               },
               child: ListView.builder(
+                controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(
                   PortfiqSpacing.space16,
                   PortfiqSpacing.space8,
                   PortfiqSpacing.space16,
                   PortfiqSpacing.space24,
                 ),
-                itemCount: feedState.newsItems.length + 1, // +1 for briefing
+                // +1 for briefing, +1 for loading indicator at bottom
+                itemCount: feedState.newsItems.length + 1 + (feedState.isLoadingMore ? 1 : 0),
                 itemBuilder: (context, index) {
                   // First item: Briefing card
                   if (index == 0) {
@@ -116,6 +132,23 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                         child: BriefingCard(
                           data: briefing,
                           onTap: () => _openBriefingDetail(context, briefing),
+                        ),
+                      ),
+                    );
+                  }
+
+                  // Loading indicator at the very bottom
+                  if (index == feedState.newsItems.length + 1) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: PortfiqTheme.textTertiary,
+                          ),
                         ),
                       ),
                     );
@@ -209,11 +242,28 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     );
   }
 
+  /// Find related news items that share ETF tickers with the given item.
+  List<NewsItem> _findRelatedNews(NewsItem item) {
+    final feedState = ref.read(feedProvider);
+    final itemTickers = item.impacts.map((i) => i.etfTicker).toSet();
+    if (itemTickers.isEmpty) return [];
+
+    return feedState.newsItems
+        .where((other) =>
+            other.id != item.id &&
+            other.impacts.any((imp) => itemTickers.contains(imp.etfTicker)))
+        .take(3)
+        .toList();
+  }
+
   void _showNewsDetail(BuildContext context, NewsItem item) {
     EventTracker.instance.track('news_card_tap', properties: {
       'news_id': item.id,
       'sentiment': item.sentiment.name,
     });
+
+    final relatedNews = _findRelatedNews(item);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: PortfiqTheme.secondaryBg,
@@ -223,10 +273,10 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
           top: Radius.circular(PortfiqTheme.radiusCard),
         ),
       ),
-      builder: (context) {
+      builder: (sheetContext) {
         return ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.85,
+            maxHeight: MediaQuery.of(sheetContext).size.height * 0.85,
           ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -409,6 +459,128 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                             ],
                           ),
                         ),
+
+                        // Related news section
+                        if (relatedNews.isNotEmpty) ...[
+                          const SizedBox(height: PortfiqSpacing.space20),
+                          Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              border: Border(
+                                top: BorderSide(color: PortfiqTheme.divider, width: 1),
+                              ),
+                            ),
+                            padding: const EdgeInsets.only(top: PortfiqSpacing.space16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.link_rounded,
+                                      size: 16,
+                                      color: PortfiqTheme.textSecondary,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '관련 뉴스',
+                                      style: PortfiqTypography.subtitle.copyWith(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: PortfiqSpacing.space12),
+                                ...relatedNews.map((related) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () {
+                                        Navigator.of(sheetContext).pop();
+                                        // Open the related news detail after pop
+                                        Future.delayed(
+                                          const Duration(milliseconds: 300),
+                                          () {
+                                            if (mounted) {
+                                              _showNewsDetail(context, related);
+                                            }
+                                          },
+                                        );
+                                      },
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: PortfiqTheme.primaryBg,
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              related.headline,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: PortfiqTypography.body.copyWith(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                                height: 1.4,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  related.source,
+                                                  style: PortfiqTypography.caption.copyWith(
+                                                    color: PortfiqTheme.textTertiary,
+                                                    fontSize: 11,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                // Show shared tickers
+                                                ...related.impacts
+                                                    .where((imp) => item.impacts.any(
+                                                        (i) => i.etfTicker == imp.etfTicker))
+                                                    .take(3)
+                                                    .map((imp) => Padding(
+                                                          padding: const EdgeInsets.only(right: 4),
+                                                          child: Container(
+                                                            padding: const EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 2,
+                                                            ),
+                                                            decoration: BoxDecoration(
+                                                              color: PortfiqTheme.accent
+                                                                  .withValues(alpha: 0.1),
+                                                              borderRadius:
+                                                                  BorderRadius.circular(4),
+                                                            ),
+                                                            child: Text(
+                                                              imp.etfTicker,
+                                                              style: TextStyle(
+                                                                fontSize: 10,
+                                                                fontWeight: FontWeight.w600,
+                                                                color: PortfiqTheme.accent,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        )),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )),
+                              ],
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

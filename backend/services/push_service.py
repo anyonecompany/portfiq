@@ -212,6 +212,77 @@ def register_token(device_id: str, push_token: str) -> bool:
         return True
 
 
+def _get_device_preference(device_id: str, pref_name: str) -> bool | None:
+    """디바이스의 특정 알림 설정값을 조회한다.
+
+    Args:
+        device_id: 디바이스 ID.
+        pref_name: 설정 컬럼명 (morning_briefing, night_checkpoint, urgent_news).
+
+    Returns:
+        설정값 (True/False), 조회 실패 시 None (기본 허용으로 처리).
+    """
+    try:
+        from services.supabase_client import get_supabase
+        sb = get_supabase()
+        resp = (
+            sb.table("devices")
+            .select(pref_name)
+            .eq("device_id", device_id)
+            .execute()
+        )
+        rows: list[dict] = resp.data  # type: ignore[assignment]
+        if rows and pref_name in rows[0] and rows[0][pref_name] is not None:
+            return bool(rows[0][pref_name])
+    except Exception as e:
+        logger.warning("디바이스 설정 조회 실패 (device=%s, pref=%s): %s", device_id, pref_name, e)
+
+    return None  # 조회 실패 시 None → 기본 허용
+
+
+def get_devices_with_preference(pref_name: str, value: bool = True) -> list[dict[str, str]]:
+    """특정 알림 설정이 활성화된 디바이스 목록을 조회한다.
+
+    Args:
+        pref_name: 설정 컬럼명 (morning_briefing, night_checkpoint, urgent_news).
+        value: 필터 값 (기본 True = 활성화된 디바이스만).
+
+    Returns:
+        [{"device_id": "...", "push_token": "..."}, ...] 형태의 리스트.
+    """
+    results: list[dict[str, str]] = []
+
+    try:
+        from services.supabase_client import get_supabase
+        sb = get_supabase()
+        query = (
+            sb.table("devices")
+            .select("device_id, push_token")
+            .neq("push_token", "")
+        )
+        query = query.eq(pref_name, value)
+        resp = query.execute()
+        rows: list[dict] = resp.data  # type: ignore[assignment]
+        if rows:
+            results = [
+                {"device_id": str(row["device_id"]), "push_token": str(row["push_token"])}
+                for row in rows
+                if row.get("push_token")
+            ]
+            return results
+    except Exception as e:
+        logger.warning(
+            "Supabase 설정 기반 디바이스 조회 실패 (pref=%s), 전체 fallback: %s",
+            pref_name, e,
+        )
+
+    # Fallback: 인메모리 토큰 (설정 필터 불가, 전체 반환)
+    for device_id, token in _push_tokens.items():
+        if token:
+            results.append({"device_id": device_id, "push_token": token})
+    return results
+
+
 def _get_push_token(device_id: str) -> str | None:
     """디바이스 ID로 푸시 토큰을 조회한다.
 
@@ -380,6 +451,10 @@ async def send_briefing_push(
 ) -> bool:
     """브리핑 생성 후 푸시 알림을 전송한다.
 
+    디바이스 알림 설정을 확인하여 비활성화된 경우 전송하지 않는다.
+    - briefing_type "morning" → morning_briefing 설정 확인
+    - briefing_type "night"   → night_checkpoint 설정 확인
+
     Args:
         device_id: 대상 디바이스 ID.
         briefing_type: "morning" 또는 "night".
@@ -389,6 +464,16 @@ async def send_briefing_push(
     Returns:
         전송 성공 여부.
     """
+    # Check device preference before sending
+    pref_name = "morning_briefing" if briefing_type == "morning" else "night_checkpoint"
+    pref_value = _get_device_preference(device_id, pref_name)
+    if pref_value is False:
+        logger.info(
+            "브리핑 푸시 스킵 (설정 비활성): device=%s, type=%s",
+            device_id, briefing_type,
+        )
+        return False
+
     emoji = "\U0001f305" if briefing_type == "morning" else "\U0001f319"
     if not body:
         body = f"{emoji} {title}"
@@ -406,7 +491,7 @@ async def send_bulk_briefing_push(
     title: str,
     body: str = "",
 ) -> dict[str, Any]:
-    """모든 등록된 디바이스에 브리핑 푸시를 전송한다.
+    """알림 설정이 활성화된 디바이스에만 브리핑 푸시를 전송한다.
 
     Args:
         briefing_type: "morning" 또는 "night".
@@ -414,9 +499,10 @@ async def send_bulk_briefing_push(
         body: 알림 본문.
 
     Returns:
-        전송 결과 요약 {"total": int, "success": int, "failed": int}.
+        전송 결과 요약 {"total": int, "success": int, "failed": int, "skipped": int}.
     """
-    devices = _get_all_device_tokens()
+    pref_name = "morning_briefing" if briefing_type == "morning" else "night_checkpoint"
+    devices = get_devices_with_preference(pref_name, value=True)
     total = len(devices)
     success = 0
     failed = 0

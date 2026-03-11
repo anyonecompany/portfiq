@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -22,16 +24,52 @@ class MyEtfScreen extends ConsumerStatefulWidget {
   ConsumerState<MyEtfScreen> createState() => _MyEtfScreenState();
 }
 
-class _MyEtfScreenState extends ConsumerState<MyEtfScreen> {
+class _MyEtfScreenState extends ConsumerState<MyEtfScreen>
+    with WidgetsBindingObserver {
   final GlobalKey _weeklyShareCardKey = GlobalKey();
   bool _isSharing = false;
+  Timer? _autoRefreshTimer;
+
+  static const _autoRefreshInterval = Duration(minutes: 5);
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _startAutoRefresh();
     EventTracker.instance.track('screen_view', properties: {
       'screen': 'my_etf',
     });
+  }
+
+  @override
+  void dispose() {
+    _stopAutoRefresh();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
+    if (lifecycleState == AppLifecycleState.resumed) {
+      _startAutoRefresh();
+      // Refresh prices immediately when app comes to foreground
+      ref.read(myEtfProvider.notifier).refreshPrices();
+    } else if (lifecycleState == AppLifecycleState.paused) {
+      _stopAutoRefresh();
+    }
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(_autoRefreshInterval, (_) {
+      ref.read(myEtfProvider.notifier).refreshPrices();
+    });
+  }
+
+  void _stopAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = null;
   }
 
   Future<void> _handleWeeklyShare() async {
@@ -220,8 +258,9 @@ class _MyEtfScreenState extends ConsumerState<MyEtfScreen> {
                   : RefreshIndicator(
                       color: PortfiqTheme.accent,
                       backgroundColor: PortfiqTheme.secondaryBg,
-                      onRefresh: () =>
-                          ref.read(myEtfProvider.notifier).loadRegisteredEtfs(),
+                      onRefresh: () async {
+                        await ref.read(myEtfProvider.notifier).refreshPrices();
+                      },
                       child: ListView(
                         padding: const EdgeInsets.all(16),
                         children: [
@@ -230,7 +269,13 @@ class _MyEtfScreenState extends ConsumerState<MyEtfScreen> {
                             isSharing: _isSharing,
                             onTap: _handleWeeklyShare,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
+                          // Last update timestamp + refresh indicator
+                          _LastUpdateBar(
+                            lastUpdate: state.lastPriceUpdate,
+                            isRefreshing: state.isRefreshingPrices,
+                          ),
+                          const SizedBox(height: 12),
                           // ETF list
                           ...state.registeredEtfs.map((etf) {
                             return Padding(
@@ -333,6 +378,57 @@ class _WeeklyShareButton extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// 마지막 가격 업데이트 시각 표시 바.
+class _LastUpdateBar extends StatelessWidget {
+  final DateTime? lastUpdate;
+  final bool isRefreshing;
+
+  const _LastUpdateBar({required this.lastUpdate, required this.isRefreshing});
+
+  String _formatTimeAgo(DateTime time) {
+    final diff = DateTime.now().difference(time);
+    if (diff.inSeconds < 60) return '방금 전';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}분 전';
+    if (diff.inHours < 24) return '${diff.inHours}시간 전';
+    return '${diff.inDays}일 전';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        if (isRefreshing)
+          const SizedBox(
+            width: 12,
+            height: 12,
+            child: CircularProgressIndicator(
+              strokeWidth: 1.5,
+              color: PortfiqTheme.textTertiary,
+            ),
+          )
+        else
+          Icon(
+            Icons.access_time,
+            size: 13,
+            color: PortfiqTheme.textTertiary,
+          ),
+        const SizedBox(width: 6),
+        Text(
+          isRefreshing
+              ? '가격 업데이트 중...'
+              : lastUpdate != null
+                  ? '마지막 업데이트: ${_formatTimeAgo(lastUpdate!)}'
+                  : '가격 정보 없음',
+          style: const TextStyle(
+            fontSize: 12,
+            color: PortfiqTheme.textTertiary,
+          ),
+        ),
+      ],
     );
   }
 }

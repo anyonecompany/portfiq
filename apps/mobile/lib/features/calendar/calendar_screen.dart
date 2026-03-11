@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/theme.dart';
 import '../../shared/tracking/event_tracker.dart';
 import '../../shared/widgets/glass_card.dart';
+import 'calendar_provider.dart';
 
 /// Economic event on the calendar.
 class CalendarEvent {
@@ -18,67 +20,19 @@ class CalendarEvent {
   });
 }
 
-/// Mock economic calendar events.
-final List<CalendarEvent> mockEvents = [
-  CalendarEvent(
-    date: DateTime(2026, 3, 12),
-    time: '22:30',
-    name: 'CPI (소비자물가지수)',
-    impactEtfs: ['TLT', 'QQQ', 'VOO'],
-  ),
-  CalendarEvent(
-    date: DateTime(2026, 3, 18),
-    time: '03:00',
-    name: 'FOMC 금리 결정',
-    impactEtfs: ['TLT', 'QQQ', 'SPY', 'GLD'],
-  ),
-  CalendarEvent(
-    date: DateTime(2026, 3, 19),
-    time: '22:30',
-    name: '신규 실업수당 청구건수',
-    impactEtfs: ['SPY', 'VOO'],
-  ),
-  CalendarEvent(
-    date: DateTime(2026, 3, 25),
-    time: '23:00',
-    name: '소비자신뢰지수',
-    impactEtfs: ['SPY', 'DIA'],
-  ),
-  CalendarEvent(
-    date: DateTime(2026, 3, 28),
-    time: '21:30',
-    name: 'PCE 물가지수',
-    impactEtfs: ['TLT', 'GLD', 'QQQ'],
-  ),
-  CalendarEvent(
-    date: DateTime(2026, 4, 2),
-    time: '21:15',
-    name: 'ADP 고용보고서',
-    impactEtfs: ['SPY', 'VOO', 'DIA'],
-  ),
-  CalendarEvent(
-    date: DateTime(2026, 4, 4),
-    time: '21:30',
-    name: '비농업 고용지표 (NFP)',
-    impactEtfs: ['SPY', 'QQQ', 'TLT', 'GLD'],
-  ),
-  CalendarEvent(
-    date: DateTime(2026, 4, 10),
-    time: '21:30',
-    name: 'CPI (소비자물가지수)',
-    impactEtfs: ['TLT', 'QQQ', 'VOO'],
-  ),
-];
-
 /// Economic calendar tab screen.
-class CalendarScreen extends StatefulWidget {
+///
+/// Fetches events from the backend API via [calendarProvider].
+/// Shows a monthly calendar grid with event dots, and a list of
+/// events for the selected date.
+class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
 
   @override
-  State<CalendarScreen> createState() => _CalendarScreenState();
+  ConsumerState<CalendarScreen> createState() => _CalendarScreenState();
 }
 
-class _CalendarScreenState extends State<CalendarScreen> {
+class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   late DateTime _currentMonth;
   late DateTime _selectedDate;
 
@@ -95,9 +49,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
     });
   }
 
-  /// Get events for a specific date.
-  List<CalendarEvent> _eventsForDate(DateTime date) {
-    return mockEvents
+  /// Get events for a specific date from provider state.
+  List<CalendarEvent> _eventsForDate(DateTime date, List<CalendarEvent> events) {
+    return events
         .where((e) =>
             e.date.year == date.year &&
             e.date.month == date.month &&
@@ -106,8 +60,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   /// Check if a date has events.
-  bool _hasEvents(DateTime date) {
-    return mockEvents.any((e) =>
+  bool _hasEvents(DateTime date, List<CalendarEvent> events) {
+    return events.any((e) =>
         e.date.year == date.year &&
         e.date.month == date.month &&
         e.date.day == date.day);
@@ -123,6 +77,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     setState(() {
       _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1);
     });
+    ref.read(calendarProvider.notifier).loadMonth(_currentMonth);
   }
 
   /// Navigate to next month.
@@ -130,16 +85,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
     setState(() {
       _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1);
     });
+    ref.read(calendarProvider.notifier).loadMonth(_currentMonth);
   }
 
   /// Select a date.
-  void _selectDate(DateTime date) {
+  void _selectDate(DateTime date, List<CalendarEvent> events) {
     setState(() {
       _selectedDate = date;
     });
     EventTracker.instance.track('date_select', properties: {
       'date': '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
-      'has_events': _hasEvents(date),
+      'has_events': _hasEvents(date, events),
     });
   }
 
@@ -166,9 +122,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final calendarState = ref.watch(calendarProvider);
+    final events = calendarState.events;
     final today = DateTime.now();
     final todayDate = DateTime(today.year, today.month, today.day);
-    final selectedEvents = _eventsForDate(_selectedDate);
+    final selectedEvents = _eventsForDate(_selectedDate, events);
 
     return Scaffold(
       backgroundColor: PortfiqTheme.primaryBg,
@@ -181,7 +139,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           _buildMonthNavigator(),
           const SizedBox(height: 8),
           // Calendar grid
-          _buildCalendarGrid(todayDate),
+          _buildCalendarGrid(todayDate, events),
           const Divider(height: 1),
           const SizedBox(height: 12),
           // Selected date label
@@ -200,29 +158,139 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          // Events list
+          // Events list — loading, error, empty, or data
           Expanded(
-            child: selectedEvents.isEmpty
-                ? Center(
-                    child: Text(
-                      '이 날의 경제 이벤트가 없습니다',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: PortfiqTheme.textSecondary.withAlpha(128),
-                      ),
-                    ),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: selectedEvents.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      return _buildEventCard(selectedEvents[index]);
-                    },
-                  ),
+            child: _buildEventsList(calendarState, selectedEvents, events),
           ),
         ],
       ),
+    );
+  }
+
+  /// 이벤트 목록 영역: 로딩/에러/빈 상태/데이터 분기.
+  Widget _buildEventsList(
+    CalendarState calendarState,
+    List<CalendarEvent> selectedEvents,
+    List<CalendarEvent> allEvents,
+  ) {
+    // 로딩 shimmer
+    if (calendarState.isLoading) {
+      return _buildLoadingShimmer();
+    }
+
+    // 에러 상태
+    if (calendarState.errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.cloud_off_rounded,
+              size: 48,
+              color: PortfiqTheme.textSecondary.withAlpha(100),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              calendarState.errorMessage!,
+              style: TextStyle(
+                fontSize: 14,
+                color: PortfiqTheme.textSecondary.withAlpha(180),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () {
+                ref.read(calendarProvider.notifier).refresh();
+              },
+              child: const Text('다시 시도'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 이벤트 없음
+    if (selectedEvents.isEmpty) {
+      return Center(
+        child: Text(
+          '이벤트 없음',
+          style: TextStyle(
+            fontSize: 14,
+            color: PortfiqTheme.textSecondary.withAlpha(128),
+          ),
+        ),
+      );
+    }
+
+    // 이벤트 목록
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: selectedEvents.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        return _buildEventCard(selectedEvents[index]);
+      },
+    );
+  }
+
+  /// 로딩 shimmer 효과.
+  Widget _buildLoadingShimmer() {
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: 3,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        return GlassCard(
+          padding: const EdgeInsets.all(PortfiqSpacing.space16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Time placeholder
+              Container(
+                width: 48,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: PortfiqTheme.textSecondary.withAlpha(30),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Name placeholder
+                    Container(
+                      width: double.infinity,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: PortfiqTheme.textSecondary.withAlpha(30),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // ETF badges placeholder
+                    Row(
+                      children: List.generate(
+                        3,
+                        (_) => Container(
+                          width: 40,
+                          height: 20,
+                          margin: const EdgeInsets.only(right: 6),
+                          decoration: BoxDecoration(
+                            color: PortfiqTheme.textSecondary.withAlpha(20),
+                            borderRadius: BorderRadius.circular(PortfiqTheme.radiusChip),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -259,7 +327,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _buildCalendarGrid(DateTime todayDate) {
+  Widget _buildCalendarGrid(DateTime todayDate, List<CalendarEvent> events) {
     final days = _calendarDays();
     final rowCount = (days.length / 7).ceil();
 
@@ -291,7 +359,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               children: List.generate(7, (col) {
                 final index = row * 7 + col;
                 final date = index < days.length ? days[index] : null;
-                return Expanded(child: _buildDayCell(date, todayDate));
+                return Expanded(child: _buildDayCell(date, todayDate, events));
               }),
             );
           }),
@@ -301,17 +369,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _buildDayCell(DateTime? date, DateTime todayDate) {
+  Widget _buildDayCell(DateTime? date, DateTime todayDate, List<CalendarEvent> events) {
     if (date == null) {
       return const SizedBox(height: 44);
     }
 
     final isSelected = _isSameDay(date, _selectedDate);
     final isToday = _isSameDay(date, todayDate);
-    final hasEvents = _hasEvents(date);
+    final hasEvents = _hasEvents(date, events);
 
     return GestureDetector(
-      onTap: () => _selectDate(date),
+      onTap: () => _selectDate(date, events),
       child: SizedBox(
         height: 44,
         child: Column(

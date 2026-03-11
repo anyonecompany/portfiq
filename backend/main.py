@@ -13,7 +13,7 @@ from slowapi.errors import RateLimitExceeded
 from config import settings
 from middleware.rate_limit import limiter
 from models.schemas import HealthResponse
-from routers import feed, briefing, etf, etf_analysis, holdings, analytics, admin
+from routers import feed, briefing, etf, etf_analysis, holdings, analytics, admin, devices, calendar
 
 # ──────────────────────────────────────────────
 # Logging
@@ -91,6 +91,8 @@ app.include_router(feed.router, prefix="/api/v1/feed", tags=["Feed"])
 app.include_router(briefing.router, prefix="/api/v1/briefing", tags=["Briefing"])
 app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["Analytics"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
+app.include_router(devices.router, prefix="/api/v1/devices", tags=["Devices"])
+app.include_router(calendar.router, prefix="/api/v1/calendar", tags=["Calendar"])
 
 
 # ──────────────────────────────────────────────

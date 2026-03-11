@@ -1,10 +1,16 @@
 """ETF router — ETF search, details, popular, price, analysis, and device registration."""
 
 from fastapi import APIRouter, Query, Path, HTTPException
+from pydantic import BaseModel, Field
 
 from models.schemas import DeviceRegisterRequest, ETFRegisterRequest
 from services.etf_service import etf_service
 from services.etf_analysis_service import etf_analysis_service
+
+
+class BatchPriceRequest(BaseModel):
+    """Request body for batch price lookup."""
+    tickers: list[str] = Field(..., min_length=1, max_length=30, description="ETF 티커 리스트")
 
 router = APIRouter()
 
@@ -64,6 +70,34 @@ async def get_etf_detail(
     if detail is None:
         raise HTTPException(status_code=404, detail=f"ETF '{ticker.upper()}' not found")
     return detail.model_dump()
+
+
+@router.post("/batch-prices")
+async def get_batch_prices(request: BatchPriceRequest) -> dict:
+    """여러 ETF의 현재가를 일괄 조회한다.
+
+    Args:
+        request: 티커 리스트가 담긴 요청 본문.
+
+    Returns:
+        티커를 키로, 가격 정보를 값으로 하는 딕셔너리.
+    """
+    from services.price_service import get_batch_prices
+
+    tickers = [t.strip().upper() for t in request.tickers if t.strip()]
+    if not tickers:
+        raise HTTPException(status_code=400, detail="티커를 하나 이상 입력해주세요")
+
+    results = await get_batch_prices(tickers)
+    # Convert list to dict keyed by ticker
+    prices = {item["ticker"]: item for item in results}
+    return {"prices": prices, "updated_at": _utc_now_iso()}
+
+
+def _utc_now_iso() -> str:
+    """현재 UTC 시각을 ISO 8601 문자열로 반환한다."""
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).isoformat()
 
 
 @router.get("/{ticker}/price")

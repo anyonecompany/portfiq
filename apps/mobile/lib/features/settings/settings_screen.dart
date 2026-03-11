@@ -4,6 +4,7 @@ import '../../config/theme.dart';
 import '../../shared/tracking/event_tracker.dart';
 import '../../shared/widgets/glass_card.dart';
 import '../my_etf/add_etf_sheet.dart';
+import 'settings_provider.dart';
 
 /// Registered ETF for settings display.
 class _RegisteredEtf {
@@ -22,11 +23,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  // Notification toggle states
-  bool _morningBriefing = true;
-  bool _nightCheckpoint = true;
-  bool _urgentNews = false;
-
   // Registered ETFs (mock initial data)
   final List<_RegisteredEtf> _registeredEtfs = [
     const _RegisteredEtf(ticker: 'QQQ', name: 'Invesco QQQ Trust'),
@@ -97,19 +93,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       });
     }
 
-    setState(() {
-      switch (key) {
-        case 'morning_briefing':
-          _morningBriefing = value;
-          break;
-        case 'night_checkpoint':
-          _nightCheckpoint = value;
-          break;
-        case 'urgent_news':
-          _urgentNews = value;
-          break;
-      }
-    });
+    final notifier = ref.read(settingsProvider.notifier);
+    switch (key) {
+      case 'morning_briefing':
+        notifier.setMorningBriefing(value);
+        break;
+      case 'night_checkpoint':
+        notifier.setNightCheckpoint(value);
+        break;
+      case 'urgent_news':
+        notifier.setUrgentNews(value);
+        break;
+    }
   }
 
   @override
@@ -301,6 +296,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildNotificationSection() {
+    final prefs = ref.watch(settingsProvider);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: PortfiqSpacing.space16),
       child: GlassCard(
@@ -309,7 +305,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         children: [
           _buildSwitchTile(
             title: '아침 브리핑 (08:35)',
-            value: _morningBriefing,
+            value: prefs.morningBriefing,
             onChanged: (v) => _toggleNotification('morning_briefing', v),
           ),
           const Divider(
@@ -320,7 +316,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           _buildSwitchTile(
             title: '밤 체크포인트 (22:00)',
-            value: _nightCheckpoint,
+            value: prefs.nightCheckpoint,
             onChanged: (v) => _toggleNotification('night_checkpoint', v),
           ),
           const Divider(
@@ -331,7 +327,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           _buildSwitchTile(
             title: '긴급 뉴스 알림',
-            value: _urgentNews,
+            value: prefs.urgentNews,
             onChanged: (v) => _toggleNotification('urgent_news', v),
           ),
         ],

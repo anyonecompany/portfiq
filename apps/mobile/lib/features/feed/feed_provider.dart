@@ -9,12 +9,16 @@ class FeedState {
   final List<NewsItem> newsItems;
   final BriefingData? briefing;
   final bool isLoading;
+  final bool isLoadingMore;
+  final bool hasMore;
   final String? errorMessage;
 
   const FeedState({
     this.newsItems = const [],
     this.briefing,
     this.isLoading = false,
+    this.isLoadingMore = false,
+    this.hasMore = true,
     this.errorMessage,
   });
 
@@ -22,12 +26,16 @@ class FeedState {
     List<NewsItem>? newsItems,
     BriefingData? briefing,
     bool? isLoading,
+    bool? isLoadingMore,
+    bool? hasMore,
     String? errorMessage,
   }) {
     return FeedState(
       newsItems: newsItems ?? this.newsItems,
       briefing: briefing ?? this.briefing,
       isLoading: isLoading ?? this.isLoading,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      hasMore: hasMore ?? this.hasMore,
       errorMessage: errorMessage,
     );
   }
@@ -39,21 +47,28 @@ class FeedNotifier extends StateNotifier<FeedState> {
     _loadInitialData();
   }
 
+  static const int _pageSize = 20;
+  int _currentOffset = 0;
+
   Future<void> _loadInitialData() async {
     try {
-      final news = await _fetchNews();
+      _currentOffset = 0;
+      final result = await _fetchNews(offset: 0, limit: _pageSize);
       final briefing = await _fetchBriefing();
       state = FeedState(
-        newsItems: _sortedByImpact(news),
+        newsItems: _sortedByImpact(result.items),
         briefing: briefing,
         isLoading: false,
+        hasMore: result.hasMore,
       );
+      _currentOffset = result.items.length;
     } catch (e) {
       if (kDebugMode) print('[FeedProvider] 초기 로드 실패, mock 사용: $e');
       state = FeedState(
         newsItems: _sortedByImpact(_mockNews),
         briefing: _currentMockBriefing(),
         isLoading: false,
+        hasMore: false,
       );
     }
   }
@@ -62,13 +77,16 @@ class FeedNotifier extends StateNotifier<FeedState> {
   Future<void> refreshFeed() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final news = await _fetchNews();
+      _currentOffset = 0;
+      final result = await _fetchNews(offset: 0, limit: _pageSize);
       final briefing = await _fetchBriefing();
       state = state.copyWith(
-        newsItems: _sortedByImpact(news),
+        newsItems: _sortedByImpact(result.items),
         briefing: briefing,
         isLoading: false,
+        hasMore: result.hasMore,
       );
+      _currentOffset = result.items.length;
     } catch (e) {
       if (kDebugMode) print('[FeedProvider] 새로고침 실패: $e');
       state = state.copyWith(
@@ -78,13 +96,37 @@ class FeedNotifier extends StateNotifier<FeedState> {
     }
   }
 
-  /// Fetch news from backend API.
-  Future<List<NewsItem>> _fetchNews() async {
-    final response = await ApiClient.instance.get('/api/v1/feed/latest');
+  /// 다음 페이지 로드 (무한 스크롤).
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.hasMore) return;
+
+    state = state.copyWith(isLoadingMore: true);
+    try {
+      final result = await _fetchNews(offset: _currentOffset, limit: _pageSize);
+      final allItems = [...state.newsItems, ...result.items];
+      _currentOffset = allItems.length;
+      state = state.copyWith(
+        newsItems: allItems,
+        isLoadingMore: false,
+        hasMore: result.hasMore,
+      );
+    } catch (e) {
+      if (kDebugMode) print('[FeedProvider] 추가 로드 실패: $e');
+      state = state.copyWith(isLoadingMore: false);
+    }
+  }
+
+  /// Fetch news from backend API with pagination.
+  Future<_FetchResult> _fetchNews({required int offset, required int limit}) async {
+    final response = await ApiClient.instance.get(
+      '/api/v1/feed/latest',
+      queryParameters: {'offset': offset, 'limit': limit},
+    );
     final data = response.data as Map<String, dynamic>;
     final items = data['items'] as List<dynamic>;
+    final hasMore = data['has_more'] as bool? ?? false;
 
-    return items.map((item) {
+    final newsItems = items.map((item) {
       final map = item as Map<String, dynamic>;
       final impacts = (map['impacts'] as List<dynamic>? ?? []).map((imp) {
         final impMap = imp as Map<String, dynamic>;
@@ -106,6 +148,8 @@ class FeedNotifier extends StateNotifier<FeedState> {
         impacts: impacts,
       );
     }).toList();
+
+    return _FetchResult(items: newsItems, hasMore: hasMore);
   }
 
   /// Fetch briefing from backend API.
@@ -183,6 +227,13 @@ class FeedNotifier extends StateNotifier<FeedState> {
 final feedProvider = StateNotifierProvider<FeedNotifier, FeedState>((ref) {
   return FeedNotifier();
 });
+
+/// Internal result type for paginated news fetch.
+class _FetchResult {
+  final List<NewsItem> items;
+  final bool hasMore;
+  const _FetchResult({required this.items, required this.hasMore});
+}
 
 // ---------------------------------------------------------------------------
 // Mock Data (fallback when API is unreachable)

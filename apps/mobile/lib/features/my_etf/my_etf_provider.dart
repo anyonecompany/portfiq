@@ -10,6 +10,8 @@ class MyEtfState {
   final List<EtfInfo> searchResults;
   final bool isLoading;
   final bool isSearching;
+  final bool isRefreshingPrices;
+  final DateTime? lastPriceUpdate;
   final String? error;
 
   const MyEtfState({
@@ -17,6 +19,8 @@ class MyEtfState {
     this.searchResults = const [],
     this.isLoading = false,
     this.isSearching = false,
+    this.isRefreshingPrices = false,
+    this.lastPriceUpdate,
     this.error,
   });
 
@@ -25,6 +29,8 @@ class MyEtfState {
     List<EtfInfo>? searchResults,
     bool? isLoading,
     bool? isSearching,
+    bool? isRefreshingPrices,
+    DateTime? lastPriceUpdate,
     String? error,
   }) {
     return MyEtfState(
@@ -32,6 +38,8 @@ class MyEtfState {
       searchResults: searchResults ?? this.searchResults,
       isLoading: isLoading ?? this.isLoading,
       isSearching: isSearching ?? this.isSearching,
+      isRefreshingPrices: isRefreshingPrices ?? this.isRefreshingPrices,
+      lastPriceUpdate: lastPriceUpdate ?? this.lastPriceUpdate,
       error: error,
     );
   }
@@ -56,23 +64,109 @@ class MyEtfNotifier extends StateNotifier<MyEtfState> {
               ?.cast<String>() ??
           ['QQQ', 'VOO', 'SCHD']; // 기본 3개
 
+      // 1) ETF 상세 정보를 개별 조회
       final etfs = <EtfInfo>[];
       for (final ticker in tickers) {
-        final etf = await _fetchEtfDetail(ticker);
+        final etf = await _fetchEtfDetailOnly(ticker);
         if (etf != null) etfs.add(etf);
       }
 
-      state = state.copyWith(registeredEtfs: etfs, isLoading: false);
+      // 2) 가격을 batch API로 한 번에 조회
+      final withPrices = await _applyBatchPrices(etfs);
+
+      state = state.copyWith(
+        registeredEtfs: withPrices,
+        isLoading: false,
+        lastPriceUpdate: DateTime.now(),
+      );
     } catch (e) {
       if (kDebugMode) print('[MyEtfProvider] 로드 실패, mock 사용: $e');
       state = state.copyWith(
         registeredEtfs: [_mockEtfMap['QQQ']!, _mockEtfMap['VOO']!, _mockEtfMap['SCHD']!],
         isLoading: false,
+        lastPriceUpdate: DateTime.now(),
       );
     }
   }
 
-  /// ETF 상세 + 가격 조회.
+  /// 가격만 새로고침 (전체 로드 없이 batch API로 가격만 갱신).
+  Future<void> refreshPrices() async {
+    if (state.registeredEtfs.isEmpty || state.isRefreshingPrices) return;
+
+    state = state.copyWith(isRefreshingPrices: true);
+    try {
+      final updated = await _applyBatchPrices(state.registeredEtfs);
+      state = state.copyWith(
+        registeredEtfs: updated,
+        isRefreshingPrices: false,
+        lastPriceUpdate: DateTime.now(),
+      );
+    } catch (e) {
+      if (kDebugMode) print('[MyEtfProvider] 가격 새로고침 실패: $e');
+      state = state.copyWith(isRefreshingPrices: false);
+    }
+  }
+
+  /// Batch price API를 호출하여 ETF 리스트에 가격 정보를 적용한다.
+  Future<List<EtfInfo>> _applyBatchPrices(List<EtfInfo> etfs) async {
+    if (etfs.isEmpty) return etfs;
+
+    try {
+      final tickers = etfs.map((e) => e.ticker).toList();
+      final response = await ApiClient.instance.post(
+        '/api/v1/etf/batch-prices',
+        data: {'tickers': tickers},
+      );
+      final data = response.data as Map<String, dynamic>;
+      final prices = data['prices'] as Map<String, dynamic>? ?? {};
+
+      return etfs.map((etf) {
+        final priceData = prices[etf.ticker] as Map<String, dynamic>?;
+        if (priceData == null) return etf;
+        return EtfInfo(
+          ticker: etf.ticker,
+          name: etf.name,
+          nameKr: etf.nameKr,
+          category: etf.category,
+          expenseRatio: etf.expenseRatio,
+          description: etf.description,
+          topHoldings: etf.topHoldings,
+          currentPrice: (priceData['price'] as num?)?.toDouble(),
+          changePct: (priceData['change_pct'] as num?)?.toDouble(),
+          changeAmount: (priceData['change_amt'] as num?)?.toDouble(),
+        );
+      }).toList();
+    } catch (e) {
+      if (kDebugMode) print('[MyEtfProvider] Batch 가격 조회 실패: $e');
+      return etfs;
+    }
+  }
+
+  /// ETF 상세 정보만 조회 (가격 제외 — batch로 별도 처리).
+  Future<EtfInfo?> _fetchEtfDetailOnly(String ticker) async {
+    try {
+      final detailResp =
+          await ApiClient.instance.get('/api/v1/etf/${ticker.toUpperCase()}/detail');
+      final d = detailResp.data as Map<String, dynamic>;
+
+      final holdings = _parseHoldings(d['top_holdings']);
+
+      return EtfInfo(
+        ticker: d['ticker'] as String? ?? ticker,
+        name: d['name'] as String? ?? '',
+        nameKr: d['name_kr'] as String? ?? d['name'] as String? ?? '',
+        category: d['category'] as String? ?? '',
+        expenseRatio: (d['expense_ratio'] as num?)?.toDouble() ?? 0.0,
+        description: d['description'] as String? ?? '',
+        topHoldings: holdings,
+      );
+    } catch (e) {
+      if (kDebugMode) print('[MyEtfProvider] ETF 상세 조회 실패 ($ticker): $e');
+      return _mockEtfMap[ticker.toUpperCase()];
+    }
+  }
+
+  /// ETF 상세 + 가격 조회 (단일 — addEtf 등에서 사용).
   Future<EtfInfo?> _fetchEtfDetail(String ticker) async {
     try {
       final detailResp =

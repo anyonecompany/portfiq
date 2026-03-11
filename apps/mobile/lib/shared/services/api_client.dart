@@ -102,4 +102,23 @@ class ApiClient {
     final response = await _dio.get('/api/v1/etf/$ticker/holdings-changes');
     return response.data as Map<String, dynamic>;
   }
+
+  /// ETF 섹터 집중도 조회.
+  Future<Map<String, dynamic>> getSectorConcentration(String ticker) async {
+    final response =
+        await _dio.get('/api/v1/etf/$ticker/sector-concentration');
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// ETF 거시 민감도 조회.
+  Future<Map<String, dynamic>> getMacroSensitivity(String ticker) async {
+    final response = await _dio.get('/api/v1/etf/$ticker/macro-sensitivity');
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// ETF 동일 테마 비교 조회.
+  Future<Map<String, dynamic>> getComparison(String ticker) async {
+    final response = await _dio.get('/api/v1/etf/$ticker/comparison');
+    return response.data as Map<String, dynamic>;
+  }
 }

@@ -829,6 +829,146 @@ class NewsService:
             logger.warning("Supabase 뉴스 로드 실패: %s", e)
             return []
 
+    async def get_all_news_paginated(
+        self, *, offset: int = 0, limit: int = 20
+    ) -> tuple[list[FeedItem], int]:
+        """Return paginated news items, including items older than 24 hours.
+
+        Unlike get_all_news() which only returns the last 24 hours, this method
+        supports browsing older news via offset/limit for infinite scroll.
+
+        Args:
+            offset: Number of items to skip.
+            limit: Maximum number of items to return.
+
+        Returns:
+            Tuple of (paginated FeedItem list, total count).
+        """
+        from services.cache import get_cached, set_cached
+
+        # First, gather the full sorted list (from cache or build it)
+        cache_key = "feed_all_sorted"
+        all_items: list[FeedItem] | None = get_cached(cache_key)
+
+        if all_items is None:
+            all_items = await self._get_all_items_no_time_filter()
+            if all_items:
+                set_cached(cache_key, all_items)
+
+        total = len(all_items)
+        page = all_items[offset:offset + limit]
+        return page, total
+
+    async def _get_all_items_no_time_filter(self) -> list[FeedItem]:
+        """Gather all available news items without the 24-hour filter.
+
+        Data source priority:
+        1. _news_cache (RSS collection results)
+        2. Supabase news table (server restart recovery)
+        3. Mock data (final fallback)
+
+        Returns:
+            All FeedItem instances sorted newest-first.
+        """
+        from services.impact_service import impact_service
+
+        if _news_cache:
+            items = self._build_feed_items_unfiltered(_news_cache)
+            if items:
+                return items
+
+        sb_articles = await self._load_from_supabase_all()
+        if sb_articles:
+            items = self._build_feed_items_unfiltered(sb_articles)
+            if items:
+                return items
+
+        # Fallback to mock
+        mock = _build_mock_news()
+        return sorted(mock, key=lambda n: n.published_at or "", reverse=True)
+
+    def _build_feed_items_unfiltered(self, articles: list[dict]) -> list[FeedItem]:
+        """Build FeedItem list from articles WITHOUT the 24-hour filter.
+
+        Args:
+            articles: Raw article dicts.
+
+        Returns:
+            Sorted FeedItem list (newest first).
+        """
+        from services.impact_service import impact_service
+
+        items: list[FeedItem] = []
+        for i, a in enumerate(articles):
+            cached_impacts = a.get("impacts", [])
+            if cached_impacts:
+                impacts = [
+                    ETFImpact(etf_ticker=imp["etf_ticker"], level=imp["level"])
+                    for imp in cached_impacts
+                ]
+            else:
+                headline = a.get("headline", "")
+                summary = a.get("summary", "")
+                impacts = impact_service.classify(f"{headline} {summary}")
+
+            if not impacts:
+                continue
+
+            items.append(
+                FeedItem(
+                    id=f"rss-{i}",
+                    headline=a["headline"],
+                    impact_reason=a.get("summary", ""),
+                    summary_3line=a.get("summary_3line", ""),
+                    sentiment=a.get("sentiment", "중립"),
+                    source=a.get("source"),
+                    source_url=a.get("source_url"),
+                    published_at=a.get("published_at"),
+                    impacts=impacts,
+                )
+            )
+        return sorted(items, key=lambda n: n.published_at or "", reverse=True)
+
+    async def _load_from_supabase_all(self) -> list[dict]:
+        """Load all news from Supabase without time filter (for pagination).
+
+        Returns:
+            News article dicts sorted newest-first. Empty list on failure.
+        """
+        try:
+            from services.supabase_client import get_supabase_service as get_supabase
+            sb = get_supabase()
+
+            resp = (
+                sb.table("news")
+                .select("id,headline,impact_reason,source,source_url,published_at,raw_data")
+                .order("published_at", desc=True)
+                .limit(500)
+                .execute()
+            )
+
+            if not resp.data:
+                return []
+
+            articles: list[dict] = []
+            for row in resp.data:
+                raw_data = row.get("raw_data") or {}
+                impacts = raw_data.get("impacts", []) if isinstance(raw_data, dict) else []
+                articles.append({
+                    "headline": row.get("headline", ""),
+                    "summary": row.get("impact_reason", ""),
+                    "source": row.get("source", ""),
+                    "source_url": row.get("source_url", ""),
+                    "published_at": row.get("published_at", ""),
+                    "impacts": impacts,
+                    "translated": True,
+                })
+            return articles
+
+        except Exception as e:
+            logger.warning("Supabase 전체 뉴스 로드 실패: %s", e)
+            return []
+
     async def get_news_for_etfs(self, tickers: list[str]) -> list[FeedItem]:
         """Filter news items that impact any of the given ETF tickers."""
         tickers_upper = {t.upper() for t in tickers}

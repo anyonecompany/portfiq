@@ -30,10 +30,19 @@ async def get_feed(
 
 
 @router.get("/latest")
-async def get_latest_feed() -> dict:
-    """Get latest news feed (all news, no personalization)."""
-    items = await news_service.get_all_news()
+async def get_latest_feed(
+    offset: int = Query(0, ge=0, description="Number of items to skip"),
+    limit: int = Query(20, ge=1, le=100, description="Number of items to return"),
+) -> dict:
+    """Get latest news feed with pagination (all news, no personalization).
+
+    Supports browsing past news beyond the 24-hour window via offset/limit.
+    """
+    items, total = await news_service.get_all_news_paginated(offset=offset, limit=limit)
     return {
         "items": [item.model_dump() for item in items],
-        "total": len(items),
+        "total": total,
+        "offset": offset,
+        "limit": limit,
+        "has_more": offset + limit < total,
     }

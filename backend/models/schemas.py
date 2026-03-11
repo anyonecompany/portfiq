@@ -44,6 +44,13 @@ class DeviceRegisterRequest(BaseModel):
     app_version: str = ""
 
 
+class NotificationPreferences(BaseModel):
+    """Notification preference toggles for a device."""
+    morning_briefing: bool = True
+    night_checkpoint: bool = True
+    urgent_news: bool = False
+
+
 # ──────────────────────────────────────────────
 # Feed
 # ──────────────────────────────────────────────
