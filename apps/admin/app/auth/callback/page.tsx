@@ -6,53 +6,14 @@ import { supabase } from "@/lib/supabase";
 import { Suspense } from "react";
 
 /**
- * Backend verify with graceful fallback.
- * Uses Next.js rewrite proxy (/api/proxy/) to avoid CORS issues entirely.
- * If backend is unreachable, returns null instead of throwing.
+ * 세션에서 유저 정보를 localStorage에 저장.
+ * 추가 네트워크 호출 없이 세션 데이터만 사용.
  */
-async function backendVerify(accessToken: string): Promise<{ user: Record<string, unknown> } | null> {
-  try {
-    // 5초 타임아웃 — Railway 콜드 스타트 시 무한 대기 방지
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-
-    const res = await fetch("/api/proxy/api/v1/admin/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ access_token: accessToken }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-
-    if (!res.ok) {
-      console.warn(`[auth/callback] Backend verify failed: ${res.status}`);
-      return null;
-    }
-    return res.json();
-  } catch (err) {
-    console.warn("[auth/callback] Backend verify unreachable:", err);
-    return null;
-  }
-}
-
-/**
- * After obtaining a Supabase session, verify with backend.
- * If backend is down/unreachable, fall back to Supabase user info.
- */
-async function verifyAndStore(accessToken: string): Promise<void> {
-  const result = await backendVerify(accessToken);
-  if (result?.user) {
-    localStorage.setItem("portfiq_admin_user", JSON.stringify(result.user));
-  } else {
-    // Graceful fallback: use Supabase user data directly
-    const { data } = await supabase.auth.getUser();
-    if (data.user) {
-      localStorage.setItem(
-        "portfiq_admin_user",
-        JSON.stringify({ email: data.user.email, role: "viewer" })
-      );
-    }
-  }
+function storeUser(session: { user: { email?: string; id: string } }) {
+  localStorage.setItem(
+    "portfiq_admin_user",
+    JSON.stringify({ email: session.user.email, role: "viewer", id: session.user.id })
+  );
 }
 
 function CallbackHandler() {
@@ -61,7 +22,6 @@ function CallbackHandler() {
   const handled = useRef(false);
 
   useEffect(() => {
-    // 한 번만 실행 — useRef로 중복 실행 방지
     if (handled.current) return;
     handled.current = true;
 
@@ -69,77 +29,46 @@ function CallbackHandler() {
 
     const handleCallback = async () => {
       try {
-        // URL에서 code 파라미터 직접 추출 (useSearchParams 의존성 제거)
         const url = new URL(window.location.href);
         const code = url.searchParams.get("code");
 
-        // 1) PKCE flow: ?code=... 파라미터가 있으면 명시적으로 교환
+        // 1) PKCE flow
         if (code) {
           const { data, error: exchangeError } =
             await supabase.auth.exchangeCodeForSession(code);
 
-          if (exchangeError) {
-            throw new Error(exchangeError.message);
-          }
+          if (exchangeError) throw new Error(exchangeError.message);
 
           if (data.session) {
-            await verifyAndStore(data.session.access_token);
+            storeUser(data.session);
             if (cancelled) return;
             router.replace("/");
             return;
           }
         }
 
-        // 2) Implicit flow: #access_token=... 해시 프래그먼트 처리
-        const hash = window.location.hash;
-        if (hash && hash.includes("access_token")) {
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          const { data } = await supabase.auth.getSession();
-          if (data.session) {
-            await verifyAndStore(data.session.access_token);
-            if (cancelled) return;
-            router.replace("/");
-            return;
-          }
-        }
-
-        // 3) 이미 세션이 있는 경우 (다른 탭에서 로그인 등)
+        // 2) 이미 세션이 있는 경우
         const { data } = await supabase.auth.getSession();
         if (data.session) {
-          await verifyAndStore(data.session.access_token);
+          storeUser(data.session);
           if (cancelled) return;
           router.replace("/");
           return;
         }
 
-        // 4) 세션이 아직 없으면 에러
+        // 3) 세션 없음
         if (!cancelled) {
-          setError("Sign-in timed out. Please try again.");
+          setError("Sign-in failed. No session found.");
         }
       } catch (err) {
         if (cancelled) return;
         console.error("[auth/callback] Error:", err);
-        // 에러 시에도 Supabase 세션이 있으면 진행 시도
-        try {
-          const { data } = await supabase.auth.getSession();
-          if (data.session) {
-            await verifyAndStore(data.session.access_token);
-            if (!cancelled) router.replace("/");
-            return;
-          }
-        } catch { /* ignore recovery failure */ }
-        // 세션도 없으면 에러 표시
-        try { await supabase.auth.signOut(); } catch { /* ignore */ }
         setError(err instanceof Error ? err.message : "Authentication failed");
       }
     };
 
     handleCallback();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (error) {
