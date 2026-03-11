@@ -33,13 +33,12 @@ export function Sidebar() {
 
   const handleLogout = async () => {
     try {
-      const { api } = await import("@/lib/api");
-      await api.logout();
+      const { signOut } = await import("@/lib/auth");
+      await signOut();
     } catch {
-      // 쿠키 삭제 실패해도 로그아웃 진행
+      localStorage.removeItem("portfiq_admin_user");
+      window.location.href = "/login";
     }
-    localStorage.removeItem("portfiq_admin_user");
-    window.location.href = "/login";
   };
 
   const sidebarContent = (

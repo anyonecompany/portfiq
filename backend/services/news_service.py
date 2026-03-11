@@ -24,7 +24,7 @@ from prompts.translate import TRANSLATE_PROMPT
 
 logger = logging.getLogger(__name__)
 
-_GEMINI_MODEL = "gemini-2.0-flash"
+_GEMINI_MODEL = settings.GEMINI_MODEL
 _gemini_client: genai.Client | None = None
 
 

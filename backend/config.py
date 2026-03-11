@@ -42,6 +42,7 @@ class Settings:
 
     # Gemini (Google AI for news translation/summarization)
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
 
     # External data APIs
     NEWS_API_KEY: str = os.getenv("NEWS_API_KEY", "")
@@ -65,6 +66,16 @@ class Settings:
 
     # Admin
     ADMIN_JWT_SECRET: str = os.getenv("ADMIN_JWT_SECRET", "")
+    ADMIN_ALLOWED_EMAILS: list[str] = os.getenv(
+        "ADMIN_ALLOWED_EMAILS",
+        "hyeonsong@anyonecompany.kr,geonyong@anyonecompany.kr",
+    ).split(",")
+
+    # Admin role mapping (email → role)
+    ADMIN_ROLE_MAP: dict[str, str] = {
+        "hyeonsong@anyonecompany.kr": "cto",
+        "geonyong@anyonecompany.kr": "ceo",
+    }
 
     # Deploy (GitHub Actions)
     GITHUB_TOKEN: str = os.getenv("GITHUB_TOKEN", "")

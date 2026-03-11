@@ -1,7 +1,7 @@
-"""Admin 인증 미들웨어 — JWT Bearer 토큰 검증.
+"""Admin 인증 미들웨어 — Supabase Auth (Google OAuth) 기반.
 
-ADMIN_JWT_SECRET 환경변수로 HS256 JWT를 검증하고,
-역할 기반 접근 제어(RBAC)를 제공한다.
+Supabase access_token을 검증하고 이메일 화이트리스트 + 역할 매핑을 수행한다.
+기존 ADMIN_JWT_SECRET 방식도 폴백으로 유지한다.
 """
 
 from __future__ import annotations
@@ -9,7 +9,6 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import jwt
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
@@ -19,58 +18,97 @@ logger = logging.getLogger(__name__)
 
 _bearer_scheme = HTTPBearer(auto_error=False)
 
-# 환경변수에서 JWT 시크릿 로드
-_JWT_SECRET: str = getattr(settings, "ADMIN_JWT_SECRET", "") or ""
-_JWT_ALGORITHM = "HS256"
 
+def _verify_supabase_token(token: str) -> dict[str, Any]:
+    """Supabase access_token을 검증하고 사용자 정보를 반환한다.
 
-def _get_jwt_secret() -> str:
-    """JWT 시크릿을 반환한다. 미설정 시 환경변수에서 직접 조회한다.
+    Args:
+        token: Supabase Auth가 발급한 JWT access_token.
 
     Returns:
-        JWT 서명 검증에 사용할 시크릿 문자열.
+        사용자 정보 딕셔너리 (email, role 등).
 
     Raises:
-        HTTPException: 시크릿이 설정되지 않은 경우.
+        HTTPException: 토큰 검증 실패 또는 화이트리스트 미포함 시.
+    """
+    try:
+        from services.supabase_client import get_supabase_service
+        sb = get_supabase_service()
+        user_response = sb.auth.get_user(token)
+        user = user_response.user
+
+        if not user or not user.email:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token: no user found",
+            )
+
+        email = user.email.lower().strip()
+
+        # 이메일 화이트리스트 체크
+        allowed = [e.lower().strip() for e in settings.ADMIN_ALLOWED_EMAILS]
+        if email not in allowed:
+            logger.warning("Unauthorized admin access attempt: %s", email)
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied. Email '{email}' is not authorized.",
+            )
+
+        # 역할 매핑
+        role = settings.ADMIN_ROLE_MAP.get(email, "viewer")
+
+        return {
+            "sub": user.id,
+            "email": email,
+            "role": role,
+            "auth_method": "supabase",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.warning("Supabase token verification failed: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token verification failed",
+        )
+
+
+def _verify_legacy_jwt(token: str) -> dict[str, Any]:
+    """기존 ADMIN_JWT_SECRET 기반 JWT 검증 (폴백).
+
+    Args:
+        token: HS256 JWT 토큰.
+
+    Returns:
+        JWT 클레임 딕셔너리.
+
+    Raises:
+        HTTPException: 검증 실패 시.
     """
     import os
 
-    secret = _JWT_SECRET or os.getenv("ADMIN_JWT_SECRET", "")
+    import jwt as pyjwt
+
+    secret = getattr(settings, "ADMIN_JWT_SECRET", "") or os.getenv("ADMIN_JWT_SECRET", "")
     if not secret:
-        logger.error("ADMIN_JWT_SECRET 환경변수가 설정되지 않았습니다")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Admin authentication is not configured",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Legacy JWT auth not configured",
         )
-    return secret
 
-
-def _decode_token(token: str) -> dict[str, Any]:
-    """JWT 토큰을 디코드하고 검증한다.
-
-    Args:
-        token: Bearer 토큰 문자열.
-
-    Returns:
-        디코드된 JWT 클레임 딕셔너리.
-
-    Raises:
-        HTTPException: 토큰이 유효하지 않거나 만료된 경우.
-    """
-    secret = _get_jwt_secret()
     try:
-        payload = jwt.decode(token, secret, algorithms=[_JWT_ALGORITHM])
+        payload = pyjwt.decode(token, secret, algorithms=["HS256"])
         return payload
-    except jwt.ExpiredSignatureError:
+    except pyjwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has expired",
         )
-    except jwt.InvalidTokenError as e:
-        logger.warning("JWT 검증 실패: %s", e)
+    except pyjwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
+            detail="Invalid token",
         )
 
 
@@ -80,30 +118,46 @@ async def get_current_admin(
 ) -> dict[str, Any]:
     """현재 인증된 관리자 정보를 반환한다.
 
-    HttpOnly 쿠키 → Bearer 헤더 순으로 JWT를 읽는다.
+    Authorization Bearer 헤더 → HttpOnly 쿠키 순으로 토큰을 읽는다.
+    Supabase Auth 검증을 시도하고, 실패 시 기존 JWT 폴백.
 
     Args:
-        request: FastAPI Request (쿠키 접근용).
-        credentials: HTTP Bearer 인증 정보 (폴백).
+        request: FastAPI Request.
+        credentials: HTTP Bearer 인증 정보.
 
     Returns:
-        JWT 클레임 딕셔너리 (sub, email, role 등).
+        관리자 정보 딕셔너리 (sub, email, role 등).
 
     Raises:
-        HTTPException: 인증 실패 시 401.
+        HTTPException: 인증 실패 시 401/403.
     """
-    # 1) HttpOnly 쿠키에서 토큰 읽기
-    token = request.cookies.get("portfiq_admin_token")
-    # 2) 없으면 Authorization 헤더 폴백
-    if not token and credentials is not None:
+    # 1) Authorization 헤더에서 토큰 읽기
+    token = None
+    if credentials is not None:
         token = credentials.credentials
+    # 2) 없으면 HttpOnly 쿠키 폴백
+    if not token:
+        token = request.cookies.get("portfiq_admin_token")
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
         )
-    payload = _decode_token(token)
-    return payload
+
+    # Supabase Auth 토큰 검증 시도
+    try:
+        return _verify_supabase_token(token)
+    except HTTPException as e:
+        if e.status_code == 403:
+            raise  # 화이트리스트 거부는 바로 반환
+        # Supabase 검증 실패 → 기존 JWT 폴백
+        try:
+            return _verify_legacy_jwt(token)
+        except HTTPException:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Not authenticated",
+            )
 
 
 def require_roles(*allowed_roles: str):
@@ -114,25 +168,11 @@ def require_roles(*allowed_roles: str):
 
     Returns:
         FastAPI 의존성 함수.
-
-    Example:
-        @router.post("/deploy", dependencies=[Depends(require_roles("ceo", "cto"))])
     """
 
     async def _check_role(
         admin: dict[str, Any] = Depends(get_current_admin),
     ) -> dict[str, Any]:
-        """역할을 검증한다.
-
-        Args:
-            admin: 현재 인증된 관리자 클레임.
-
-        Returns:
-            검증 통과 시 관리자 클레임.
-
-        Raises:
-            HTTPException: 역할이 허용 목록에 없으면 403.
-        """
         role = admin.get("role", "")
         if role not in allowed_roles:
             roles_str = " or ".join(allowed_roles)

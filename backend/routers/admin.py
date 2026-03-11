@@ -47,10 +47,9 @@ class TestPushRequest(BaseModel):
 
 
 class AdminLoginRequest(BaseModel):
-    """관리자 로그인 요청 스키마."""
+    """관리자 로그인 요청 스키마 (Supabase Auth 토큰 검증)."""
 
-    email: str = Field(..., description="관리자 이메일.")
-    password: str = Field(..., description="비밀번호.")
+    access_token: str = Field(..., description="Supabase Auth access_token.")
 
 
 class DeployApproveRequest(BaseModel):
@@ -750,101 +749,42 @@ async def admin_login(
     body: AdminLoginRequest,
     response: Response,
 ) -> dict[str, Any]:
-    """관리자 로그인. JWT 토큰을 HttpOnly 쿠키로 발급한다.
+    """관리자 로그인 — Supabase Auth access_token을 검증하고 세션을 설정한다.
+
+    프론트엔드에서 Google OAuth로 Supabase 로그인 후 받은 access_token을
+    백엔드에 전달하면, 이메일 화이트리스트 검증 + 역할 매핑을 수행한다.
 
     Args:
         request: FastAPI Request (rate limiter용).
-        body: 이메일과 비밀번호.
+        body: Supabase Auth access_token.
         response: FastAPI Response (쿠키 설정용).
 
     Returns:
-        token_type, expires_in, user 정보. JWT는 HttpOnly 쿠키로 전달.
+        token_type, user 정보. access_token은 HttpOnly 쿠키로도 전달.
     """
-    import os
-    from datetime import datetime, timezone
+    from middleware.admin_auth import _verify_supabase_token
 
-    import jwt as pyjwt
+    # Supabase 토큰 검증 + 화이트리스트 + 역할 매핑
+    admin_info = _verify_supabase_token(body.access_token)
 
-    from services.supabase_client import get_supabase
-    sb = get_supabase()
-
-    # 사용자 조회
-    user_resp = (
-        sb.table("admin_users")
-        .select("*")
-        .eq("email", body.email)
-        .limit(1)
-        .execute()
-    )
-    if not user_resp.data:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
-        )
-
-    user = user_resp.data[0]
-
-    # 비밀번호 검증
-    try:
-        import bcrypt
-
-        stored_hash = user.get("password_hash", "")
-        if isinstance(stored_hash, str):
-            stored_hash = stored_hash.encode("utf-8")
-        password_bytes = body.password.encode("utf-8")
-
-        if not bcrypt.checkpw(password_bytes, stored_hash):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid email or password",
-            )
-    except ImportError:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Server authentication module (bcrypt) is not installed",
-        )
-    except HTTPException:
-        raise
-
-    # JWT 생성
-    secret = os.getenv("ADMIN_JWT_SECRET", "")
-    if not secret:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Admin authentication is not configured",
-        )
-
-    now = datetime.now(timezone.utc)
-    expires_in = 3600  # 1시간
-    payload = {
-        "sub": str(user.get("id", "")),
-        "email": user["email"],
-        "role": user.get("role", "pm"),
-        "iat": int(now.timestamp()),
-        "exp": int((now + timedelta(seconds=expires_in)).timestamp()),
-    }
-
-    access_token = pyjwt.encode(payload, secret, algorithm="HS256")
-
-    # HttpOnly 쿠키로 JWT 설정
+    # HttpOnly 쿠키로 Supabase access_token 저장
     is_prod = settings.ENVIRONMENT == "production"
     response.set_cookie(
         key="portfiq_admin_token",
-        value=access_token,
+        value=body.access_token,
         httponly=True,
         secure=is_prod,
         samesite="lax",
-        max_age=expires_in,
+        max_age=3600,
         path="/",
     )
 
     return {
         "token_type": "bearer",
-        "expires_in": expires_in,
         "user": {
-            "id": user.get("id"),
-            "email": user["email"],
-            "role": user.get("role", "pm"),
+            "id": admin_info.get("sub"),
+            "email": admin_info["email"],
+            "role": admin_info["role"],
         },
     }
 

@@ -10,24 +10,30 @@ import type {
   DeployStatusResponse,
   LoginResponse,
 } from "@/types/admin";
+import { getAccessToken, signOut } from "./auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 async function adminFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = await getAccessToken();
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options?.headers as Record<string, string>),
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
+    headers,
   });
 
   if (res.status === 401) {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("portfiq_admin_user");
-      window.location.href = "/login";
-    }
+    await signOut();
     throw new Error("Unauthorized");
   }
 
@@ -40,15 +46,15 @@ async function adminFetch<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  // Auth
-  login: (email: string, password: string) =>
+  // Auth — Supabase 토큰 검증 via backend
+  verifyLogin: (accessToken: string) =>
     adminFetch<LoginResponse>("/api/v1/admin/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ access_token: accessToken }),
     }),
 
   logout: () =>
-    adminFetch<{ status: string }>("/api/v1/admin/auth/logout", {
+    adminFetch<{ message: string }>("/api/v1/admin/auth/logout", {
       method: "POST",
     }),
 
