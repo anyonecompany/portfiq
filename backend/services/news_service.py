@@ -14,8 +14,8 @@ import logging
 import threading
 from datetime import datetime, timedelta, timezone
 
-import anthropic
 import feedparser
+from google import genai
 import httpx
 
 from config import settings
@@ -24,16 +24,16 @@ from prompts.translate import TRANSLATE_PROMPT
 
 logger = logging.getLogger(__name__)
 
-_TRANSLATE_MODEL = "claude-sonnet-4-5-20250929"
-_translate_client: anthropic.Anthropic | None = None
+_GEMINI_MODEL = "gemini-2.0-flash"
+_gemini_client: genai.Client | None = None
 
 
-def _get_translate_client() -> anthropic.Anthropic:
-    """Return a lazily-initialised Anthropic client for translation."""
-    global _translate_client
-    if _translate_client is None:
-        _translate_client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-    return _translate_client
+def _get_gemini_client() -> genai.Client:
+    """Return a lazily-initialised Gemini client for translation."""
+    global _gemini_client
+    if _gemini_client is None:
+        _gemini_client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    return _gemini_client
 
 
 # ──────────────────────────────────────────────
@@ -293,14 +293,11 @@ async def _translate_batch(headlines: list[str]) -> list[dict[str, str]]:
     prompt = _TRANSLATE_SUMMARISE_PROMPT.format(headlines=numbered)
 
     try:
-        client = _get_translate_client()
-        response = client.messages.create(
-            model=_TRANSLATE_MODEL,
-            max_tokens=8192,
-            messages=[{"role": "user", "content": prompt}],
+        client = _get_gemini_client()
+        response = client.models.generate_content(
+            model=_GEMINI_MODEL, contents=prompt
         )
-        block = response.content[0]
-        text = block.text if hasattr(block, "text") else ""
+        text = response.text if response.text else ""
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
         elif "```" in text:
@@ -345,8 +342,8 @@ async def _translate_and_summarize(headlines: list[str]) -> list[dict[str, str]]
     if not headlines:
         return []
 
-    if not settings.ANTHROPIC_API_KEY:
-        logger.warning("ANTHROPIC_API_KEY 미설정 — 원문 헤드라인 반환")
+    if not settings.GEMINI_API_KEY:
+        logger.warning("GEMINI_API_KEY 미설정 — 원문 헤드라인 반환")
         return [{"ko": h, "impact_reason": ""} for h in headlines]
 
     results: list[dict[str, str]] = []
@@ -424,8 +421,8 @@ def _translate_cached_articles_sync() -> None:
         if not untranslated:
             return
 
-        if not settings.ANTHROPIC_API_KEY:
-            logger.warning("ANTHROPIC_API_KEY 미설정 — 번역 건너뜀")
+        if not settings.GEMINI_API_KEY:
+            logger.warning("GEMINI_API_KEY 미설정 — 번역 건너뜀")
             return
 
         headlines = [a["headline_en"] for a in untranslated]
@@ -438,14 +435,11 @@ def _translate_cached_articles_sync() -> None:
             prompt = _TRANSLATE_SUMMARISE_PROMPT.format(headlines=numbered)
 
             try:
-                client = _get_translate_client()
-                response = client.messages.create(
-                    model=_TRANSLATE_MODEL,
-                    max_tokens=8192,
-                    messages=[{"role": "user", "content": prompt}],
+                client = _get_gemini_client()
+                response = client.models.generate_content(
+                    model=_GEMINI_MODEL, contents=prompt
                 )
-                _block = response.content[0]
-                text = _block.text if hasattr(_block, "text") else ""
+                text = response.text if response.text else ""
                 if "```json" in text:
                     text = text.split("```json")[1].split("```")[0]
                 elif "```" in text:
@@ -585,22 +579,19 @@ async def fetch_and_store_news() -> int:
             logger.warning("Supabase 연결 실패, 캐시만 갱신: %s", e)
 
         # 번역 실행 (동기 — 스케줄러 job이므로 blocking OK)
-        if unique and settings.ANTHROPIC_API_KEY:
+        if unique and settings.GEMINI_API_KEY:
             headlines = [a.get("headline_en", a.get("headline", "")) for a in unique]
-            logger.info("번역 시작: %d건", len(headlines))
+            logger.info("번역 시작: %d건 (Gemini 2.0 Flash)", len(headlines))
             for start in range(0, len(headlines), _BATCH_SIZE):
                 batch = headlines[start:start + _BATCH_SIZE]
                 numbered = "\n".join(f"[{i}] {h}" for i, h in enumerate(batch))
                 prompt = _TRANSLATE_SUMMARISE_PROMPT.format(headlines=numbered)
                 try:
-                    client = _get_translate_client()
-                    response = client.messages.create(
-                        model=_TRANSLATE_MODEL,
-                        max_tokens=8192,
-                        messages=[{"role": "user", "content": prompt}],
+                    client = _get_gemini_client()
+                    response = client.models.generate_content(
+                        model=_GEMINI_MODEL, contents=prompt
                     )
-                    _blk = response.content[0]
-                    text = _blk.text if hasattr(_blk, "text") else ""
+                    text = response.text if response.text else ""
                     if "```json" in text:
                         text = text.split("```json")[1].split("```")[0]
                     elif "```" in text:
@@ -867,8 +858,8 @@ async def translate_headlines(headlines: list[str]) -> list[str]:
     if not headlines:
         return []
 
-    if not settings.ANTHROPIC_API_KEY:
-        logger.warning("ANTHROPIC_API_KEY 미설정 — 원문 헤드라인 반환")
+    if not settings.GEMINI_API_KEY:
+        logger.warning("GEMINI_API_KEY 미설정 — 원문 헤드라인 반환")
         return headlines
 
     # Build numbered headline list
@@ -876,14 +867,11 @@ async def translate_headlines(headlines: list[str]) -> list[str]:
     prompt = TRANSLATE_PROMPT.format(headlines=numbered)
 
     try:
-        client = _get_translate_client()
-        response = client.messages.create(
-            model=_TRANSLATE_MODEL,
-            max_tokens=1024,
-            messages=[{"role": "user", "content": prompt}],
+        client = _get_gemini_client()
+        response = client.models.generate_content(
+            model=_GEMINI_MODEL, contents=prompt
         )
-        _tblk = response.content[0]
-        text = _tblk.text if hasattr(_tblk, "text") else ""
+        text = response.text if response.text else ""
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
         elif "```" in text:

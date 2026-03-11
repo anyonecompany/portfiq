@@ -40,6 +40,9 @@ class Settings:
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
     ANTHROPIC_MODEL: str = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
 
+    # Gemini (Google AI for news translation/summarization)
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+
     # External data APIs
     NEWS_API_KEY: str = os.getenv("NEWS_API_KEY", "")
     MARKET_DATA_API_KEY: str = os.getenv("MARKET_DATA_API_KEY", "")
