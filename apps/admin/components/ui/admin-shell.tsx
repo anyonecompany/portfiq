@@ -9,8 +9,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("portfiq_admin_token");
-    if (!token) {
+    const user = localStorage.getItem("portfiq_admin_user");
+    if (!user) {
       router.replace("/login");
     } else {
       setChecked(true);
