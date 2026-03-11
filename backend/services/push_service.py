@@ -62,7 +62,18 @@ def _init_firebase() -> bool:
             except (json.JSONDecodeError, Exception) as e:
                 logger.error("Firebase 서비스 계정 JSON 파싱 실패: %s", e)
 
-        # 방법 2: GOOGLE_APPLICATION_CREDENTIALS (파일 경로, 환경변수로 자동 감지)
+        # 방법 2: FIREBASE_CREDENTIALS_PATH (파일 경로, 명시적 설정)
+        firebase_creds_path = settings.FIREBASE_CREDENTIALS_PATH
+        if firebase_creds_path:
+            try:
+                cred = credentials.Certificate(firebase_creds_path)
+                _firebase_app = firebase_admin.initialize_app(cred)
+                logger.info("Firebase Admin SDK 초기화 완료 (파일: %s)", firebase_creds_path)
+                return True
+            except Exception as e:
+                logger.error("Firebase 서비스 계정 파일 로드 실패 (FIREBASE_CREDENTIALS_PATH): %s", e)
+
+        # 방법 3: GOOGLE_APPLICATION_CREDENTIALS (파일 경로, 환경변수로 자동 감지)
         google_creds_path = settings.GOOGLE_APPLICATION_CREDENTIALS
         if google_creds_path:
             try:
@@ -71,9 +82,9 @@ def _init_firebase() -> bool:
                 logger.info("Firebase Admin SDK 초기화 완료 (파일: %s)", google_creds_path)
                 return True
             except Exception as e:
-                logger.error("Firebase 서비스 계정 파일 로드 실패: %s", e)
+                logger.error("Firebase 서비스 계정 파일 로드 실패 (GOOGLE_APPLICATION_CREDENTIALS): %s", e)
 
-        # 방법 3: Application Default Credentials (GCP 환경)
+        # 방법 4: Application Default Credentials (GCP 환경)
         try:
             _firebase_app = firebase_admin.initialize_app()
             logger.info("Firebase Admin SDK 초기화 완료 (ADC)")
@@ -90,6 +101,89 @@ def _init_firebase() -> bool:
 
     except ImportError:
         logger.warning("firebase-admin 패키지 미설치 — pip install firebase-admin")
+        return False
+
+
+def init_firebase() -> bool:
+    """Firebase Admin SDK를 명시적으로 초기화한다.
+
+    서버 시작 시 호출하여 Firebase 연결 상태를 미리 확인한다.
+    초기화 실패해도 예외를 발생시키지 않으며 False를 반환한다.
+
+    Returns:
+        초기화 성공 여부.
+    """
+    result = _init_firebase()
+    if result:
+        logger.info("Firebase 초기화 성공 — FCM 푸시 활성")
+    else:
+        logger.warning("Firebase 초기화 실패 — 푸시 알림은 로그만 남깁니다")
+    return result
+
+
+async def send_push_to_token(
+    token: str,
+    title: str,
+    body: str,
+    data: dict[str, Any] | None = None,
+) -> bool:
+    """푸시 토큰을 직접 지정하여 알림을 전송한다.
+
+    테스트 푸시 등 device_id 없이 토큰만으로 발송할 때 사용한다.
+
+    Args:
+        token: FCM 푸시 토큰.
+        title: 알림 제목.
+        body: 알림 본문.
+        data: 추가 데이터 페이로드.
+
+    Returns:
+        전송 성공 여부.
+    """
+    if not token:
+        logger.warning("푸시 토큰이 비어있음")
+        return False
+
+    if not _init_firebase():
+        logger.info(
+            "테스트 푸시 (Firebase 미설정, 로그만): token=%s..., title='%s'",
+            token[:20], title,
+        )
+        return True
+
+    try:
+        from firebase_admin import messaging
+
+        str_data = {k: str(v) for k, v in (data or {}).items()}
+
+        message = messaging.Message(
+            notification=messaging.Notification(title=title, body=body),
+            token=token,
+            data=str_data,
+            android=messaging.AndroidConfig(
+                priority="high",
+                notification=messaging.AndroidNotification(
+                    channel_id="portfiq_briefing",
+                    priority="high",
+                ),
+            ),
+            apns=messaging.APNSConfig(
+                payload=messaging.APNSPayload(
+                    aps=messaging.Aps(
+                        alert=messaging.ApsAlert(title=title, body=body),
+                        sound="default",
+                        badge=1,
+                    ),
+                ),
+            ),
+        )
+
+        response = messaging.send(message)
+        logger.info("테스트 FCM 전송 성공: token=%s..., response=%s", token[:20], response)
+        return True
+
+    except Exception as e:
+        logger.error("테스트 FCM 전송 실패: token=%s..., error=%s", token[:20], e)
         return False
 
 

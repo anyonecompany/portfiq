@@ -37,6 +37,14 @@ class PushSendRequest(BaseModel):
     body: str = Field(..., description="푸시 본문.")
 
 
+class TestPushRequest(BaseModel):
+    """테스트 푸시 발송 요청 스키마."""
+
+    device_token: str = Field(..., description="FCM 디바이스 토큰.")
+    title: str = Field(default="테스트", description="푸시 제목.")
+    body: str = Field(default="푸시 테스트입니다", description="푸시 본문.")
+
+
 class AdminLoginRequest(BaseModel):
     """관리자 로그인 요청 스키마."""
 
@@ -291,6 +299,53 @@ async def send_push(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to send push notification",
+        )
+
+
+# ──────────────────────────────────────────────
+# 7.5. Test Push (디버깅 / QA용)
+# ──────────────────────────────────────────────
+
+@router.post("/test-push")
+async def test_push(
+    body: TestPushRequest,
+    admin: dict[str, Any] = Depends(get_current_admin),
+) -> dict[str, Any]:
+    """테스트 푸시 알림을 특정 디바이스 토큰으로 발송한다.
+
+    Firebase 초기화 상태와 토큰 유효성을 빠르게 검증하기 위한 엔드포인트.
+    Admin 인증이 필요하다.
+
+    Args:
+        body: 디바이스 토큰, 제목, 본문.
+
+    Returns:
+        발송 성공 여부와 상세 정보.
+    """
+    from services.push_service import send_push_to_token, _firebase_initialized, _firebase_app
+
+    try:
+        success = await send_push_to_token(
+            token=body.device_token,
+            title=body.title,
+            body=body.body,
+            data={"type": "test"},
+        )
+
+        return {
+            "success": success,
+            "firebase_initialized": _firebase_initialized,
+            "firebase_active": _firebase_app is not None,
+            "device_token": f"{body.device_token[:20]}..." if len(body.device_token) > 20 else body.device_token,
+            "title": body.title,
+            "body": body.body,
+            "message": "푸시 발송 성공" if success else "푸시 발송 실패",
+        }
+    except Exception as e:
+        logger.error("테스트 푸시 실패: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"테스트 푸시 발송 실패: {e}",
         )
 
 

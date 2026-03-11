@@ -88,64 +88,72 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
           ),
           const SizedBox(height: 24),
 
-          // Search results
-          if (_filteredEtfs.isNotEmpty) ...[
-            Text(
-              '검색 결과',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: PortfiqTheme.textSecondary,
+          // Scrollable ETF chips area
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Search results
+                  if (_filteredEtfs.isNotEmpty) ...[
+                    Text(
+                      '검색 결과',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: PortfiqTheme.textSecondary,
+                          ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _filteredEtfs.map((ticker) {
+                        final selected = state.selectedEtfs.contains(ticker);
+                        return _EtfChip(
+                          ticker: ticker,
+                          selected: selected,
+                          onTap: () {
+                            EventTracker.instance.track('etf_chip_selected', properties: {
+                              'ticker': ticker,
+                              'source': 'search_result',
+                            });
+                            notifier.toggleEtf(ticker);
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Popular ETFs
+                  Text(
+                    '인기 ETF',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: PortfiqTheme.textSecondary,
+                        ),
                   ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: OnboardingNotifier.popularEtfs.map((ticker) {
+                      final selected = state.selectedEtfs.contains(ticker);
+                      return _EtfChip(
+                        ticker: ticker,
+                        selected: selected,
+                        onTap: () {
+                          EventTracker.instance.track('etf_chip_selected', properties: {
+                            'ticker': ticker,
+                            'source': 'popular_chip',
+                          });
+                          notifier.toggleEtf(ticker);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _filteredEtfs.map((ticker) {
-                final selected = state.selectedEtfs.contains(ticker);
-                return _EtfChip(
-                  ticker: ticker,
-                  selected: selected,
-                  onTap: () {
-                    EventTracker.instance.track('etf_chip_selected', properties: {
-                      'ticker': ticker,
-                      'source': 'search_result',
-                    });
-                    notifier.toggleEtf(ticker);
-                  },
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 24),
-          ],
-
-          // Popular ETFs
-          Text(
-            '인기 ETF',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: PortfiqTheme.textSecondary,
-                ),
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: OnboardingNotifier.popularEtfs.map((ticker) {
-              final selected = state.selectedEtfs.contains(ticker);
-              return _EtfChip(
-                ticker: ticker,
-                selected: selected,
-                onTap: () {
-                  EventTracker.instance.track('etf_chip_selected', properties: {
-                    'ticker': ticker,
-                    'source': 'popular_chip',
-                  });
-                  notifier.toggleEtf(ticker);
-                },
-              );
-            }).toList(),
-          ),
-
-          const Spacer(),
 
           // Selected count
           if (state.selectedEtfs.isNotEmpty)
@@ -160,25 +168,30 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
             ),
 
           // CTA
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: notifier.canProceed
-                  ? () {
-                      EventTracker.instance.track(
-                        'etf_registered',
-                        properties: {
-                          'tickers': state.selectedEtfs,
-                          'count': state.selectedEtfs.length,
-                        },
-                      );
-                      widget.onNext();
-                    }
-                  : null,
-              child: const Text('완료'),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 32),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: notifier.canProceed
+                      ? () {
+                          EventTracker.instance.track(
+                            'etf_registered',
+                            properties: {
+                              'tickers': state.selectedEtfs,
+                              'count': state.selectedEtfs.length,
+                            },
+                          );
+                          widget.onNext();
+                        }
+                      : null,
+                  child: const Text('완료'),
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 32),
         ],
       ),
     );

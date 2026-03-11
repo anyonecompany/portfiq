@@ -47,6 +47,7 @@ class Settings:
     # Push notifications (FCM / Firebase Admin SDK)
     FCM_SERVER_KEY: str = os.getenv("FCM_SERVER_KEY", "")
     FIREBASE_SERVICE_ACCOUNT_JSON: str = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON", "")
+    FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "")
     GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
 
     # CORS

@@ -41,6 +41,13 @@ async def lifespan(app: FastAPI):
                 settings.BRIEFING_MORNING_HOUR, settings.BRIEFING_MORNING_MINUTE,
                 settings.BRIEFING_NIGHT_HOUR)
 
+    # Initialize Firebase Admin SDK (non-blocking)
+    try:
+        from services.push_service import init_firebase
+        init_firebase()
+    except Exception as e:
+        logger.warning("Firebase 초기화 실패 (푸시 비활성): %s", e)
+
     # Start background scheduler (news collection + briefing generation)
     from jobs.briefing_scheduler import start_scheduler, stop_scheduler
     start_scheduler()
@@ -93,7 +100,7 @@ app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
 @app.get("/health", tags=["Health"])
 async def health_root() -> dict:
     """Lightweight health check for Railway / load balancer probes."""
-    return {"status": "ok", "version": "1.0.0"}
+    return {"status": "ok", "version": "1.0.0", "environment": settings.ENVIRONMENT}
 
 
 @app.get("/api/health", response_model=HealthResponse, tags=["Health"])

@@ -1073,48 +1073,52 @@ class _MacroRow extends StatelessWidget {
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(PortfiqSpacing.space24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(factor.icon, size: 20, color: _levelColor()),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${factor.label} 민감도',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: _levelColor().withValues(alpha: 0.15),
-                        borderRadius:
-                            BorderRadius.circular(PortfiqTheme.radiusChip),
-                      ),
-                      child: Text(
-                        _levelLabel(),
-                        style: TextStyle(
-                          color: _levelColor(),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Inter',
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(factor.icon, size: 20, color: _levelColor()),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${factor.label} 민감도',
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  factor.explanation,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        height: 1.6,
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _levelColor().withValues(alpha: 0.15),
+                          borderRadius:
+                              BorderRadius.circular(PortfiqTheme.radiusChip),
+                        ),
+                        child: Text(
+                          _levelLabel(),
+                          style: TextStyle(
+                            color: _levelColor(),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Inter',
+                          ),
+                        ),
                       ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    factor.explanation,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          height: 1.6,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
           ),
         );

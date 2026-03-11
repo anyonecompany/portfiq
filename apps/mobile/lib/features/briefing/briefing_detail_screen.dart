@@ -107,20 +107,23 @@ class _BriefingDetailScreenState extends State<BriefingDetailScreen> {
                 ),
         ],
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(PortfiqSpacing.space20),
-            child: isMorning ? _buildMorningContent(data) : _buildNightContent(data),
-          ),
+      body: SafeArea(
+        top: false,
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(PortfiqSpacing.space20),
+              child: isMorning ? _buildMorningContent(data) : _buildNightContent(data),
+            ),
 
-          // Offscreen share card for capture
-          Positioned(
-            left: -2000,
-            top: 0,
-            child: ShareCard(data: data, repaintKey: _shareCardKey),
-          ),
-        ],
+            // Offscreen share card for capture
+            Positioned(
+              left: -2000,
+              top: 0,
+              child: ShareCard(data: data, repaintKey: _shareCardKey),
+            ),
+          ],
+        ),
       ),
     );
   }

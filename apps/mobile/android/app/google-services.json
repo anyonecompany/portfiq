@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "6523595749",
+    "project_id": "portfiq-325cc",
+    "storage_bucket": "portfiq-325cc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:6523595749:android:904b2285ec1405dfa85d0c",
+        "android_client_info": {
+          "package_name": "com.example.portfiq"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAI6ox4DGBqiT3IywcPfhmfWPmKraBJgc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

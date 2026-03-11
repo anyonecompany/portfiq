@@ -224,182 +224,197 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
         ),
       ),
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(
-            PortfiqSpacing.space20,
-            PortfiqSpacing.space12,
-            PortfiqSpacing.space20,
-            PortfiqSpacing.space24,
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Handle bar
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: PortfiqTheme.divider,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: PortfiqSpacing.space16),
-
-              // Sentiment badge
-              _SentimentBadge(sentiment: item.sentiment),
-              const SizedBox(height: PortfiqSpacing.space12),
-
-              // Headline
-              Text(
-                item.headline,
-                style: PortfiqTypography.subtitle.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: PortfiqSpacing.space16),
-
-              // 3-line summary card
-              if (item.summary3line.isNotEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(PortfiqSpacing.space16),
-                  decoration: BoxDecoration(
-                    color: PortfiqTheme.primaryBg,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: _sentimentColor(item.sentiment).withValues(alpha: 0.3),
-                      width: 1,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              PortfiqSpacing.space20,
+              PortfiqSpacing.space12,
+              PortfiqSpacing.space20,
+              PortfiqSpacing.space24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle bar
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: PortfiqTheme.divider,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.auto_awesome,
-                            size: 14,
-                            color: PortfiqTheme.accent,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'AI 3줄 요약',
-                            style: PortfiqTypography.caption.copyWith(
-                              color: PortfiqTheme.accent,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: PortfiqSpacing.space12),
-                      ...item.summary3line.split('\n').map(
-                        (line) => Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Text(
-                            line,
-                            style: PortfiqTypography.body.copyWith(
-                              color: PortfiqTheme.textPrimary,
-                              fontSize: 14,
-                              height: 1.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                Text(
-                  item.impactReason,
-                  style: PortfiqTypography.body.copyWith(
-                    color: PortfiqTheme.textSecondary,
-                    fontSize: 14,
-                    height: 1.6,
-                  ),
                 ),
-
-              const SizedBox(height: PortfiqSpacing.space16),
-
-              // Impact badges
-              if (item.impacts.isNotEmpty)
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: item.impacts.map((impact) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: _impactColor(impact.level).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        impact.etfTicker,
-                        style: PortfiqTypography.caption.copyWith(
-                          color: _impactColor(impact.level),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-
-              if (item.impacts.isNotEmpty)
                 const SizedBox(height: PortfiqSpacing.space16),
 
-              // Source + 전문 보러가기
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(color: PortfiqTheme.divider, width: 1),
-                  ),
-                ),
-                padding: const EdgeInsets.only(top: PortfiqSpacing.space12),
-                child: Row(
-                  children: [
-                    Text(
-                      item.source,
-                      style: PortfiqTypography.caption.copyWith(
-                        color: PortfiqTheme.textTertiary,
-                      ),
-                    ),
-                    const Spacer(),
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          EventTracker.instance.track('news_source_tap', properties: {
-                            'news_id': item.id,
-                            'source': item.source,
-                          });
-                          _openUrl(item.sourceUrl);
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: PortfiqTheme.accent.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            '전문 보러가기 →',
-                            style: PortfiqTypography.caption.copyWith(
-                              color: PortfiqTheme.accent,
-                              fontWeight: FontWeight.w600,
-                            ),
+                // Scrollable content
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Sentiment badge
+                        _SentimentBadge(sentiment: item.sentiment),
+                        const SizedBox(height: PortfiqSpacing.space12),
+
+                        // Headline
+                        Text(
+                          item.headline,
+                          style: PortfiqTypography.subtitle.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 18,
+                            height: 1.4,
                           ),
                         ),
-                      ),
+                        const SizedBox(height: PortfiqSpacing.space16),
+
+                        // 3-line summary card
+                        if (item.summary3line.isNotEmpty)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(PortfiqSpacing.space16),
+                            decoration: BoxDecoration(
+                              color: PortfiqTheme.primaryBg,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: _sentimentColor(item.sentiment).withValues(alpha: 0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.auto_awesome,
+                                      size: 14,
+                                      color: PortfiqTheme.accent,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'AI 3줄 요약',
+                                      style: PortfiqTypography.caption.copyWith(
+                                        color: PortfiqTheme.accent,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: PortfiqSpacing.space12),
+                                ...item.summary3line.split('\n').map(
+                                  (line) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 6),
+                                    child: Text(
+                                      line,
+                                      style: PortfiqTypography.body.copyWith(
+                                        color: PortfiqTheme.textPrimary,
+                                        fontSize: 14,
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Text(
+                            item.impactReason,
+                            style: PortfiqTypography.body.copyWith(
+                              color: PortfiqTheme.textSecondary,
+                              fontSize: 14,
+                              height: 1.6,
+                            ),
+                          ),
+
+                        const SizedBox(height: PortfiqSpacing.space16),
+
+                        // Impact badges
+                        if (item.impacts.isNotEmpty)
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: item.impacts.map((impact) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: _impactColor(impact.level).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  impact.etfTicker,
+                                  style: PortfiqTypography.caption.copyWith(
+                                    color: _impactColor(impact.level),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+
+                        if (item.impacts.isNotEmpty)
+                          const SizedBox(height: PortfiqSpacing.space16),
+
+                        // Source + 전문 보러가기
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(color: PortfiqTheme.divider, width: 1),
+                            ),
+                          ),
+                          padding: const EdgeInsets.only(top: PortfiqSpacing.space12),
+                          child: Row(
+                            children: [
+                              Text(
+                                item.source,
+                                style: PortfiqTypography.caption.copyWith(
+                                  color: PortfiqTheme.textTertiary,
+                                ),
+                              ),
+                              const Spacer(),
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    EventTracker.instance.track('news_source_tap', properties: {
+                                      'news_id': item.id,
+                                      'source': item.source,
+                                    });
+                                    _openUrl(item.sourceUrl);
+                                  },
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: PortfiqTheme.accent.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      '전문 보러가기 →',
+                                      style: PortfiqTypography.caption.copyWith(
+                                        color: PortfiqTheme.accent,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
