@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { api } from "@/lib/api";
@@ -9,26 +9,45 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
+  const pathnameRef = useRef(pathname);
+  pathnameRef.current = pathname;
 
   useEffect(() => {
+    let cancelled = false;
+
+    const verifyAndRedirect = async (accessToken: string) => {
+      try {
+        const res = await api.verifyLogin(accessToken);
+        if (cancelled) return;
+        localStorage.setItem("portfiq_admin_user", JSON.stringify(res.user));
+        if (pathnameRef.current === "/login") {
+          router.replace("/");
+        } else {
+          setReady(true);
+        }
+      } catch {
+        if (cancelled) return;
+        await supabase.auth.signOut();
+        localStorage.removeItem("portfiq_admin_user");
+        if (pathnameRef.current !== "/login") {
+          router.replace("/login");
+        }
+        setReady(true); // login 페이지 렌더링 허용
+      }
+    };
+
     const checkAuth = async () => {
       const { data } = await supabase.auth.getSession();
       const session = data.session;
 
+      if (cancelled) return;
+
       if (pathname === "/login") {
         if (session) {
-          // OAuth 콜백 후 로그인 페이지에 돌아온 경우 — 백엔드 검증
-          try {
-            const res = await api.verifyLogin(session.access_token);
-            localStorage.setItem("portfiq_admin_user", JSON.stringify(res.user));
-            router.replace("/");
-            return;
-          } catch {
-            // 화이트리스트 거부 등 — 로그인 페이지에 머무름
-            await supabase.auth.signOut();
-          }
+          await verifyAndRedirect(session.access_token);
+        } else {
+          setReady(true);
         }
-        setReady(true);
         return;
       }
 
@@ -38,38 +57,27 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // 백엔드 검증 (세션 유효성 + 화이트리스트)
-      try {
-        const res = await api.verifyLogin(session.access_token);
-        localStorage.setItem("portfiq_admin_user", JSON.stringify(res.user));
-        setReady(true);
-      } catch {
-        await supabase.auth.signOut();
-        localStorage.removeItem("portfiq_admin_user");
-        router.replace("/login");
-      }
+      await verifyAndRedirect(session.access_token);
     };
 
     checkAuth();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (cancelled) return;
+
         if (event === "SIGNED_OUT") {
           localStorage.removeItem("portfiq_admin_user");
           router.replace("/login");
-        } else if (event === "SIGNED_IN" && session && pathname === "/login") {
-          try {
-            const res = await api.verifyLogin(session.access_token);
-            localStorage.setItem("portfiq_admin_user", JSON.stringify(res.user));
-            router.replace("/");
-          } catch {
-            await supabase.auth.signOut();
-          }
+        } else if (event === "SIGNED_IN" && session) {
+          // pathname 상관없이 처리 — ref로 최신값 사용
+          await verifyAndRedirect(session.access_token);
         }
       }
     );
 
     return () => {
+      cancelled = true;
       listener.subscription.unsubscribe();
     };
   }, [pathname, router]);
