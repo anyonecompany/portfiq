@@ -116,6 +116,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       cancelled = true;
       listener.subscription.unsubscribe();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, router, isPublic]);
 
   if (!ready && !isPublic) {
