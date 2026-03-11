@@ -28,7 +28,7 @@ class Settings:
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
 
     # Server
-    HOST: str = os.getenv("HOST", "0.0.0.0")
+    HOST: str = os.getenv("HOST", "0.0.0.0")  # nosec B104 — intentional for container deployment
     PORT: int = int(os.getenv("PORT", "8000"))
 
     # Supabase

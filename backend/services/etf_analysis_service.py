@@ -357,7 +357,7 @@ def _cache_key_for_tickers(tickers: list[str]) -> str:
     """
     normalized = sorted(t.upper() for t in tickers)
     raw = ",".join(normalized)
-    return hashlib.md5(raw.encode()).hexdigest()
+    return hashlib.md5(raw.encode(), usedforsecurity=False).hexdigest()  # nosec B324
 
 
 # ──────────────────────────────────────────────
@@ -506,8 +506,8 @@ class EtfAnalysisService:
                 return None
 
             prompt = (
-                f"다음 ETF들의 구조적 차이를 한국어 3줄로 요약해줘. "
-                f"투자자가 어떤 상황에서 어떤 ETF를 선택해야 하는지 명확하게.\n\n"
+                "다음 ETF들의 구조적 차이를 한국어 3줄로 요약해줘. "
+                "투자자가 어떤 상황에서 어떤 ETF를 선택해야 하는지 명확하게.\n\n"
                 + "\n".join(etf_infos)
                 + "\n\n규칙: 정확히 3문장, 각 문장은 한 줄, 전문 용어는 최소화."
             )
@@ -618,24 +618,35 @@ class EtfAnalysisService:
     async def get_combined_analysis(self, ticker: str) -> dict:
         """섹터 집중도 + 매크로 민감도 + 보유종목 변동을 통합 반환한다.
 
+        Results are cached for 15 minutes to reduce repeated computation.
+
         Args:
             ticker: ETF 티커 심볼.
 
         Returns:
             {ticker, sector_concentration, macro_sensitivity, holdings_changes}
         """
+        from services.cache import get_cached, set_cached
+
         t = ticker.upper()
+        cache_key = f"etf_analysis_{t}"
+        cached = get_cached(cache_key)
+        if cached is not None:
+            logger.debug("Cache hit for %s", cache_key)
+            return cached
 
         sector = await self.get_sector_concentration(t)
         macro = await self.get_macro_sensitivity(t)
         changes = await self.get_holdings_changes(t)
 
-        return {
+        result = {
             "ticker": t,
             "sector_concentration": sector,
             "macro_sensitivity": macro,
             "holdings_changes": changes,
         }
+        set_cached(cache_key, result)
+        return result
 
 
 etf_analysis_service = EtfAnalysisService()

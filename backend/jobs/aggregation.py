@@ -308,11 +308,11 @@ async def _calc_session_metrics(
             .lt("event_timestamp", next_date_str)
             .execute()
         )
-        fallback_data = fallback_resp.data or []
-        if not fallback_data:
+        raw_events = fallback_resp.data or []
+        if not raw_events:
             return 0, 0.0
-        devices = set(e["device_id"] for e in fallback_data)
-        return 0, round(len(fallback_data) / len(devices), 2)
+        devices = set(e["device_id"] for e in raw_events)
+        return 0, round(len(raw_events) / len(devices), 2)
 
     total_duration = sum(s.get("duration_seconds", 0) for s in sessions)
     avg_duration = total_duration // len(sessions) if sessions else 0

@@ -230,8 +230,9 @@ def _get_push_token(device_id: str) -> str | None:
             .eq("device_id", device_id)
             .execute()
         )
-        if resp.data and resp.data[0].get("push_token"):
-            return resp.data[0]["push_token"]
+        rows: list[dict] = resp.data  # type: ignore[assignment]
+        if rows and rows[0].get("push_token"):
+            return str(rows[0]["push_token"])
     except Exception as e:
         logger.warning("Supabase 토큰 조회 실패, 인메모리 조회: %s", e)
 
@@ -255,10 +256,11 @@ def _get_all_device_tokens() -> list[dict[str, str]]:
             .neq("push_token", "")
             .execute()
         )
-        if resp.data:
+        rows_all: list[dict] = resp.data  # type: ignore[assignment]
+        if rows_all:
             results = [
-                {"device_id": row["device_id"], "push_token": row["push_token"]}
-                for row in resp.data
+                {"device_id": str(row["device_id"]), "push_token": str(row["push_token"])}
+                for row in rows_all
                 if row.get("push_token")
             ]
             return results

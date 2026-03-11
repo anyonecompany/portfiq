@@ -13,8 +13,9 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from pydantic import BaseModel, Field
 
+from config import settings
 from middleware.admin_auth import get_current_admin, require_roles
-from middleware.rate_limit import limiter, RATE_LOGIN, RATE_DEPLOY, RATE_ADMIN_READ, RATE_PUSH_SEND
+from middleware.rate_limit import limiter, RATE_LOGIN, RATE_DEPLOY, RATE_PUSH_SEND
 from services import admin_service
 
 logger = logging.getLogger(__name__)
@@ -651,9 +652,9 @@ async def execute_deploy(
                 [
                     "gh", "api",
                     f"repos/{github_repo}/actions/workflows/{workflow_id}/dispatches",
-                    "-f", f"ref=main",
-                    "-f", f"inputs[environment]={request.target_environment}",
-                    "-f", f"inputs[release_id]={request.release_id}",
+                    "-f", "ref=main",
+                    "-f", f"inputs[environment]={body.target_environment}",
+                    "-f", f"inputs[release_id]={body.release_id}",
                 ],
                 capture_output=True,
                 text=True,
@@ -684,21 +685,21 @@ async def execute_deploy(
 
     # deploy_history 기록
     sb.table("deploy_history").insert({
-        "release_id": request.release_id,
+        "release_id": body.release_id,
         "github_run_id": github_run_id,
         "status": "deploying",
         "triggered_by": email,
-        "target_environment": request.target_environment,
+        "target_environment": body.target_environment,
         "started_at": now,
     }).execute()
 
     # 릴리즈 상태 업데이트
     sb.table("deploy_releases").update(
         {"status": "deploying"}
-    ).eq("release_id", request.release_id).execute()
+    ).eq("release_id", body.release_id).execute()
 
     return {
-        "release_id": request.release_id,
+        "release_id": body.release_id,
         "github_run_id": github_run_id,
         "status": "deploying",
         "triggered_by": email,
@@ -833,3 +834,47 @@ async def admin_logout(response: Response) -> dict[str, str]:
         path="/",
     )
     return {"message": "Logged out successfully"}
+
+
+# ──────────────────────────────────────────────
+# 13. Cache Management
+# ──────────────────────────────────────────────
+
+@router.post("/cache/clear")
+async def clear_cache(
+    admin: dict[str, Any] = Depends(get_current_admin),
+) -> dict[str, Any]:
+    """인메모리 캐시를 전체 클리어한다.
+
+    popular ETF, 브리핑, 뉴스 피드, ETF 분석 등의 캐시를 초기화한다.
+    다음 요청 시 최신 데이터로 재생성된다.
+
+    Returns:
+        클리어된 캐시 항목 수와 결과 메시지.
+    """
+    from services.cache import clear_cache as do_clear_cache
+
+    cleared = do_clear_cache()
+    logger.info(
+        "Cache cleared by admin %s: %d entries",
+        admin.get("email", "unknown"),
+        cleared,
+    )
+    return {
+        "cleared": cleared,
+        "message": f"캐시 {cleared}개 항목 초기화 완료",
+    }
+
+
+@router.get("/cache/stats")
+async def cache_stats(
+    admin: dict[str, Any] = Depends(get_current_admin),
+) -> dict[str, Any]:
+    """현재 캐시 상태를 반환한다.
+
+    Returns:
+        캐시 크기, TTL, 저장된 키 목록.
+    """
+    from services.cache import get_cache_stats
+
+    return get_cache_stats()

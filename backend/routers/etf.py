@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Query, Path, HTTPException
 
-from models.schemas import DeviceRegisterRequest, ETFRegisterRequest, ETFSearchResult, ETFInfo
+from models.schemas import DeviceRegisterRequest, ETFRegisterRequest
 from services.etf_service import etf_service
 from services.etf_analysis_service import etf_analysis_service
 

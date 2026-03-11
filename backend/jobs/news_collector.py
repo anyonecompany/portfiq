@@ -1,6 +1,5 @@
 """뉴스 수집 Job — 15분 간격으로 실행."""
 
-import asyncio
 import logging
 
 from services.news_service import fetch_and_store_news

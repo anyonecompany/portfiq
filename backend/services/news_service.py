@@ -9,12 +9,10 @@ Architecture:
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import threading
 from datetime import datetime, timedelta, timezone
-from typing import Any
 
 import anthropic
 import feedparser
@@ -301,7 +299,8 @@ async def _translate_batch(headlines: list[str]) -> list[dict[str, str]]:
             max_tokens=8192,
             messages=[{"role": "user", "content": prompt}],
         )
-        text = response.content[0].text
+        block = response.content[0]
+        text = block.text if hasattr(block, "text") else ""
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
         elif "```" in text:
@@ -384,7 +383,11 @@ async def _collect_rss_fast() -> list[dict]:
                 for entry in feed.entries[:10]:
                     published = entry.get("published_parsed")
                     pub_dt = (
-                        datetime(*published[:6], tzinfo=timezone.utc)
+                        datetime(
+                            published[0], published[1], published[2],
+                            published[3], published[4], published[5],
+                            tzinfo=timezone.utc,
+                        )
                         if published
                         else datetime.now(timezone.utc)
                     )
@@ -441,7 +444,8 @@ def _translate_cached_articles_sync() -> None:
                     max_tokens=8192,
                     messages=[{"role": "user", "content": prompt}],
                 )
-                text = response.content[0].text
+                _block = response.content[0]
+                text = _block.text if hasattr(_block, "text") else ""
                 if "```json" in text:
                     text = text.split("```json")[1].split("```")[0]
                 elif "```" in text:
@@ -573,7 +577,8 @@ async def fetch_and_store_news() -> int:
                         max_tokens=8192,
                         messages=[{"role": "user", "content": prompt}],
                     )
-                    text = response.content[0].text
+                    _blk = response.content[0]
+                    text = _blk.text if hasattr(_blk, "text") else ""
                     if "```json" in text:
                         text = text.split("```json")[1].split("```")[0]
                     elif "```" in text:
@@ -630,8 +635,15 @@ class NewsService:
         """Return news items from the last 24 hours, sorted by published_at (newest first).
 
         RSS 캐시가 있으면 캐시 기반 FeedItem을 반환하고 (keyword 기반 impact 포함),
-        없으면 mock 데이터를 반환한다.
+        없으면 mock 데이터를 반환한다. FeedItem 변환 결과는 15분간 캐싱된다.
         """
+        from services.cache import get_cached, set_cached
+
+        cache_key = "feed_latest"
+        cached = get_cached(cache_key)
+        if cached is not None:
+            return cached
+
         if _news_cache:
             from services.impact_service import impact_service
 
@@ -674,15 +686,19 @@ class NewsService:
                         impacts=impacts,
                     )
                 )
-            return sorted(items, key=lambda n: n.published_at or "", reverse=True)
+            result = sorted(items, key=lambda n: n.published_at or "", reverse=True)
+            set_cached(cache_key, result)
+            return result
 
         # Fallback: mock data (always fresh due to dynamic timestamps)
         mock = _build_mock_news()
-        return sorted(
+        result = sorted(
             [m for m in mock if _is_within_24h(m.published_at)],
             key=lambda n: n.published_at or "",
             reverse=True,
         )
+        set_cached(cache_key, result)
+        return result
 
     async def get_news_for_etfs(self, tickers: list[str]) -> list[FeedItem]:
         """Filter news items that impact any of the given ETF tickers."""
@@ -743,7 +759,8 @@ async def translate_headlines(headlines: list[str]) -> list[str]:
             max_tokens=1024,
             messages=[{"role": "user", "content": prompt}],
         )
-        text = response.content[0].text
+        _tblk = response.content[0]
+        text = _tblk.text if hasattr(_tblk, "text") else ""
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
         elif "```" in text:

@@ -43,7 +43,8 @@ def _call_claude(prompt: str) -> dict | None:
             max_tokens=1024,
             messages=[{"role": "user", "content": prompt}],
         )
-        text = response.content[0].text
+        block = response.content[0]
+        text = block.text if hasattr(block, "text") else ""
         # Extract JSON from response
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
@@ -152,7 +153,8 @@ class BriefingService:
         """Return morning briefing for the device.
 
         Calls Claude API with the morning prompt. Falls back to mock data
-        if the API key is missing or the call fails.
+        if the API key is missing or the call fails. Results are cached
+        for 15 minutes to reduce Claude API costs.
 
         Args:
             device_id: The requesting device identifier.
@@ -160,6 +162,14 @@ class BriefingService:
         Returns:
             A BriefingResponse with morning briefing content.
         """
+        from services.cache import get_cached, set_cached
+
+        cache_key = "briefing_morning"
+        cached = get_cached(cache_key)
+        if cached is not None:
+            logger.debug("Cache hit for %s", cache_key)
+            return cached
+
         if not settings.ANTHROPIC_API_KEY:
             logger.warning("ANTHROPIC_API_KEY 미설정 — mock 데이터 반환")
             return _MOCK_MORNING.model_copy(
@@ -183,13 +193,16 @@ class BriefingService:
                 update={"generated_at": datetime.now(timezone.utc).isoformat()}
             )
 
-        return _build_briefing_from_claude(data, "morning")
+        result = _build_briefing_from_claude(data, "morning")
+        set_cached(cache_key, result)
+        return result
 
     async def get_night_briefing(self, device_id: str) -> BriefingResponse:
         """Return night checkpoint for the device.
 
         Calls Claude API with the night prompt. Falls back to mock data
-        if the API key is missing or the call fails.
+        if the API key is missing or the call fails. Results are cached
+        for 15 minutes to reduce Claude API costs.
 
         Args:
             device_id: The requesting device identifier.
@@ -197,6 +210,14 @@ class BriefingService:
         Returns:
             A BriefingResponse with night checkpoint content.
         """
+        from services.cache import get_cached, set_cached
+
+        cache_key = "briefing_night"
+        cached = get_cached(cache_key)
+        if cached is not None:
+            logger.debug("Cache hit for %s", cache_key)
+            return cached
+
         if not settings.ANTHROPIC_API_KEY:
             logger.warning("ANTHROPIC_API_KEY 미설정 — mock 데이터 반환")
             return _MOCK_NIGHT.model_copy(
@@ -218,7 +239,9 @@ class BriefingService:
                 update={"generated_at": datetime.now(timezone.utc).isoformat()}
             )
 
-        return _build_briefing_from_claude(data, "night")
+        result = _build_briefing_from_claude(data, "night")
+        set_cached(cache_key, result)
+        return result
 
     async def generate_briefing(self, device_id: str) -> BriefingResponse:
         """Manually trigger briefing generation.

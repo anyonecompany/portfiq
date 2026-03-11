@@ -234,9 +234,19 @@ class EtfService:
     async def get_popular(self) -> list[ETFSearchResult]:
         """Return the top 10 popular ETFs based on device registration count.
 
+        Results are cached for 15 minutes to avoid repeated Supabase/API calls.
+
         Returns:
             List of ETFSearchResult ordered by popularity.
         """
+        from services.cache import get_cached, set_cached
+
+        cache_key = "etf_popular"
+        cached = get_cached(cache_key)
+        if cached is not None:
+            logger.debug("Cache hit for %s", cache_key)
+            return cached
+
         sb = _get_sb()
         if sb is not None:
             try:
@@ -248,7 +258,7 @@ class EtfService:
                     ).execute()
                 )
                 if resp.data:
-                    return [
+                    results = [
                         ETFSearchResult(
                             ticker=row["ticker"],
                             name=row["name"],
@@ -256,6 +266,8 @@ class EtfService:
                         )
                         for row in resp.data
                     ]
+                    set_cached(cache_key, results)
+                    return results
                 # If RPC doesn't exist or returns empty, try simple query
                 resp = (
                     sb.table("etf_master")
@@ -263,7 +275,7 @@ class EtfService:
                     .limit(10)
                     .execute()
                 )
-                return [
+                results = [
                     ETFSearchResult(
                         ticker=row["ticker"],
                         name=row["name"],
@@ -272,6 +284,8 @@ class EtfService:
                     )
                     for row in resp.data
                 ]
+                set_cached(cache_key, results)
+                return results
             except Exception as e:
                 logger.warning("Supabase get_popular failed, falling back to mock: %s", e)
 
@@ -285,6 +299,7 @@ class EtfService:
                     name_kr=_NAME_KR_MAP.get(t),
                     category=info.category,
                 ))
+        set_cached(cache_key, results)
         return results
 
     async def register_etfs(self, device_id: str, tickers: list[str]) -> list[str]:

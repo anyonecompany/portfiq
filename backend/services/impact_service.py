@@ -42,7 +42,8 @@ def _call_claude(prompt: str) -> list | None:
             max_tokens=2048,
             messages=[{"role": "user", "content": prompt}],
         )
-        text = response.content[0].text
+        block = response.content[0]
+        text = block.text if hasattr(block, "text") else ""
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
         elif "```" in text:
