@@ -16,6 +16,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
   useEffect(() => {
+    console.log("[auth-guard] useEffect fired — pathname:", pathname, "isPublic:", isPublic, "checked:", checked.current, "ready:", ready);
+
     // 공개 페이지는 즉시 렌더링
     if (isPublic) {
       setReady(true);
@@ -31,24 +33,31 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     let cancelled = false;
 
     const checkSession = async () => {
+      console.log("[auth-guard] checkSession() running, pathname:", pathname);
+
       // 1) localStorage에 유저 정보가 있으면 즉시 통과 (가장 빠른 경로)
       const stored = localStorage.getItem("portfiq_admin_user");
+      console.log("[auth-guard] localStorage portfiq_admin_user:", stored ? "EXISTS" : "MISSING");
       if (stored) {
         checked.current = true;
         setReady(true);
+        console.log("[auth-guard] ✅ Passed via localStorage");
         return;
       }
 
       // 2) localStorage에 없으면 Supabase 세션 확인
       try {
+        console.log("[auth-guard] Checking Supabase session...");
         const { data } = await supabase.auth.getSession();
         if (cancelled) return;
 
         if (!data.session) {
+          console.log("[auth-guard] ❌ No Supabase session, redirecting to /login");
           router.replace("/login");
           return;
         }
 
+        console.log("[auth-guard] Supabase session found, trying backend verify...");
         // 세션 있으면 백엔드 검증 시도
         try {
           const res = await fetch(
@@ -65,7 +74,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           localStorage.setItem("portfiq_admin_user", JSON.stringify(json.user));
           checked.current = true;
           setReady(true);
-        } catch {
+          console.log("[auth-guard] ✅ Passed via backend verify");
+        } catch (backendErr) {
+          console.warn("[auth-guard] Backend verify failed:", backendErr);
           if (cancelled) return;
           // 백엔드 실패 시 Supabase 유저 정보로 fallback
           const { data: recheck } = await supabase.auth.getUser();
@@ -76,7 +87,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             }));
             checked.current = true;
             setReady(true);
+            console.log("[auth-guard] ✅ Passed via Supabase user fallback");
           } else {
+            console.log("[auth-guard] ❌ No Supabase user, redirecting to /login");
             router.replace("/login");
           }
         }
