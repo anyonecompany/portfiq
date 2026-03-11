@@ -533,7 +533,7 @@ async def fetch_and_store_news() -> int:
         # Supabase 저장 시도
         stored = 0
         try:
-            from services.supabase_client import get_supabase
+            from services.supabase_client import get_supabase_service as get_supabase
             sb = get_supabase()
 
             for article in unique:
@@ -616,7 +616,7 @@ async def fetch_and_store_news() -> int:
 
             # 번역된 헤드라인을 Supabase에 업데이트
             try:
-                from services.supabase_client import get_supabase
+                from services.supabase_client import get_supabase_service as get_supabase
                 sb_update = get_supabase()
                 update_count = 0
                 for article in unique:
@@ -774,7 +774,7 @@ class NewsService:
             뉴스 기사 딕셔너리 리스트. 실패 시 빈 리스트.
         """
         try:
-            from services.supabase_client import get_supabase
+            from services.supabase_client import get_supabase_service as get_supabase
             sb = get_supabase()
 
             cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
