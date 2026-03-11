@@ -52,7 +52,7 @@ class Settings:
 
     # CORS
     CORS_ORIGINS: list[str] = os.getenv(
-        "CORS_ORIGINS", "http://localhost:3000,http://localhost:8080"
+        "CORS_ORIGINS", "http://localhost:3000,http://localhost:8080,https://portfiq-admin.vercel.app,https://admin-seven-nu-34.vercel.app"
     ).split(",")
 
     # Briefing schedule
