@@ -31,6 +31,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     let cancelled = false;
 
     const checkSession = async () => {
+      // 1) localStorage에 유저 정보가 있으면 즉시 통과 (가장 빠른 경로)
+      const stored = localStorage.getItem("portfiq_admin_user");
+      if (stored) {
+        checked.current = true;
+        setReady(true);
+        return;
+      }
+
+      // 2) localStorage에 없으면 Supabase 세션 확인
       try {
         const { data } = await supabase.auth.getSession();
         if (cancelled) return;
@@ -40,17 +49,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        // 세션 존재 — localStorage에 유저 정보가 있으면 바로 통과
-        const stored = localStorage.getItem("portfiq_admin_user");
-        if (stored) {
-          checked.current = true;
-          setReady(true);
-          return;
-        }
-
-        // localStorage에 없으면 백엔드 검증 (새 탭 등)
+        // 세션 있으면 백엔드 검증 시도
         try {
-          // Use Next.js rewrite proxy to avoid CORS (same-origin request)
           const res = await fetch(
             "/api/proxy/api/v1/admin/auth/login",
             {
@@ -67,7 +67,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           setReady(true);
         } catch {
           if (cancelled) return;
-          // 네트워크/CORS 에러 시 Supabase 세션이 유효하면 통과 (graceful fallback)
+          // 백엔드 실패 시 Supabase 유저 정보로 fallback
           const { data: recheck } = await supabase.auth.getUser();
           if (recheck.user) {
             localStorage.setItem("portfiq_admin_user", JSON.stringify({
@@ -77,13 +77,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             checked.current = true;
             setReady(true);
           } else {
-            await supabase.auth.signOut();
-            localStorage.removeItem("portfiq_admin_user");
             router.replace("/login");
           }
         }
-      } catch {
-        // Unexpected error (e.g. Supabase client misconfigured) — redirect to login
+      } catch (err) {
+        console.warn("[auth-guard] Session check failed:", err);
         if (cancelled) return;
         router.replace("/login");
       }

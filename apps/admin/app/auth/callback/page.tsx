@@ -12,19 +12,24 @@ import { Suspense } from "react";
  */
 async function backendVerify(accessToken: string): Promise<{ user: Record<string, unknown> } | null> {
   try {
-    // Use Next.js rewrite proxy to avoid CORS (same-origin request)
+    // 5초 타임아웃 — Railway 콜드 스타트 시 무한 대기 방지
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
     const res = await fetch("/api/proxy/api/v1/admin/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ access_token: accessToken }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
+
     if (!res.ok) {
       console.warn(`[auth/callback] Backend verify failed: ${res.status}`);
       return null;
     }
     return res.json();
   } catch (err) {
-    // Network error — don't crash, return null for graceful fallback
     console.warn("[auth/callback] Backend verify unreachable:", err);
     return null;
   }
