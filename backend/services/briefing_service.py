@@ -1,7 +1,12 @@
-"""AI 브리핑 생성 서비스 — Claude API 연동."""
+"""AI 브리핑 생성 서비스 — Claude API 연동.
+
+Claude API 호출은 동기 I/O이므로 asyncio.to_thread()로 스레드 풀에서 실행하여
+이벤트 루프 블로킹을 방지한다. 12초 타임아웃을 적용한다.
+"""
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from datetime import datetime, timezone
@@ -15,20 +20,24 @@ from prompts.briefing import MORNING_PROMPT, NIGHT_PROMPT
 logger = logging.getLogger(__name__)
 
 MODEL = "claude-sonnet-4-5-20250929"
+_CLAUDE_TIMEOUT = 12  # Claude API 호출 타임아웃 (초)
 
 _client: anthropic.Anthropic | None = None
 
 
 def _get_client() -> anthropic.Anthropic:
-    """Return a lazily-initialised Anthropic client."""
+    """Return a lazily-initialised Anthropic client with timeout."""
     global _client
     if _client is None:
-        _client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+        _client = anthropic.Anthropic(
+            api_key=settings.ANTHROPIC_API_KEY,
+            timeout=_CLAUDE_TIMEOUT,
+        )
     return _client
 
 
-def _call_claude(prompt: str) -> dict | None:
-    """Claude API 호출 + JSON 파싱.
+def _call_claude_sync(prompt: str) -> dict | None:
+    """Claude API 동기 호출 + JSON 파싱 (스레드 풀에서 실행).
 
     Args:
         prompt: The formatted prompt to send to Claude.
@@ -51,6 +60,28 @@ def _call_claude(prompt: str) -> dict | None:
         elif "```" in text:
             text = text.split("```")[1].split("```")[0]
         return json.loads(text.strip())
+    except Exception as e:
+        logger.error("Claude API 호출 실패: %s", e)
+        return None
+
+
+async def _call_claude(prompt: str) -> dict | None:
+    """Claude API 비동기 호출 — 스레드 풀 + 타임아웃.
+
+    Args:
+        prompt: The formatted prompt to send to Claude.
+
+    Returns:
+        Parsed JSON dict on success, None on failure/timeout.
+    """
+    try:
+        return await asyncio.wait_for(
+            asyncio.to_thread(_call_claude_sync, prompt),
+            timeout=_CLAUDE_TIMEOUT,
+        )
+    except asyncio.TimeoutError:
+        logger.warning("Claude API 타임아웃 (%ds)", _CLAUDE_TIMEOUT)
+        return None
     except Exception as e:
         logger.error("Claude API 호출 실패: %s", e)
         return None
@@ -185,7 +216,7 @@ class BriefingService:
         )
 
         prompt = MORNING_PROMPT.format(etf_list=etf_list, news_summary=news_summary)
-        data = _call_claude(prompt)
+        data = await _call_claude(prompt)
 
         if data is None:
             logger.warning("Claude API 실패 — mock morning briefing 반환")
@@ -231,7 +262,7 @@ class BriefingService:
         )
 
         prompt = NIGHT_PROMPT.format(etf_list=etf_list, news_summary=news_summary)
-        data = _call_claude(prompt)
+        data = await _call_claude(prompt)
 
         if data is None:
             logger.warning("Claude API 실패 — mock night briefing 반환")

@@ -294,10 +294,25 @@ async def _translate_batch(headlines: list[str]) -> list[dict[str, str]]:
 
     try:
         client = _get_gemini_client()
-        response = client.models.generate_content(
-            model=_GEMINI_MODEL, contents=prompt
-        )
-        text = response.text if response.text else ""
+
+        # Gemini 호출을 스레드 풀에서 실행 + 15초 타임아웃
+        import asyncio
+
+        def _gemini_sync() -> str:
+            response = client.models.generate_content(
+                model=_GEMINI_MODEL, contents=prompt
+            )
+            return response.text if response.text else ""
+
+        try:
+            text = await asyncio.wait_for(
+                asyncio.to_thread(_gemini_sync),
+                timeout=15,
+            )
+        except asyncio.TimeoutError:
+            logger.warning("Gemini 번역 배치 타임아웃 (15s)")
+            return fallback
+
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
         elif "```" in text:
@@ -368,7 +383,7 @@ async def _collect_rss_fast() -> list[dict]:
     """
     articles: list[dict] = []
 
-    async with httpx.AsyncClient(timeout=10.0) as client:
+    async with httpx.AsyncClient(timeout=8.0) as client:
         for feed_url, source_name in RSS_FEEDS_EN:
             try:
                 resp = await client.get(feed_url, headers={
@@ -867,11 +882,25 @@ async def translate_headlines(headlines: list[str]) -> list[str]:
     prompt = TRANSLATE_PROMPT.format(headlines=numbered)
 
     try:
+        import asyncio
+
         client = _get_gemini_client()
-        response = client.models.generate_content(
-            model=_GEMINI_MODEL, contents=prompt
-        )
-        text = response.text if response.text else ""
+
+        def _gemini_translate_sync() -> str:
+            response = client.models.generate_content(
+                model=_GEMINI_MODEL, contents=prompt
+            )
+            return response.text if response.text else ""
+
+        try:
+            text = await asyncio.wait_for(
+                asyncio.to_thread(_gemini_translate_sync),
+                timeout=15,
+            )
+        except asyncio.TimeoutError:
+            logger.warning("Gemini 번역 타임아웃 (15s)")
+            return headlines
+
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
         elif "```" in text:

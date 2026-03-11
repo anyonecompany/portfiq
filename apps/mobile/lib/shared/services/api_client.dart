@@ -4,7 +4,7 @@ import '../../config/app_config.dart';
 
 /// Singleton Dio-based API client.
 ///
-/// Auto-adds `X-Device-ID` header, 15s timeout, JSON content-type.
+/// Auto-adds `X-Device-ID` header, 15s connect / 30s receive timeout, JSON content-type.
 class ApiClient {
   ApiClient._();
   static final ApiClient instance = ApiClient._();
@@ -20,7 +20,7 @@ class ApiClient {
       BaseOptions(
         baseUrl: AppConfig.apiBaseUrl,
         connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 30),
         contentType: Headers.jsonContentType,
         responseType: ResponseType.json,
       ),

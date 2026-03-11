@@ -12,7 +12,11 @@ import type {
 } from "@/types/admin";
 import { getAccessToken, signOut } from "./auth";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Use Next.js rewrite proxy to avoid CORS issues.
+// In development, falls back to direct API call if proxy not configured.
+const API_BASE = typeof window !== "undefined"
+  ? "/api/proxy"  // Browser: use same-origin proxy (no CORS)
+  : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000");  // SSR: direct call
 
 async function adminFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const token = await getAccessToken();

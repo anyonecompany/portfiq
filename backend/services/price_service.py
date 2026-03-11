@@ -1,5 +1,10 @@
-"""ETF 실시간 가격 서비스 — yfinance 기반."""
+"""ETF 실시간 가격 서비스 — yfinance 기반.
 
+yfinance 호출은 동기 I/O이므로 asyncio.to_thread()로 스레드 풀에서 실행하여
+이벤트 루프 블로킹을 방지한다. 추가로 10초 타임아웃을 적용한다.
+"""
+
+import asyncio
 import logging
 import time
 
@@ -8,6 +13,7 @@ logger = logging.getLogger(__name__)
 # In-memory price cache (15분 TTL)
 _price_cache: dict[str, tuple[float, dict]] = {}  # ticker -> (expires_at, data)
 _PRICE_TTL = 900  # 15분
+_YFINANCE_TIMEOUT = 10  # yfinance 호출 타임아웃 (초)
 
 
 def _get_cached_price(ticker: str) -> dict | None:
@@ -27,8 +33,47 @@ def _cache_price(ticker: str, data: dict) -> None:
     _price_cache[ticker] = (time.monotonic() + _PRICE_TTL, data)
 
 
+def _fetch_price_sync(ticker: str) -> dict:
+    """yfinance에서 가격을 동기적으로 조회한다 (스레드 풀에서 실행).
+
+    Args:
+        ticker: ETF 티커.
+
+    Returns:
+        가격 딕셔너리.
+
+    Raises:
+        Exception: yfinance 호출 실패 시.
+    """
+    import yfinance as yf
+
+    stock = yf.Ticker(ticker)
+    info = stock.fast_info
+
+    current_price = float(info.get("lastPrice", 0) or info.get("last_price", 0))
+    previous_close = float(info.get("previousClose", 0) or info.get("previous_close", 0))
+
+    if current_price and previous_close:
+        change_amt = round(current_price - previous_close, 2)
+        change_pct = round((change_amt / previous_close) * 100, 2)
+    else:
+        change_amt = 0.0
+        change_pct = 0.0
+
+    return {
+        "ticker": ticker.upper(),
+        "price": round(current_price, 2),
+        "change_pct": change_pct,
+        "change_amt": change_amt,
+        "currency": "USD",
+    }
+
+
 async def get_etf_price(ticker: str) -> dict:
     """ETF 현재가 및 등락률을 반환한다.
+
+    yfinance 호출을 스레드 풀에서 실행하고 10초 타임아웃을 적용한다.
+    캐시 히트 시 즉시 반환, 실패 시 mock 데이터로 폴백한다.
 
     Args:
         ticker: ETF 티커 (예: QQQ, VOO).
@@ -42,38 +87,22 @@ async def get_etf_price(ticker: str) -> dict:
         return cached
 
     try:
-        import yfinance as yf
-
-        stock = yf.Ticker(ticker)
-        info = stock.fast_info
-
-        current_price = float(info.get("lastPrice", 0) or info.get("last_price", 0))
-        previous_close = float(info.get("previousClose", 0) or info.get("previous_close", 0))
-
-        if current_price and previous_close:
-            change_amt = round(current_price - previous_close, 2)
-            change_pct = round((change_amt / previous_close) * 100, 2)
-        else:
-            change_amt = 0.0
-            change_pct = 0.0
-
-        result = {
-            "ticker": ticker.upper(),
-            "price": round(current_price, 2),
-            "change_pct": change_pct,
-            "change_amt": change_amt,
-            "currency": "USD",
-        }
+        # yfinance는 동기 I/O이므로 스레드 풀에서 실행 + 타임아웃 적용
+        result = await asyncio.wait_for(
+            asyncio.to_thread(_fetch_price_sync, ticker),
+            timeout=_YFINANCE_TIMEOUT,
+        )
 
         _cache_price(ticker, result)
-        logger.info("가격 조회: %s = $%.2f (%.2f%%)", ticker, current_price, change_pct)
+        logger.info("가격 조회: %s = $%.2f (%.2f%%)", ticker, result["price"], result["change_pct"])
         return result
 
+    except asyncio.TimeoutError:
+        logger.warning("가격 조회 타임아웃 (%s, %ds) — mock 데이터 반환", ticker, _YFINANCE_TIMEOUT)
+        return _get_mock_price(ticker)
     except Exception as e:
         logger.warning("가격 조회 실패 (%s): %s — mock 데이터 반환", ticker, e)
-        # Mock fallback
-        mock = _get_mock_price(ticker)
-        return mock
+        return _get_mock_price(ticker)
 
 
 def _get_mock_price(ticker: str) -> dict:
@@ -98,14 +127,13 @@ def _get_mock_price(ticker: str) -> dict:
 async def get_batch_prices(tickers: list[str]) -> list[dict]:
     """여러 ETF 가격을 일괄 조회한다.
 
+    병렬로 가격을 조회하여 전체 응답 시간을 단축한다.
+
     Args:
         tickers: 티커 리스트.
 
     Returns:
         가격 딕셔너리 리스트.
     """
-    results = []
-    for ticker in tickers:
-        price = await get_etf_price(ticker)
-        results.append(price)
-    return results
+    tasks = [get_etf_price(ticker) for ticker in tickers]
+    return list(await asyncio.gather(*tasks))

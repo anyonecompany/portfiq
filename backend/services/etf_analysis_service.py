@@ -472,12 +472,16 @@ class EtfAnalysisService:
     async def _generate_claude_comparison(self, tickers: list[str]) -> str | None:
         """Claude API로 ETF 비교 요약을 생성한다.
 
+        스레드 풀에서 실행하고 12초 타임아웃을 적용한다.
+
         Args:
             tickers: 비교할 ETF 티커 리스트.
 
         Returns:
             3줄 한국어 비교 요약 또는 실패 시 None.
         """
+        import asyncio
+
         try:
             from anthropic import Anthropic
             from config import settings
@@ -512,16 +516,27 @@ class EtfAnalysisService:
                 + "\n\n규칙: 정확히 3문장, 각 문장은 한 줄, 전문 용어는 최소화."
             )
 
-            client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-            response = client.messages.create(
-                model=settings.ANTHROPIC_MODEL,
-                max_tokens=300,
-                messages=[{"role": "user", "content": prompt}],
-            )
+            def _call_sync() -> str:
+                client = Anthropic(
+                    api_key=settings.ANTHROPIC_API_KEY,
+                    timeout=12.0,
+                )
+                response = client.messages.create(
+                    model=settings.ANTHROPIC_MODEL,
+                    max_tokens=300,
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                return response.content[0].text.strip()
 
-            text = response.content[0].text.strip()
+            text = await asyncio.wait_for(
+                asyncio.to_thread(_call_sync),
+                timeout=12,
+            )
             return text
 
+        except asyncio.TimeoutError:
+            logger.warning("Claude ETF 비교 타임아웃 (12s)")
+            return None
         except Exception as e:
             logger.warning("Claude ETF 비교 생성 실패: %s", e)
             return None

@@ -7,6 +7,7 @@ Falls back to yfinance for ETFs not in the local master.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from datetime import datetime, timedelta
@@ -82,12 +83,41 @@ _ETF_MASTER: dict[str, ETFInfo] = _build_etf_master_from_seed()
 
 _yf_cache: dict[str, tuple[datetime, ETFInfo | None]] = {}
 _YF_CACHE_TTL = timedelta(hours=24)
+_YF_LOOKUP_TIMEOUT = 8  # yfinance info 호출 타임아웃 (초)
 
 
-def _lookup_yfinance(ticker: str) -> ETFInfo | None:
+def _lookup_yfinance_sync(ticker: str) -> ETFInfo | None:
+    """Look up ETF info from yfinance synchronously (runs in thread pool).
+
+    Args:
+        ticker: ETF ticker symbol.
+
+    Returns:
+        ETFInfo if found, None otherwise.
+    """
+    import yfinance as yf
+
+    t = yf.Ticker(ticker)
+    info = t.info
+    if not info or not info.get("shortName"):
+        return None
+
+    return ETFInfo(
+        ticker=ticker.upper(),
+        name=info.get("shortName", ""),
+        name_kr=None,
+        description=info.get("longName", ""),
+        category=info.get("category", info.get("quoteType", "")),
+        expense_ratio=info.get("annualReportExpenseRatio"),
+        top_holdings=[],
+    )
+
+
+async def _lookup_yfinance(ticker: str) -> ETFInfo | None:
     """Look up ETF info from yfinance when not in local master.
 
     Results are cached for 24 hours to avoid repeated API calls.
+    Runs in a thread pool with timeout to avoid blocking the event loop.
 
     Args:
         ticker: ETF ticker symbol.
@@ -101,25 +131,16 @@ def _lookup_yfinance(ticker: str) -> ETFInfo | None:
         return cached[1]
 
     try:
-        import yfinance as yf
-
-        t = yf.Ticker(ticker)
-        info = t.info
-        if not info or not info.get("shortName"):
-            _yf_cache[ticker.upper()] = (now, None)
-            return None
-
-        result = ETFInfo(
-            ticker=ticker.upper(),
-            name=info.get("shortName", ""),
-            name_kr=None,
-            description=info.get("longName", ""),
-            category=info.get("category", info.get("quoteType", "")),
-            expense_ratio=info.get("annualReportExpenseRatio"),
-            top_holdings=[],
+        result = await asyncio.wait_for(
+            asyncio.to_thread(_lookup_yfinance_sync, ticker),
+            timeout=_YF_LOOKUP_TIMEOUT,
         )
         _yf_cache[ticker.upper()] = (now, result)
         return result
+    except asyncio.TimeoutError:
+        logger.warning("yfinance lookup timed out for %s (%ds)", ticker, _YF_LOOKUP_TIMEOUT)
+        _yf_cache[ticker.upper()] = (now, None)
+        return None
     except Exception as e:
         logger.warning("yfinance lookup failed for %s: %s", ticker, e)
         _yf_cache[ticker.upper()] = (now, None)
@@ -229,7 +250,7 @@ class EtfService:
             return info
 
         # Final fallback: yfinance dynamic lookup
-        return _lookup_yfinance(ticker)
+        return await _lookup_yfinance(ticker)
 
     async def get_popular(self) -> list[ETFSearchResult]:
         """Return the top 10 popular ETFs based on device registration count.
