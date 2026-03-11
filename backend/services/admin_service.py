@@ -35,17 +35,18 @@ async def get_dashboard_stats() -> dict[str, Any]:
     today = date.today()
     yesterday = today - timedelta(days=1)
 
-    # 오늘/어제 메트릭 조회
+    # 오늘/어제 메트릭 조회 (실제 컬럼: date, total_devices, active_devices,
+    # briefings_generated, news_fetched, events_received, avg_etfs_per_device)
     today_resp = (
         sb.table("daily_metrics")
         .select("*")
-        .eq("metric_date", today.isoformat())
+        .eq("date", today.isoformat())
         .execute()
     )
     yesterday_resp = (
         sb.table("daily_metrics")
         .select("*")
-        .eq("metric_date", yesterday.isoformat())
+        .eq("date", yesterday.isoformat())
         .execute()
     )
 
@@ -86,9 +87,9 @@ async def get_dashboard_stats() -> dict[str, Any]:
     return {
         "date": today.isoformat(),
         "kpis": {
-            "dau": _kpi("dau"),
+            "dau": _kpi("active_devices"),
             "d7_retention": _kpi("d7_retention", is_pct=True),
-            "new_installs": _kpi("new_installs"),
+            "new_installs": _kpi("total_devices"),
             "onboarding_conversion": _kpi("onboarding_conversion", is_pct=True),
             "briefings_generated": _kpi("briefings_generated"),
             "push_open_rate": _kpi("push_open_rate", is_pct=True),

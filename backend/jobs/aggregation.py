@@ -140,7 +140,7 @@ async def aggregate_daily_metrics(target_date: date | None = None) -> dict[str, 
         )
 
         metrics = {
-            "metric_date": date_str,
+            "date": date_str,
             "dau": dau,
             "new_users": new_users,
             "onboarding_conversion": onboarding_conversion,
@@ -156,7 +156,7 @@ async def aggregate_daily_metrics(target_date: date | None = None) -> dict[str, 
 
         # UPSERT into daily_metrics
         sb.table("daily_metrics").upsert(
-            metrics, on_conflict="metric_date"
+            metrics, on_conflict="date"
         ).execute()
 
         logger.info("일간 메트릭 집계 완료: %s → DAU=%d, 신규=%d", date_str, dau, new_users)
@@ -166,7 +166,7 @@ async def aggregate_daily_metrics(target_date: date | None = None) -> dict[str, 
         error_msg = f"{date_str} 집계 실패: {e}"
         logger.warning("일간 메트릭 집계 실패: %s", e)
         _notify_failure(error_msg)
-        return {"metric_date": date_str, "error": str(e)}
+        return {"date": date_str, "error": str(e)}
 
 
 async def _calc_retention(
