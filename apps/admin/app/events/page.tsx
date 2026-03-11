@@ -13,7 +13,7 @@ import type { EventsResponse, AnalyticsEvent } from "@/types/admin";
 const PAGE_SIZE = 50;
 
 const EVENT_NAMES = [
-  "All Events",
+  "전체 이벤트",
   "session_start",
   "onboarding_started",
   "onboarding_completed",
@@ -41,21 +41,21 @@ export default function EventsPage() {
   );
 
   const handleEventChange = useCallback((value: string) => {
-    setEventFilter(value === "All Events" ? "" : value);
+    setEventFilter(value === "전체 이벤트" ? "" : value);
     setPage(1);
   }, []);
 
   const columns = [
     {
       key: "event_name",
-      header: "Event",
+      header: "이벤트",
       render: (row: AnalyticsEvent) => (
         <span className="font-mono text-accent text-xs">{row.event_name}</span>
       ),
     },
     {
       key: "device_id",
-      header: "Device ID",
+      header: "기기 ID",
       render: (row: AnalyticsEvent) => (
         <span className="font-mono text-xs truncate max-w-[120px] block">
           {row.device_id}
@@ -64,7 +64,7 @@ export default function EventsPage() {
     },
     {
       key: "properties",
-      header: "Properties",
+      header: "속성",
       render: (row: AnalyticsEvent) => (
         <span className="font-mono text-xs text-text-secondary truncate max-w-[200px] block">
           {JSON.stringify(row.properties)}
@@ -73,7 +73,7 @@ export default function EventsPage() {
     },
     {
       key: "event_timestamp",
-      header: "Time",
+      header: "시간",
       render: (row: AnalyticsEvent) => (
         <span className="text-xs whitespace-nowrap">
           {formatDateTime(row.event_timestamp)}
@@ -86,8 +86,8 @@ export default function EventsPage() {
     <AdminShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Events</h1>
-          <p className="text-text-secondary text-sm mt-1">Raw event explorer</p>
+          <h1 className="text-2xl font-bold text-text-primary">이벤트</h1>
+          <p className="text-text-secondary text-sm mt-1">원시 이벤트 탐색기</p>
         </div>
 
         {error && (
@@ -99,7 +99,7 @@ export default function EventsPage() {
         {/* Filters */}
         <div className="flex flex-wrap gap-3">
           <select
-            value={eventFilter || "All Events"}
+            value={eventFilter || "전체 이벤트"}
             onChange={(e) => handleEventChange(e.target.value)}
             className="bg-surface border border-divider rounded-btn px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent"
           >
@@ -114,7 +114,7 @@ export default function EventsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
             <input
               type="text"
-              placeholder="Filter by Device ID"
+              placeholder="기기 ID로 검색"
               value={deviceFilter}
               onChange={(e) => {
                 setDeviceFilter(e.target.value);
@@ -126,7 +126,7 @@ export default function EventsPage() {
 
           {data && (
             <span className="text-sm text-text-secondary self-center ml-auto">
-              {data.total.toLocaleString()} events found
+              {data.total.toLocaleString()}건
             </span>
           )}
         </div>

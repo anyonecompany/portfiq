@@ -28,9 +28,9 @@ export default function PushPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary">Push Performance</h1>
+            <h1 className="text-2xl font-bold text-text-primary">푸시 알림 성과</h1>
             <p className="text-text-secondary text-sm mt-1">
-              Push notification metrics and analytics
+              푸시 알림 지표 및 분석
             </p>
           </div>
 
@@ -45,7 +45,7 @@ export default function PushPage() {
                     : "bg-surface text-text-secondary hover:text-text-primary"
                 }`}
               >
-                {r === "7d" ? "Last 7 Days" : "Last 30 Days"}
+                {r === "7d" ? "최근 7일" : "최근 30일"}
               </button>
             ))}
           </div>
@@ -57,7 +57,6 @@ export default function PushPage() {
           </div>
         )}
 
-        {/* Summary Cards */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -67,28 +66,28 @@ export default function PushPage() {
         ) : data ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
-              label="Total Sent"
+              label="전체 발송"
               value={data.summary.total_sent}
               changePct={0}
               direction="flat"
               icon={Send}
             />
             <StatCard
-              label="Delivered"
+              label="수신 완료"
               value={data.summary.total_delivered}
               changePct={0}
               direction="flat"
               icon={CheckCircle}
             />
             <StatCard
-              label="Opened"
+              label="오픈"
               value={data.summary.total_opened}
               changePct={0}
               direction="flat"
               icon={MousePointerClick}
             />
             <StatCard
-              label="Open Rate"
+              label="오픈율"
               value={data.summary.overall_open_rate}
               changePct={0}
               direction="flat"
@@ -98,10 +97,9 @@ export default function PushPage() {
           </div>
         ) : null}
 
-        {/* Daily Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Daily Push Performance</CardTitle>
+            <CardTitle>일별 푸시 성과</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -112,23 +110,22 @@ export default function PushPage() {
           </CardContent>
         </Card>
 
-        {/* By Type */}
         {data && (
           <Card>
             <CardHeader>
-              <CardTitle>Performance by Push Type</CardTitle>
+              <CardTitle>유형별 성과</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-divider">
-                      <th className="text-left text-text-secondary font-medium px-4 py-3">Type</th>
-                      <th className="text-right text-text-secondary font-medium px-4 py-3">Sent</th>
-                      <th className="text-right text-text-secondary font-medium px-4 py-3">Delivered</th>
-                      <th className="text-right text-text-secondary font-medium px-4 py-3">Opened</th>
-                      <th className="text-right text-text-secondary font-medium px-4 py-3">Open Rate</th>
-                      <th className="text-right text-text-secondary font-medium px-4 py-3">Avg. Open Time</th>
+                      <th className="text-left text-text-secondary font-medium px-4 py-3">유형</th>
+                      <th className="text-right text-text-secondary font-medium px-4 py-3">발송</th>
+                      <th className="text-right text-text-secondary font-medium px-4 py-3">수신</th>
+                      <th className="text-right text-text-secondary font-medium px-4 py-3">오픈</th>
+                      <th className="text-right text-text-secondary font-medium px-4 py-3">오픈율</th>
+                      <th className="text-right text-text-secondary font-medium px-4 py-3">평균 오픈 시간</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -140,7 +137,7 @@ export default function PushPage() {
                         <td className="px-4 py-3 text-text-primary text-right">{formatNumber(row.opened)}</td>
                         <td className="px-4 py-3 text-text-primary text-right font-medium">{row.open_rate}%</td>
                         <td className="px-4 py-3 text-text-secondary text-right">
-                          {Math.round(row.avg_time_to_open_seconds / 60)}m
+                          {Math.round(row.avg_time_to_open_seconds / 60)}분
                         </td>
                       </tr>
                     ))}

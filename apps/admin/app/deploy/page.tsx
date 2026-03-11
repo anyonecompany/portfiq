@@ -32,6 +32,13 @@ function StatusBadge({ status }: { status: string }) {
     pending: <Clock className="w-3.5 h-3.5" />,
   };
 
+  const labels: Record<string, string> = {
+    deployed: "배포 완료",
+    deploying: "배포 중",
+    failed: "실패",
+    pending: "대기 중",
+  };
+
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
@@ -39,7 +46,7 @@ function StatusBadge({ status }: { status: string }) {
       }`}
     >
       {icons[status]}
-      {status}
+      {labels[status] || status}
     </span>
   );
 }
@@ -72,7 +79,7 @@ function TotpModal({
         </div>
         <div className="mb-4">
           <label className="block text-sm font-medium text-text-secondary mb-1.5">
-            TOTP Code
+            TOTP 코드
           </label>
           <input
             type="text"
@@ -89,7 +96,7 @@ function TotpModal({
             onClick={onClose}
             className="flex-1 bg-surface text-text-secondary rounded-btn px-4 py-2.5 text-sm font-medium hover:bg-surface/80"
           >
-            Cancel
+            취소
           </button>
           <button
             onClick={() => {
@@ -99,7 +106,7 @@ function TotpModal({
             disabled={code.length !== 6 || loading}
             className="flex-1 bg-accent hover:bg-accent/90 disabled:bg-accent/50 text-white rounded-btn px-4 py-2.5 text-sm font-medium"
           >
-            {loading ? "Verifying..." : "Confirm"}
+            {loading ? "확인 중..." : "확인"}
           </button>
         </div>
       </div>
@@ -131,7 +138,7 @@ export default function DeployPage() {
       setMessage({ type: "success", text: res.message });
       setTotpAction(null);
     } catch (err) {
-      setMessage({ type: "error", text: err instanceof Error ? err.message : "Approval failed" });
+      setMessage({ type: "error", text: err instanceof Error ? err.message : "승인 실패" });
     } finally {
       setActionLoading(false);
     }
@@ -145,7 +152,7 @@ export default function DeployPage() {
       setRunId(res.github_run_id);
       setTotpAction(null);
     } catch (err) {
-      setMessage({ type: "error", text: err instanceof Error ? err.message : "Deploy failed" });
+      setMessage({ type: "error", text: err instanceof Error ? err.message : "배포 실패" });
     } finally {
       setActionLoading(false);
     }
@@ -155,9 +162,9 @@ export default function DeployPage() {
     <AdminShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Deploy</h1>
+          <h1 className="text-2xl font-bold text-text-primary">배포 관리</h1>
           <p className="text-text-secondary text-sm mt-1">
-            Release management and deployment control
+            릴리즈 관리 및 배포 제어
           </p>
         </div>
 
@@ -179,21 +186,19 @@ export default function DeployPage() {
           </div>
         )}
 
-        {/* Deploy Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Approve Release */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-accent" />
-                Approve Release
+                릴리즈 승인
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <input
                   type="text"
-                  placeholder="Release ID (e.g., rel_20260310_v1.2.0)"
+                  placeholder="릴리즈 ID (예: rel_20260310_v1.2.0)"
                   value={releaseId}
                   onChange={(e) => setReleaseId(e.target.value)}
                   className="w-full bg-surface border border-divider rounded-btn px-3 py-2.5 text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-accent text-sm"
@@ -203,25 +208,24 @@ export default function DeployPage() {
                   disabled={!releaseId}
                   className="w-full bg-accent hover:bg-accent/90 disabled:bg-accent/50 text-white rounded-btn px-4 py-2.5 text-sm font-medium"
                 >
-                  Approve with TOTP
+                  TOTP로 승인
                 </button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Execute Deploy */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Rocket className="w-5 h-5 text-positive" />
-                Execute Deployment
+                배포 실행
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <input
                   type="text"
-                  placeholder="Release ID"
+                  placeholder="릴리즈 ID"
                   value={releaseId}
                   onChange={(e) => setReleaseId(e.target.value)}
                   className="w-full bg-surface border border-divider rounded-btn px-3 py-2.5 text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:border-accent text-sm"
@@ -231,17 +235,16 @@ export default function DeployPage() {
                   disabled={!releaseId}
                   className="w-full bg-positive hover:bg-positive/90 disabled:bg-positive/50 text-white rounded-btn px-4 py-2.5 text-sm font-medium"
                 >
-                  Deploy to Production
+                  프로덕션에 배포
                 </button>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Deploy Status */}
         <Card>
           <CardHeader>
-            <CardTitle>Deployment Status</CardTitle>
+            <CardTitle>배포 상태</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex gap-3 mb-4">
@@ -257,7 +260,7 @@ export default function DeployPage() {
                 disabled={!runId || loading}
                 className="bg-accent hover:bg-accent/90 disabled:bg-accent/50 text-white rounded-btn px-4 py-2.5 text-sm font-medium"
               >
-                Check
+                조회
               </button>
             </div>
 
@@ -267,7 +270,7 @@ export default function DeployPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-text-secondary text-sm">Release: </span>
+                    <span className="text-text-secondary text-sm">릴리즈: </span>
                     <span className="text-text-primary font-medium">{deployStatus.release_id}</span>
                     <span className="text-text-secondary text-sm ml-3">v{deployStatus.version}</span>
                   </div>
@@ -275,9 +278,9 @@ export default function DeployPage() {
                 </div>
 
                 <div className="text-sm text-text-secondary">
-                  By {deployStatus.triggered_by} | Started {formatDateTime(deployStatus.started_at)}
-                  {deployStatus.completed_at && ` | Completed ${formatDateTime(deployStatus.completed_at)}`}
-                  {` | ${deployStatus.duration_seconds}s`}
+                  실행자: {deployStatus.triggered_by} | 시작: {formatDateTime(deployStatus.started_at)}
+                  {deployStatus.completed_at && ` | 완료: ${formatDateTime(deployStatus.completed_at)}`}
+                  {` | ${deployStatus.duration_seconds}초`}
                 </div>
 
                 {deployStatus.error_log && (
@@ -286,7 +289,6 @@ export default function DeployPage() {
                   </div>
                 )}
 
-                {/* Steps */}
                 <div className="space-y-2">
                   {deployStatus.steps.map((step) => (
                     <div
@@ -311,7 +313,7 @@ export default function DeployPage() {
                         </span>
                       </div>
                       <span className="text-text-secondary text-sm">
-                        {step.duration_seconds}s
+                        {step.duration_seconds}초
                       </span>
                     </div>
                   ))}
@@ -319,23 +321,22 @@ export default function DeployPage() {
               </div>
             ) : runId ? (
               <p className="text-text-secondary text-sm text-center py-8">
-                Enter a Run ID and click Check to view status
+                Run ID를 입력하고 조회 버튼을 눌러주세요
               </p>
             ) : (
               <p className="text-text-secondary text-sm text-center py-8">
-                Enter a GitHub Actions Run ID to check deployment status
+                GitHub Actions Run ID를 입력하면 배포 상태를 확인할 수 있습니다
               </p>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* TOTP Modal */}
       <TotpModal
         open={totpAction !== null}
         onClose={() => setTotpAction(null)}
         onSubmit={totpAction === "approve" ? handleApprove : handleExecute}
-        title={totpAction === "approve" ? "Approve Release" : "Execute Deployment"}
+        title={totpAction === "approve" ? "릴리즈 승인" : "배포 실행"}
         loading={actionLoading}
       />
     </AdminShell>

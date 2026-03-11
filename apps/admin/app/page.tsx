@@ -25,7 +25,7 @@ function generateDauTrend(currentDau: number): { date: string; dau: number }[] {
     d.setDate(d.getDate() - i);
     const variance = Math.round((Math.random() - 0.5) * currentDau * 0.15);
     data.push({
-      date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      date: d.toLocaleDateString("ko-KR", { month: "short", day: "numeric" }),
       dau: Math.max(0, currentDau + variance - i * 20),
     });
   }
@@ -42,15 +42,15 @@ export default function DashboardPage() {
     <AdminShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-text-primary">대시보드</h1>
           <p className="text-text-secondary text-sm mt-1">
-            {data ? `Data as of ${data.date}` : "Loading..."}
+            {data ? `${data.date} 기준 데이터` : "데이터 불러오는 중..."}
           </p>
         </div>
 
         {error && (
           <div className="bg-negative/10 border border-negative/30 rounded-btn px-4 py-3 text-sm text-negative">
-            {error}
+            서버 연결 실패: {error}
           </div>
         )}
 
@@ -63,14 +63,14 @@ export default function DashboardPage() {
         ) : data ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             <StatCard
-              label="DAU"
+              label="일간 활성 사용자"
               value={data.kpis.dau.value}
               changePct={data.kpis.dau.change_pct}
               direction={data.kpis.dau.direction}
               icon={Users}
             />
             <StatCard
-              label="D7 Retention"
+              label="7일 리텐션"
               value={data.kpis.d7_retention.value}
               changePct={data.kpis.d7_retention.change_pct}
               direction={data.kpis.d7_retention.direction}
@@ -78,14 +78,14 @@ export default function DashboardPage() {
               isPercentage
             />
             <StatCard
-              label="New Installs"
+              label="신규 설치"
               value={data.kpis.new_installs.value}
               changePct={data.kpis.new_installs.change_pct}
               direction={data.kpis.new_installs.direction}
               icon={UserPlus}
             />
             <StatCard
-              label="Onboarding Conv."
+              label="온보딩 전환율"
               value={data.kpis.onboarding_conversion.value}
               changePct={data.kpis.onboarding_conversion.change_pct}
               direction={data.kpis.onboarding_conversion.direction}
@@ -93,14 +93,14 @@ export default function DashboardPage() {
               isPercentage
             />
             <StatCard
-              label="Briefings"
+              label="브리핑 생성"
               value={data.kpis.briefings_generated.value}
               changePct={data.kpis.briefings_generated.change_pct}
               direction={data.kpis.briefings_generated.direction}
               icon={FileText}
             />
             <StatCard
-              label="Push Open Rate"
+              label="푸시 오픈율"
               value={data.kpis.push_open_rate.value}
               changePct={data.kpis.push_open_rate.change_pct}
               direction={data.kpis.push_open_rate.direction}
@@ -112,7 +112,7 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>7-Day DAU Trend</CardTitle>
+            <CardTitle>7일간 DAU 추이</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -125,7 +125,7 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Today&apos;s Top Events</CardTitle>
+            <CardTitle>오늘의 주요 이벤트</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -137,11 +137,11 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-2">
                 {[
-                  { name: "session_start", count: data?.kpis.dau.value || 0 },
-                  { name: "briefing_viewed", count: Math.round((data?.kpis.briefings_generated.value || 0) * 0.7) },
-                  { name: "etf_registered", count: Math.round((data?.kpis.new_installs.value || 0) * 0.8) },
-                  { name: "push_notification_opened", count: Math.round((data?.kpis.dau.value || 0) * (data?.kpis.push_open_rate.value || 0) / 100) },
-                  { name: "onboarding_completed", count: Math.round((data?.kpis.new_installs.value || 0) * (data?.kpis.onboarding_conversion.value || 0) / 100) },
+                  { name: "session_start", label: "세션 시작", count: data?.kpis.dau.value || 0 },
+                  { name: "briefing_viewed", label: "브리핑 조회", count: Math.round((data?.kpis.briefings_generated.value || 0) * 0.7) },
+                  { name: "etf_registered", label: "ETF 등록", count: Math.round((data?.kpis.new_installs.value || 0) * 0.8) },
+                  { name: "push_notification_opened", label: "푸시 알림 오픈", count: Math.round((data?.kpis.dau.value || 0) * (data?.kpis.push_open_rate.value || 0) / 100) },
+                  { name: "onboarding_completed", label: "온보딩 완료", count: Math.round((data?.kpis.new_installs.value || 0) * (data?.kpis.onboarding_conversion.value || 0) / 100) },
                 ].map((event, i) => (
                   <div
                     key={event.name}
@@ -152,6 +152,9 @@ export default function DashboardPage() {
                         {i + 1}
                       </span>
                       <span className="text-text-primary text-sm font-medium">
+                        {event.label}
+                      </span>
+                      <span className="text-text-secondary text-xs font-mono">
                         {event.name}
                       </span>
                     </div>

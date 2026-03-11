@@ -18,13 +18,13 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/funnel", label: "Funnel", icon: Filter },
-  { href: "/retention", label: "Retention", icon: RotateCcw },
-  { href: "/users", label: "Users", icon: Users },
-  { href: "/events", label: "Events", icon: Activity },
-  { href: "/push", label: "Push", icon: Bell },
-  { href: "/deploy", label: "Deploy", icon: Rocket },
+  { href: "/", label: "대시보드", icon: LayoutDashboard },
+  { href: "/funnel", label: "퍼널 분석", icon: Filter },
+  { href: "/retention", label: "리텐션", icon: RotateCcw },
+  { href: "/users", label: "사용자", icon: Users },
+  { href: "/events", label: "이벤트", icon: Activity },
+  { href: "/push", label: "푸시 알림", icon: Bell },
+  { href: "/deploy", label: "배포 관리", icon: Rocket },
 ];
 
 export function Sidebar() {
@@ -49,7 +49,7 @@ export function Sidebar() {
           <div className="w-8 h-8 rounded-btn bg-accent flex items-center justify-center">
             <span className="text-white font-bold text-sm">P</span>
           </div>
-          <span className="text-text-primary font-bold text-lg">Portfiq Admin</span>
+          <span className="text-text-primary font-bold text-lg">포트픽 관리자</span>
         </Link>
       </div>
 
@@ -86,7 +86,7 @@ export function Sidebar() {
           className="flex items-center gap-3 px-3 py-2.5 rounded-btn text-sm font-medium text-text-secondary hover:text-negative hover:bg-surface transition-colors w-full"
         >
           <LogOut className="w-5 h-5" />
-          Logout
+          로그아웃
         </button>
       </div>
     </div>

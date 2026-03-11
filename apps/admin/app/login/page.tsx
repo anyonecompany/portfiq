@@ -37,8 +37,8 @@ export default function LoginPage() {
           <div className="w-14 h-14 rounded-card bg-accent flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-2xl">P</span>
           </div>
-          <h1 className="text-2xl font-bold text-text-primary">Portfiq Admin</h1>
-          <p className="text-text-secondary mt-1">Sign in with your company account</p>
+          <h1 className="text-2xl font-bold text-text-primary">포트픽 관리자</h1>
+          <p className="text-text-secondary mt-1">회사 계정으로 로그인하세요</p>
         </div>
 
         <div className="bg-card border border-divider rounded-card p-6 space-y-4">
@@ -71,7 +71,7 @@ export default function LoginPage() {
                 fill="#EA4335"
               />
             </svg>
-            {loading ? "Signing in..." : "Sign in with Google"}
+            {loading ? "로그인 중..." : "Google로 로그인"}
           </button>
 
           <p className="text-xs text-text-secondary text-center">

@@ -26,31 +26,30 @@ const PLATFORM_COLORS = ["#6366F1", "#10B981"];
 function UserStatsContent({ data }: { data: UserStatsResponse }) {
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Total Installs"
+          label="전체 설치 수"
           value={data.total_installs}
           changePct={0}
           direction="flat"
           icon={Users}
         />
         <StatCard
-          label="Active (7d)"
+          label="7일 활성 기기"
           value={data.active_devices_7d}
           changePct={0}
           direction="flat"
           icon={Smartphone}
         />
         <StatCard
-          label="Active (30d)"
+          label="30일 활성 기기"
           value={data.active_devices_30d}
           changePct={0}
           direction="flat"
           icon={BarChart3}
         />
         <StatCard
-          label="Push Enabled"
+          label="푸시 활성화율"
           value={data.push_enabled_pct}
           changePct={0}
           direction="flat"
@@ -60,15 +59,14 @@ function UserStatsContent({ data }: { data: UserStatsResponse }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* ETF Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>ETF Distribution</CardTitle>
+            <CardTitle>ETF 등록 분포</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm text-text-secondary mb-3">
-              Avg: {data.etf_distribution.avg_etfs_per_user} ETFs/user |
-              Median: {data.etf_distribution.median_etfs_per_user}
+              평균: {data.etf_distribution.avg_etfs_per_user}개/사용자 |
+              중앙값: {data.etf_distribution.median_etfs_per_user}개
             </div>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={data.etf_distribution.histogram}>
@@ -78,7 +76,7 @@ function UserStatsContent({ data }: { data: UserStatsResponse }) {
                   tick={{ fill: "#9CA3AF", fontSize: 12 }}
                   axisLine={{ stroke: "#2D2F3A" }}
                   tickLine={false}
-                  label={{ value: "ETF Count", position: "insideBottom", offset: -5, fill: "#9CA3AF" }}
+                  label={{ value: "ETF 개수", position: "insideBottom", offset: -5, fill: "#9CA3AF" }}
                 />
                 <YAxis
                   tick={{ fill: "#9CA3AF", fontSize: 12 }}
@@ -99,10 +97,9 @@ function UserStatsContent({ data }: { data: UserStatsResponse }) {
           </CardContent>
         </Card>
 
-        {/* Platform Breakdown */}
         <Card>
           <CardHeader>
-            <CardTitle>Platform Breakdown</CardTitle>
+            <CardTitle>플랫폼 비율</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
@@ -136,20 +133,19 @@ function UserStatsContent({ data }: { data: UserStatsResponse }) {
         </Card>
       </div>
 
-      {/* Top ETFs */}
       <Card>
         <CardHeader>
-          <CardTitle>Top ETFs</CardTitle>
+          <CardTitle>인기 ETF</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-divider">
-                  <th className="text-left text-text-secondary font-medium px-4 py-3">Rank</th>
-                  <th className="text-left text-text-secondary font-medium px-4 py-3">Ticker</th>
-                  <th className="text-left text-text-secondary font-medium px-4 py-3">Name</th>
-                  <th className="text-right text-text-secondary font-medium px-4 py-3">Registered</th>
+                  <th className="text-left text-text-secondary font-medium px-4 py-3">순위</th>
+                  <th className="text-left text-text-secondary font-medium px-4 py-3">티커</th>
+                  <th className="text-left text-text-secondary font-medium px-4 py-3">이름</th>
+                  <th className="text-right text-text-secondary font-medium px-4 py-3">등록 수</th>
                 </tr>
               </thead>
               <tbody>
@@ -182,8 +178,8 @@ export default function UsersPage() {
     <AdminShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Users</h1>
-          <p className="text-text-secondary text-sm mt-1">User statistics and demographics</p>
+          <h1 className="text-2xl font-bold text-text-primary">사용자</h1>
+          <p className="text-text-secondary text-sm mt-1">사용자 통계 및 현황</p>
         </div>
 
         {error && (

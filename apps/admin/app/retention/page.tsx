@@ -20,7 +20,6 @@ export default function RetentionPage() {
     [weeks]
   );
 
-  // Compute D1/D3/D7 averages from latest cohort
   const latestCohort = data?.cohorts[0];
   const getRetRate = (weekNum: number) => {
     if (!latestCohort) return null;
@@ -37,9 +36,9 @@ export default function RetentionPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary">Retention</h1>
+            <h1 className="text-2xl font-bold text-text-primary">리텐션</h1>
             <p className="text-text-secondary text-sm mt-1">
-              Weekly cohort retention analysis
+              주간 코호트 리텐션 분석
             </p>
           </div>
 
@@ -54,7 +53,7 @@ export default function RetentionPage() {
                     : "bg-surface text-text-secondary hover:text-text-primary"
                 }`}
               >
-                {w} Weeks
+                {w}주
               </button>
             ))}
           </div>
@@ -66,7 +65,6 @@ export default function RetentionPage() {
           </div>
         )}
 
-        {/* Retention Summary Cards */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -76,7 +74,7 @@ export default function RetentionPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <StatCard
-              label="Week 1 Retention"
+              label="1주 리텐션"
               value={d1 ?? 0}
               changePct={0}
               direction="flat"
@@ -84,7 +82,7 @@ export default function RetentionPage() {
               isPercentage
             />
             <StatCard
-              label="Week 3 Retention"
+              label="3주 리텐션"
               value={d3 ?? 0}
               changePct={0}
               direction="flat"
@@ -92,7 +90,7 @@ export default function RetentionPage() {
               isPercentage
             />
             <StatCard
-              label="Week 7 Retention"
+              label="7주 리텐션"
               value={d7 ?? 0}
               changePct={0}
               direction="flat"
@@ -102,10 +100,9 @@ export default function RetentionPage() {
           </div>
         )}
 
-        {/* Cohort Heatmap */}
         <Card>
           <CardHeader>
-            <CardTitle>Cohort Retention Heatmap</CardTitle>
+            <CardTitle>코호트 리텐션 히트맵</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -116,10 +113,9 @@ export default function RetentionPage() {
           </CardContent>
         </Card>
 
-        {/* Retention Line Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Retention Curves</CardTitle>
+            <CardTitle>리텐션 곡선</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
