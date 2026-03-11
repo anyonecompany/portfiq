@@ -56,9 +56,20 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         setReady(true);
       } catch {
         if (cancelled) return;
-        await supabase.auth.signOut();
-        localStorage.removeItem("portfiq_admin_user");
-        router.replace("/login");
+        // 네트워크/CORS 에러 시 Supabase 세션이 유효하면 통과 (graceful)
+        // 세션이 없는 상태에서만 로그아웃 처리
+        const { data: recheck } = await supabase.auth.getUser();
+        if (recheck.user) {
+          localStorage.setItem("portfiq_admin_user", JSON.stringify({
+            email: recheck.user.email,
+            role: "viewer",
+          }));
+          setReady(true);
+        } else {
+          await supabase.auth.signOut();
+          localStorage.removeItem("portfiq_admin_user");
+          router.replace("/login");
+        }
       }
     };
 
