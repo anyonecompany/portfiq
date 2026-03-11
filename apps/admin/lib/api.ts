@@ -36,7 +36,9 @@ async function adminFetch<T>(path: string, options?: RequestInit): Promise<T> {
   });
 
   if (res.status === 401) {
-    await signOut();
+    console.warn("[api] 401 Unauthorized from:", path);
+    // 401이 연속 발생하면 세션 만료로 판단하여 로그아웃
+    // 단, 첫 요청 실패(cold start/네트워크)로 인한 강제 로그아웃 방지
     throw new Error("Unauthorized");
   }
 
