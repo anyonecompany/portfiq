@@ -1,0 +1,157 @@
+2026-03-11 13:38:59,893 [INFO] portfiq: Portfiq API starting in local mode
+2026-03-11 13:38:59,893 [INFO] portfiq: CORS origins: ['http://localhost:3000', 'http://localhost:8080']
+2026-03-11 13:38:59,893 [INFO] portfiq: Briefing schedule: morning 08:35, night 22:00
+2026-03-11 13:38:59,969 [INFO] services.push_service: Firebase Admin SDK 초기화 완료 (JSON env)
+2026-03-11 13:38:59,969 [INFO] services.push_service: Firebase 초기화 성공 — FCM 푸시 활성
+2026-03-11 13:38:59,998 [DEBUG] tzlocal: /etc/localtime found
+2026-03-11 13:38:59,999 [DEBUG] tzlocal: 1 found:
+ {'/etc/localtime is a symlink to': 'Asia/Seoul'}
+2026-03-11 13:38:59,999 [INFO] apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-11 13:38:59,999 [INFO] apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-11 13:38:59,999 [INFO] apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-11 13:38:59,999 [INFO] apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-11 13:39:00,000 [INFO] apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-11 13:39:00,000 [INFO] apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-11 13:39:00,000 [INFO] apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-11 13:39:00,000 [INFO] apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-11 13:39:00,000 [INFO] apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-03-11 13:39:00,000 [INFO] apscheduler.scheduler: Added job "뉴스 수집" to job store "default"
+2026-03-11 13:39:00,000 [INFO] apscheduler.scheduler: Added job "아침 브리핑 생성" to job store "default"
+2026-03-11 13:39:00,000 [INFO] apscheduler.scheduler: Added job "밤 체크포인트 생성" to job store "default"
+2026-03-11 13:39:00,001 [INFO] apscheduler.scheduler: Added job "초기 뉴스 수집" to job store "default"
+2026-03-11 13:39:00,001 [INFO] apscheduler.scheduler: Added job "일간 메트릭 집계" to job store "default"
+2026-03-11 13:39:00,001 [INFO] apscheduler.scheduler: Added job "퍼널 코호트 집계" to job store "default"
+2026-03-11 13:39:00,001 [INFO] apscheduler.scheduler: Added job "주간 ETF 요약 브리핑 (토요일)" to job store "default"
+2026-03-11 13:39:00,001 [INFO] apscheduler.scheduler: Added job "다음주 월요일 체크리스트 브리핑 (일요일)" to job store "default"
+2026-03-11 13:39:00,001 [INFO] apscheduler.scheduler: Added job "주간 보유종목 스냅샷" to job store "default"
+2026-03-11 13:39:00,001 [INFO] apscheduler.scheduler: Scheduler started
+2026-03-11 13:39:00,001 [INFO] jobs.briefing_scheduler: 스케줄러 시작: 뉴스(3분), 아침(08:35 KST), 밤(22:00 KST), 집계(01:00 KST), 퍼널(01:30 KST), 주말(토08:35/일22:00 KST), 스냅샷(월01:00 KST)
+2026-03-11 13:39:00,001 [DEBUG] apscheduler.scheduler: Looking for jobs to run
+2026-03-11 13:39:00,001 [DEBUG] apscheduler.scheduler: Next wakeup is due at 2026-03-11 13:39:04.999659+09:00 (in 4.998104 seconds)
+2026-03-11 13:39:04,187 [INFO] services.supabase_client: Supabase client initialized for https://bhwxbpwadinnkqzsiwsy.supabase.co
+2026-03-11 13:39:04,194 [DEBUG] httpcore.connection: connect_tcp.started host='bhwxbpwadinnkqzsiwsy.supabase.co' port=443 local_address=None timeout=120 socket_options=None
+2026-03-11 13:39:04,216 [DEBUG] httpcore.connection: connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x11599ff50>
+2026-03-11 13:39:04,216 [DEBUG] httpcore.connection: start_tls.started ssl_context=<ssl.SSLContext object at 0x1158ef530> server_hostname='bhwxbpwadinnkqzsiwsy.supabase.co' timeout=120
+2026-03-11 13:39:04,237 [DEBUG] httpcore.connection: start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x11599fdd0>
+2026-03-11 13:39:04,237 [DEBUG] httpcore.http2: send_connection_init.started request=<Request [b'GET']>
+2026-03-11 13:39:04,237 [DEBUG] httpcore.http2: send_connection_init.complete
+2026-03-11 13:39:04,237 [DEBUG] httpcore.http2: send_request_headers.started request=<Request [b'GET']> stream_id=1
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Adding (b':method', b'GET') to the header table, sensitive:False, huffman:True
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Encoding 2 with 7 bits
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Adding (b':authority', b'bhwxbpwadinnkqzsiwsy.supabase.co') to the header table, sensitive:False, huffman:True
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Encoding 1 with 6 bits
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Encoding 24 with 7 bits
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Adding (b':scheme', b'https') to the header table, sensitive:False, huffman:True
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Encoding 7 with 7 bits
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Adding (b':path', b'/rest/v1/events?select=id') to the header table, sensitive:False, huffman:True
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Encoding 4 with 6 bits
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Encoding 18 with 7 bits
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Adding (b'accept', b'*/*') to the header table, sensitive:False, huffman:True
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Encoding 19 with 6 bits
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Encoding 3 with 7 bits
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Adding (b'accept-encoding', b'gzip, deflate, br, zstd') to the header table, sensitive:False, huffman:True
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Encoding 16 with 6 bits
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Encoding 18 with 7 bits
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Adding (b'user-agent', b'python-httpx/0.28.1') to the header table, sensitive:False, huffman:True
+2026-03-11 13:39:04,237 [DEBUG] hpack.hpack: Encoding 58 with 6 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoding 14 with 7 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Adding (b'prefer', b'count=exact') to the header table, sensitive:False, huffman:True
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoding 5 with 7 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoding 8 with 7 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Adding (b'x-client-info', b'supabase-py/2.27.2') to the header table, sensitive:False, huffman:True
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoding 10 with 7 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoding 13 with 7 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Adding (b'apikey', b'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJod3hicHdhZGlubmtxenNpd3N5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwODc5ODQsImV4cCI6MjA4ODY2Mzk4NH0.JkSUdy7AbyzQfi3MUOx0ucu0VmIElS-o6T9YDCYfHQw') to the header table, sensitive:False, huffman:True
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoding 5 with 7 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoding 167 with 7 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Adding (b'authorization', b'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJod3hicHdhZGlubmtxenNpd3N5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwODc5ODQsImV4cCI6MjA4ODY2Mzk4NH0.JkSUdy7AbyzQfi3MUOx0ucu0VmIElS-o6T9YDCYfHQw') to the header table, sensitive:True, huffman:True
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoding 23 with 4 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoding 172 with 7 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Adding (b'accept-profile', b'public') to the header table, sensitive:False, huffman:True
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoding 10 with 7 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoding 5 with 7 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Adding (b'content-profile', b'public') to the header table, sensitive:False, huffman:True
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoding 11 with 7 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoding 5 with 7 bits
+2026-03-11 13:39:04,238 [DEBUG] hpack.hpack: Encoded header block to b"\x82A\x98\x8e\x7f\x1ec\xaf\xc0\xe45Uu\xed\xed\x06\xf0\x8fK\xa2\xda\xc7\x18\xd0U\xc8\x7f\x87D\x92b\xc2\xa1,w\x0b\x05\xeeZ\x92\x8f\xf1\x05\xa0\xa4L\x06\x93S\x83\xf9c\xe7P\x92\x9b\xd9\xab\xfaRB\xcb@\xd2_\xa5#\xb3\xe9OhL\x9fz\x8e\xaf\xd2g=KN\x94\xd7\xe5\x80.'\x97\x0f@\x85\xae\xc2\xca[?\x88!\xed\xa90\x17\xc8\xc8\x9f@\x8a\xf2\xb1(1jJ\xc6\xaaS\xff\x8dE\xb5\x8e1\xa0\xabW\xe9\x81.'W\x17@\x85\x1df\xea__\xff(/\xac\xb3\xc7\x88\x86\xd4l\xb98{\xc8\x1d&\xc8\x8c\x95ml\x97\xb29\x93\xad\x7f\x9coe}r\xfa\xcbY\x19\xd0mF\xcb\xeeO\xcb\xb3\xf3\xa7\x0f\xbf\xdd\xd9\x11\x92\xac\xb4~\x9b#\x99)\xcay\x19\x9c\xc4\xc7$\xff\xb8\xa8\xb6:S\xe4\xb5i\xaeFt\xb7\x90\xde\x0cJ_G\xee\xec\x8ed\xa7\r\xb1\x89\xa3g\xbd\x96\xbe\x7f\x9b\r\xab\xa6\x06t\xfb\xd1\xe3U\xf27\xaa\xfe\xc4d\xa7\x8bD\xbd\x91\xcd\x1d!kU\xfeb\xd1\xef\xabZq\x81|\xbdwp\x93\xd3\xb0\xc7\xeb\xde\xc9L\xce\x8e\x1a\xbc\x82\xd2Z\x0e4\xe4\xc1F\xe5\x8e\xe6\xf7\xf9\xdf\xbd\xce\\{<\x7f\x1f\x08\xff-\xbaQ\xd8[\x14/\xac\xb3\xc7\x88\x86\xd4l\xb98{\xc8\x1d&\xc8\x8c\x95ml\x97\xb29\x93\xad\x7f\x9coe}r\xfa\xcbY\x19\xd0mF\xcb\xeeO\xcb\xb3\xf3\xa7\x0f\xbf\xdd\xd9\x11\x92\xac\xb4~\x9b#\x99)\xcay\x19\x9c\xc4\xc7$\xff\xb8\xa8\xb6:S\xe4\xb5i\xaeFt\xb7\x90\xde\x0cJ_G\xee\xec\x8ed\xa7\r\xb1\x89\xa3g\xbd\x96\xbe\x7f\x9b\r\xab\xa6\x06t\xfb\xd1\xe3U\xf27\xaa\xfe\xc4d\xa7\x8bD\xbd\x91\xcd\x1d!kU\xfeb\xd1\xef\xabZq\x81|\xbdwp\x93\xd3\xb0\xc7\xeb\xde\xc9L\xce\x8e\x1a\xbc\x82\xd2Z\x0e4\xe4\xc1F\xe5\x8e\xe6\xf7\xf9\xdf\xbd\xce\\{<\x7f@\x8a\x19\x08Z\xd2\xb5v\x1eSP_\x85\xae\xd8\xe81?@\x8b!\xeaIjJ\xd5\xd8yMA\x7f\x85\xae\xd8\xe81?"
+2026-03-11 13:39:04,238 [DEBUG] httpcore.http2: send_request_headers.complete
+2026-03-11 13:39:04,238 [DEBUG] httpcore.http2: send_request_body.started request=<Request [b'GET']> stream_id=1
+2026-03-11 13:39:04,238 [DEBUG] httpcore.http2: send_request_body.complete
+2026-03-11 13:39:04,238 [DEBUG] httpcore.http2: receive_response_headers.started request=<Request [b'GET']> stream_id=1
+2026-03-11 13:39:04,246 [DEBUG] httpcore.http2: receive_remote_settings.started
+2026-03-11 13:39:04,247 [DEBUG] httpcore.http2: receive_remote_settings.complete return_value=<RemoteSettingsChanged changed_settings:{ChangedSetting(setting=3, original_value=None, new_value=100), ChangedSetting(setting=4, original_value=65535, new_value=65536), ChangedSetting(setting=5, original_value=16384, new_value=16777215)}>
+2026-03-11 13:39:04,373 [DEBUG] hpack.hpack: Decoding b'?\xe1\x1f\x88a\x96\xe4Y>\x94\x08T\xd0;\x14\x10\x04\xe2\x80j\xe3/\xdc\x03Jb\xd1\xbf_\x96\x1du\xd0b\r&=LtA\xea\xfbP\x93\x8e\xc4\x150Z\x99V{\\\x012v\x87%\x07\xb6Ih\x1d\x85^\x03*/0@\x85$\xabX?_\x8f~A\xbb$\xafF\xfb\xcf\xc81\xb4\xf2\xd9/i@\x8a$\xab\x10d\x9c\xab!#M\xa8\x86\xbf\xcfL:2^]\x8d`\xbd\xcbRQ\xfe \xb4\x14\x89\x80\xd2\x7fx\xa0\xa4~V\x1c\xc5\x81\x90\xb6\xcb\x80\x00>\xd45D\xa2\xd9\x0b\xba\xd8\xef\x9e\x91\x9a\xa4}\xa9]\x85\xa0\xe3\x93@\x90\xf2\xb1\x0fRKRVO\xaa\xca\xb1\xebI\x8fR?\x85\xa8\xe8\xa8\xd2\xcb@\x8b!\xeaIjJ\xd5\xd8yMA\x7f\x85\xae\xd8\xe81?@\x8d\xae\xc2\xca[\x0bQ\n\xb0\xeb\xae\x83\x16O\x88!\xed\xa90\x17\xc8\xc8\x9f@\x8dDkL4\x97\xc0\xfd-\xdc\xb6 \xc7\xab\x011@\x8aDkWa\xfa\x14\x89Z\xc2\xcb\x90\x8e\x7f\x1ec\xaf\xc0\xe45Uu\xed\xed\x06\xf0\x8f_@\x8aDkX^\xd6\x95\tX\xd2\x7f\x9a\x00_$\x91\xb2\x05\xa5e\xa8\xd6vP\x95h\xc3#KI\x1b\xe5\x01\x0b\x18\xc1(\x7f@\x8f\xf2\xb1j\xee\x7fK\r)-5\xa5b\x1e\xda\x93\x011@\x95\xf2\xb1j\xee\x7fK[Z\x13aGJ\xc8-\x9d\xccB\xac\x93R_\x0217w\xffU\x8a"K\x14t\xc0\x9e\xec\xd9\xcb\xf2\xf7\x99\xba\x993\x1f\x95@\xd3G"\xdf\xe7\xc2\x8b\xef\x03*\xf9\xcf\xe7\x91/\xbd\xa7\xd7}\xab\xc2\xb0]u\x91\x01\x97\xdai`\xae\x05\xc2\xb8V\xc1E7\xaa\x8e\xec\xd2\xb9\xce,\xf6\xd4.^29\xdf[[\xb1\x9b\xf6\xed\xd5\xf8\xee\xe5\x88\t\xa0\x01\xba*m\x95\xb8\xdf\xc5\xdf\xb2\x19\'Y{M\x98\x1b\xb8\xfa\xf1\x8f\xb7\x17\xc3*\xfd\xe3\xcd\xe3\xf3\x87\xe4D\xd6]m\x9aD\xbd\xcaK$\xa0\x1b\x0729\xe5>\xdbA\xe3]\x07\xfbR\xb1\xa6x\x18\xfbP\xbek5\x85D\x1c\x8b\'\xd2\x81\n\xda\x07b\xc2q@7p\x0f\xdc\x03Jb\xd1\xbf\xedI\x0fH\xcdT\x0b\xa2\xda\xc7\x18\xd0U\xc8\x7f\xb51\xa55\xea\xaa\x8f_jn)-\xb0\xbfjn\x1d%\xdcd\x96\r\'\xa8\xbf{\x8b\x84\x84-i[\x05D<\x86\xaao@\x85\x1d\tY\x1d\xc9\x90\x9d\x98?\x9b\x8d4\xcf\xf3\xf6\xa5#\x81\xe7\x1a\x00?'
+2026-03-11 13:39:04,373 [DEBUG] hpack.hpack: Decoded 4096, consumed 3 bytes
+2026-03-11 13:39:04,373 [DEBUG] hpack.table: Resizing header table to 4096 from 4096
+2026-03-11 13:39:04,373 [DEBUG] hpack.hpack: Decoded 8, consumed 1 bytes
+2026-03-11 13:39:04,373 [DEBUG] hpack.hpack: Decoded (b':status', b'200'), consumed 1
+2026-03-11 13:39:04,373 [DEBUG] hpack.hpack: Decoded 33, consumed 1 bytes
+2026-03-11 13:39:04,373 [DEBUG] hpack.hpack: Decoded 22, consumed 1 bytes
+2026-03-11 13:39:04,373 [DEBUG] hpack.hpack: Decoded (b'date', b'Wed, 11 Mar 2026 04:39:04 GMT'), total consumed 24 bytes, indexed True
+2026-03-11 13:39:04,373 [DEBUG] hpack.hpack: Decoded 31, consumed 1 bytes
+2026-03-11 13:39:04,373 [DEBUG] hpack.hpack: Decoded 22, consumed 1 bytes
+2026-03-11 13:39:04,373 [DEBUG] hpack.hpack: Decoded (b'content-type', b'application/json; charset=utf-8'), total consumed 24 bytes, indexed True
+2026-03-11 13:39:04,373 [DEBUG] hpack.hpack: Decoded 28, consumed 1 bytes
+2026-03-11 13:39:04,373 [DEBUG] hpack.hpack: Decoded 1, consumed 1 bytes
+2026-03-11 13:39:04,373 [DEBUG] hpack.hpack: Decoded (b'content-length', <memory at 0x1158eae00>), total consumed 3 bytes, indexed True
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 54, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 7, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded (b'server', b'cloudflare'), total consumed 9 bytes, indexed True
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 30, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 3, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded (b'content-range', <memory at 0x1158eaec0>), total consumed 5 bytes, indexed True
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 5, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 15, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded (b'cf-ray', b'9da7df8b989daa48-ICN'), total consumed 23 bytes, indexed True
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 10, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 6, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded (b'cf-cache-status', b'DYNAMIC'), total consumed 19 bytes, indexed True
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 29, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 13, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded (b'content-location', b'/events?select=id'), total consumed 15 bytes, indexed True
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 56, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 32, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), total consumed 34 bytes, indexed True
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 16, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 5, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded (b'x-content-type-options', b'nosniff'), total consumed 24 bytes, indexed True
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 11, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 5, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded (b'content-profile', b'public'), total consumed 19 bytes, indexed True
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 13, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 8, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded (b'preference-applied', b'count=exact'), total consumed 24 bytes, indexed True
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 13, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 1, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded (b'sb-gateway-version', <memory at 0x1158eaf80>), total consumed 17 bytes, indexed True
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 10, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded 16, consumed 1 bytes
+2026-03-11 13:39:04,374 [DEBUG] hpack.hpack: Decoded (b'sb-project-ref', b'bhwxbpwadinnkqzsiwsy'), total consumed 29 bytes, indexed True
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded 10, consumed 1 bytes
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded 26, consumed 1 bytes
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded (b'sb-request-id', b'019cdb30-f34b-7f1e-b1d4-db9e0ceba0f1'), total consumed 39 bytes, indexed True
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded 15, consumed 1 bytes
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded 1, consumed 1 bytes
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded (b'x-envoy-attempt-count', <memory at 0x1158ead40>), total consumed 19 bytes, indexed True
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded 21, consumed 1 bytes
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded 2, consumed 1 bytes
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded (b'x-envoy-upstream-service-time', <memory at 0x1158eb100>), total consumed 26 bytes, indexed True
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded 55, consumed 1 bytes
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded 212, consumed 2 bytes
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded (b'set-cookie', b'__cf_bm=tv3rWXCxgkitgoWn0NlWeDYUlD80J.LoxWcD8NyvR.A-1773203944-1.0.1.1-ElmCnbBgf6Y_Lun2WwI6vP4SHiZBB.VSWG0tl01B2muf5b9Gvqs3ckfqgK0SVywHqV91f.vbKwXUX_cPeP5idt8Wdrdl0QagsYJoRu0wPlo; path=/; expires=Wed, 11-Mar-26 05:09:04 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None'), total consumed 215 bytes, indexed True
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded 59, consumed 1 bytes
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded 11, consumed 1 bytes
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded (b'vary', b'Accept-Encoding'), total consumed 13 bytes, indexed True
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded 5, consumed 1 bytes
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded 16, consumed 1 bytes
+2026-03-11 13:39:04,375 [DEBUG] hpack.hpack: Decoded (b'alt-svc', b'h3=":443"; ma=86400'), total consumed 24 bytes, indexed True
+2026-03-11 13:39:04,375 [DEBUG] httpcore.http2: receive_response_headers.complete return_value=(200, [(b'date', b'Wed, 11 Mar 2026 04:39:04 GMT'), (b'content-type', b'application/json; charset=utf-8'), (b'content-length', b'2'), (b'server', b'cloudflare'), (b'content-range', b'*/0'), (b'cf-ray', b'9da7df8b989daa48-ICN'), (b'cf-cache-status', b'DYNAMIC'), (b'content-location', b'/events?select=id'), (b'strict-transport-security', b'max-age=31536000; includeSubDomains; preload'), (b'x-content-type-options', b'nosniff'), (b'content-profile', b'public'), (b'preference-applied', b'count=exact'), (b'sb-gateway-version', b'1'), (b'sb-project-ref', b'bhwxbpwadinnkqzsiwsy'), (b'sb-request-id', b'019cdb30-f34b-7f1e-b1d4-db9e0ceba0f1'), (b'x-envoy-attempt-count', b'1'), (b'x-envoy-upstream-service-time', b'17'), (b'set-cookie', b'__cf_bm=tv3rWXCxgkitgoWn0NlWeDYUlD80J.LoxWcD8NyvR.A-1773203944-1.0.1.1-ElmCnbBgf6Y_Lun2WwI6vP4SHiZBB.VSWG0tl01B2muf5b9Gvqs3ckfqgK0SVywHqV91f.vbKwXUX_cPeP5idt8Wdrdl0QagsYJoRu0wPlo; path=/; expires=Wed, 11-Mar-26 05:09:04 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None'), (b'vary', b'Accept-Encoding'), (b'alt-svc', b'h3=":443"; ma=86400')])
+2026-03-11 13:39:04,377 [INFO] httpx: HTTP Request: GET https://bhwxbpwadinnkqzsiwsy.supabase.co/rest/v1/events?select=id "HTTP/2 200 OK"
+2026-03-11 13:39:04,377 [DEBUG] httpcore.http2: receive_response_body.started request=<Request [b'GET']> stream_id=1
+2026-03-11 13:39:04,377 [DEBUG] httpcore.http2: receive_response_body.complete
+2026-03-11 13:39:04,377 [DEBUG] httpcore.http2: response_closed.started stream_id=1
+2026-03-11 13:39:04,377 [DEBUG] httpcore.http2: response_closed.complete
+2026-03-11 13:39:04,378 [DEBUG] portfiq: Health check — events stored: 0
+2026-03-11 13:39:04,682 [INFO] jobs.briefing_scheduler: 스케줄러 중지
+2026-03-11 13:39:04,682 [INFO] portfiq: Portfiq API shutting down
+2026-03-11 13:39:04,682 [INFO] apscheduler.scheduler: Scheduler has been shut down
