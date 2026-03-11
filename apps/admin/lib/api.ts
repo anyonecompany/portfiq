@@ -10,7 +10,7 @@ import type {
   DeployStatusResponse,
   LoginResponse,
 } from "@/types/admin";
-import { getAccessToken, signOut } from "./auth";
+import { getAccessToken } from "./auth";
 
 // Use Next.js rewrite proxy to avoid CORS issues.
 // In development, falls back to direct API call if proxy not configured.
