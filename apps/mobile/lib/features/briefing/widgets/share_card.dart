@@ -66,7 +66,6 @@ class ShareCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 80),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                   // Top: Logo / branding
                   _buildHeader(accentColor),

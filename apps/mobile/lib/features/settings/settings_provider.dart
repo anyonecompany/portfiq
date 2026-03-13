@@ -8,29 +8,56 @@ class NotificationPrefs {
   final bool morningBriefing;
   final bool nightCheckpoint;
   final bool urgentNews;
+  final int morningHour;
+  final int morningMinute;
+  final int nightHour;
+  final int nightMinute;
 
   const NotificationPrefs({
     this.morningBriefing = true,
     this.nightCheckpoint = true,
     this.urgentNews = false,
+    this.morningHour = 8,
+    this.morningMinute = 35,
+    this.nightHour = 22,
+    this.nightMinute = 0,
   });
 
   NotificationPrefs copyWith({
     bool? morningBriefing,
     bool? nightCheckpoint,
     bool? urgentNews,
+    int? morningHour,
+    int? morningMinute,
+    int? nightHour,
+    int? nightMinute,
   }) {
     return NotificationPrefs(
       morningBriefing: morningBriefing ?? this.morningBriefing,
       nightCheckpoint: nightCheckpoint ?? this.nightCheckpoint,
       urgentNews: urgentNews ?? this.urgentNews,
+      morningHour: morningHour ?? this.morningHour,
+      morningMinute: morningMinute ?? this.morningMinute,
+      nightHour: nightHour ?? this.nightHour,
+      nightMinute: nightMinute ?? this.nightMinute,
     );
   }
+
+  /// Format time as HH:MM string.
+  String get morningTimeStr =>
+      '${morningHour.toString().padLeft(2, '0')}:${morningMinute.toString().padLeft(2, '0')}';
+
+  String get nightTimeStr =>
+      '${nightHour.toString().padLeft(2, '0')}:${nightMinute.toString().padLeft(2, '0')}';
 
   Map<String, dynamic> toJson() => {
         'morning_briefing': morningBriefing,
         'night_checkpoint': nightCheckpoint,
         'urgent_news': urgentNews,
+        'morning_hour': morningHour,
+        'morning_minute': morningMinute,
+        'night_hour': nightHour,
+        'night_minute': nightMinute,
       };
 
   factory NotificationPrefs.fromJson(Map<dynamic, dynamic> json) {
@@ -38,6 +65,10 @@ class NotificationPrefs {
       morningBriefing: json['morning_briefing'] as bool? ?? true,
       nightCheckpoint: json['night_checkpoint'] as bool? ?? true,
       urgentNews: json['urgent_news'] as bool? ?? false,
+      morningHour: json['morning_hour'] as int? ?? 8,
+      morningMinute: json['morning_minute'] as int? ?? 35,
+      nightHour: json['night_hour'] as int? ?? 22,
+      nightMinute: json['night_minute'] as int? ?? 0,
     );
   }
 }
@@ -83,6 +114,18 @@ class SettingsNotifier extends StateNotifier<NotificationPrefs> {
   /// Toggle urgent news.
   void setUrgentNews(bool value) {
     state = state.copyWith(urgentNews: value);
+    _persist();
+  }
+
+  /// Set morning briefing time.
+  void setMorningTime(int hour, int minute) {
+    state = state.copyWith(morningHour: hour, morningMinute: minute);
+    _persist();
+  }
+
+  /// Set night checkpoint time.
+  void setNightTime(int hour, int minute) {
+    state = state.copyWith(nightHour: hour, nightMinute: minute);
     _persist();
   }
 

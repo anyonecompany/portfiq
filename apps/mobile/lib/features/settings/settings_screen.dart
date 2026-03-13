@@ -304,6 +304,45 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Future<void> _pickTime(BuildContext context, {required bool isMorning}) async {
+    final prefs = ref.read(settingsProvider);
+    final initial = isMorning
+        ? TimeOfDay(hour: prefs.morningHour, minute: prefs.morningMinute)
+        : TimeOfDay(hour: prefs.nightHour, minute: prefs.nightMinute);
+
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initial,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: PortfiqTheme.accent,
+              surface: PortfiqTheme.secondaryBg,
+              onSurface: PortfiqTheme.textPrimary,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked == null) return;
+
+    final notifier = ref.read(settingsProvider.notifier);
+    if (isMorning) {
+      notifier.setMorningTime(picked.hour, picked.minute);
+    } else {
+      notifier.setNightTime(picked.hour, picked.minute);
+    }
+
+    EventTracker.instance.track('notification_time_changed', properties: {
+      'type': isMorning ? 'morning' : 'night',
+      'hour': picked.hour,
+      'minute': picked.minute,
+    });
+  }
+
   Widget _buildNotificationSection() {
     final prefs = ref.watch(settingsProvider);
     return Padding(
@@ -313,9 +352,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       child: Column(
         children: [
           _buildSwitchTile(
-            title: '아침 브리핑 (08:35)',
+            title: '아침 브리핑',
             value: prefs.morningBriefing,
             onChanged: (v) => _toggleNotification('morning_briefing', v),
+            trailing: prefs.morningBriefing
+                ? _buildTimeButton(prefs.morningTimeStr, isMorning: true)
+                : null,
           ),
           const Divider(
             height: 1,
@@ -324,9 +366,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             color: PortfiqTheme.divider,
           ),
           _buildSwitchTile(
-            title: '밤 체크포인트 (22:00)',
+            title: '밤 체크포인트',
             value: prefs.nightCheckpoint,
             onChanged: (v) => _toggleNotification('night_checkpoint', v),
+            trailing: prefs.nightCheckpoint
+                ? _buildTimeButton(prefs.nightTimeStr, isMorning: false)
+                : null,
           ),
           const Divider(
             height: 1,
@@ -345,31 +390,71 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Widget _buildTimeButton(String timeStr, {required bool isMorning}) {
+    return GestureDetector(
+      onTap: () => _pickTime(context, isMorning: isMorning),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: PortfiqTheme.accent.withAlpha(26),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          timeStr,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: PortfiqTheme.accent,
+            fontFamily: 'Inter',
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSwitchTile({
     required String title,
     required bool value,
     required ValueChanged<bool> onChanged,
+    Widget? trailing,
   }) {
-    return SwitchListTile(
-      dense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-          color: PortfiqTheme.textPrimary,
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: PortfiqTheme.textPrimary,
+                  ),
+                ),
+                if (trailing != null) ...[
+                  const SizedBox(height: 4),
+                  trailing,
+                ],
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: (v) {
+              HapticFeedback.selectionClick();
+              onChanged(v);
+            },
+            activeThumbColor: PortfiqTheme.accent,
+            activeTrackColor: PortfiqTheme.accent,
+            inactiveThumbColor: PortfiqTheme.textPrimary,
+            inactiveTrackColor: PortfiqTheme.divider,
+          ),
+        ],
       ),
-      value: value,
-      onChanged: (v) {
-        HapticFeedback.selectionClick();
-        onChanged(v);
-      },
-      activeThumbColor: PortfiqTheme.accent,
-      activeTrackColor: PortfiqTheme.accent,
-      inactiveThumbColor: PortfiqTheme.textPrimary,
-      inactiveTrackColor: PortfiqTheme.divider,
     );
   }
 

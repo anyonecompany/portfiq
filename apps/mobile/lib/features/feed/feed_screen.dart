@@ -22,10 +22,11 @@ class FeedScreen extends ConsumerStatefulWidget {
 }
 
 class _FeedScreenState extends ConsumerState<FeedScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   AnimationController? _staggerController;
   int _maxScrolledIndex = 0;
   final ScrollController _scrollController = ScrollController();
+  bool _ahaTracked = false;
 
   @override
   void initState() {
@@ -89,6 +90,15 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
           _initStaggerAnimation(feedState.newsItems.length + 1);
         }
       });
+
+      // AARRR: Track aha moment — first time user sees personalized feed
+      if (!_ahaTracked && feedState.newsItems.isNotEmpty) {
+        _ahaTracked = true;
+        EventTracker.instance.track('aha_moment_feed_viewed', properties: {
+          'news_count': feedState.newsItems.length,
+          'has_briefing': feedState.briefing != null,
+        });
+      }
     }
 
     return Scaffold(
@@ -301,6 +311,10 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
   void _openBriefingDetail(BuildContext context, BriefingData briefing) {
     EventTracker.instance.track('briefing_card_tap', properties: {
       'type': briefing.type.name,
+    });
+    EventTracker.instance.track('briefing_viewed', properties: {
+      'type': briefing.type.name,
+      'title': briefing.title,
     });
     Navigator.of(context).push(
       MaterialPageRoute(

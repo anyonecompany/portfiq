@@ -7,6 +7,8 @@ import '../../config/theme.dart';
 import '../../shared/services/api_client.dart';
 import '../../shared/tracking/event_tracker.dart';
 import '../../shared/widgets/glass_card.dart';
+import '../feed/feed_models.dart';
+import '../feed/feed_provider.dart';
 import '../my_etf/etf_models.dart';
 import '../my_etf/my_etf_provider.dart';
 import 'etf_holdings_changes_widget.dart';
@@ -320,29 +322,8 @@ class _EtfDetailScreenState extends ConsumerState<EtfDetailScreen> {
           _buildHoldingsSection(context, displayHoldings, maxWeight),
           const SizedBox(height: 16),
 
-          // 섹션 4: 관련 뉴스 (플레이스홀더)
-          GlassCard(
-            padding: const EdgeInsets.all(PortfiqSpacing.space20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '관련 뉴스',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 16),
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text(
-                      '관련 뉴스가 없습니다',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // 섹션 4: 관련 뉴스 (피드에서 이 ETF 관련 뉴스 필터링)
+          _buildRelatedNewsSection(context),
           const SizedBox(height: 16),
 
           // ──── CTA: 해부 리포트 보기 ────
@@ -369,6 +350,80 @@ class _EtfDetailScreenState extends ConsumerState<EtfDetailScreen> {
               ),
             ),
           const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  // Related News (from feed data)
+  // ──────────────────────────────────────────────────────────────
+
+  Widget _buildRelatedNewsSection(BuildContext context) {
+    final feedState = ref.watch(feedProvider);
+    final ticker = widget.ticker.toUpperCase();
+
+    // Filter news that mention this ETF
+    final relatedNews = feedState.newsItems
+        .where((item) => item.impacts.any(
+              (imp) => imp.etfTicker.toUpperCase() == ticker,
+            ))
+        .take(5)
+        .toList();
+
+    return GlassCard(
+      padding: const EdgeInsets.all(PortfiqSpacing.space20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                '관련 뉴스',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              if (relatedNews.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: PortfiqTheme.accent.withAlpha(26),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${relatedNews.length}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: PortfiqTheme.accent,
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (relatedNews.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  '관련 뉴스가 없습니다',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            )
+          else
+            ...relatedNews.map((news) => _RelatedNewsItem(
+                  headline: news.headline,
+                  source: news.source,
+                  sentiment: news.sentiment,
+                  impactLevel: news.impacts
+                      .where((imp) => imp.etfTicker.toUpperCase() == ticker)
+                      .firstOrNull
+                      ?.level,
+                )),
         ],
       ),
     );
@@ -1290,6 +1345,105 @@ class _ComparisonCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 관련 뉴스 아이템 (ETF 상세 화면용).
+class _RelatedNewsItem extends StatelessWidget {
+  final String headline;
+  final String source;
+  final NewsSentiment sentiment;
+  final ImpactLevel? impactLevel;
+
+  const _RelatedNewsItem({
+    required this.headline,
+    required this.source,
+    required this.sentiment,
+    this.impactLevel,
+  });
+
+  Color _sentimentColor() {
+    switch (sentiment) {
+      case NewsSentiment.positive:
+        return const Color(0xFF22C55E);
+      case NewsSentiment.negative:
+        return const Color(0xFFEF4444);
+      case NewsSentiment.neutral:
+        return const Color(0xFF9CA3AF);
+    }
+  }
+
+  String _sentimentLabel() {
+    switch (sentiment) {
+      case NewsSentiment.positive:
+        return '호재';
+      case NewsSentiment.negative:
+        return '위험';
+      case NewsSentiment.neutral:
+        return '중립';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: PortfiqTheme.surface,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              headline,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: PortfiqTheme.textPrimary,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: _sentimentColor().withAlpha(26),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    _sentimentLabel(),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: _sentimentColor(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    source,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: PortfiqTheme.textTertiary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

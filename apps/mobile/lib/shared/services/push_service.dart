@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
+import '../tracking/event_tracker.dart';
 import 'api_client.dart';
 
 /// FCM 푸시 알림 서비스.
@@ -35,6 +36,15 @@ class PushService {
 
       // Foreground 메시지 수신 리스너
       FirebaseMessaging.onMessage.listen(_onForegroundMessage);
+
+      // Background/terminated → 앱 오픈 리스너 (push_notification_opened 트래킹)
+      FirebaseMessaging.onMessageOpenedApp.listen(_onMessageOpened);
+
+      // 앱이 terminated 상태에서 푸시로 열린 경우
+      final initialMessage = await _messaging!.getInitialMessage();
+      if (initialMessage != null) {
+        _onMessageOpened(initialMessage);
+      }
 
       if (kDebugMode) {
         print('[PushService] Initialized, token: ${_currentToken?.substring(0, 20)}...');
@@ -123,5 +133,18 @@ class PushService {
       print('[PushService] Foreground message: ${message.notification?.title}');
     }
     // TODO: 인앱 알림 UI 표시 (snackbar 등)
+  }
+
+  /// 푸시 알림을 탭하여 앱을 연 경우 (AARRR Retention 핵심 이벤트).
+  void _onMessageOpened(RemoteMessage message) {
+    if (kDebugMode) {
+      print('[PushService] Message opened: ${message.notification?.title}');
+    }
+
+    EventTracker.instance.track('push_notification_opened', properties: {
+      'title': message.notification?.title ?? '',
+      'type': message.data['type'] ?? 'unknown',
+      'message_id': message.messageId ?? '',
+    });
   }
 }
