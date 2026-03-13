@@ -411,7 +411,7 @@ class _LastUpdateBar extends StatelessWidget {
             ),
           )
         else
-          Icon(
+          const Icon(
             Icons.access_time,
             size: 13,
             color: PortfiqTheme.textTertiary,
@@ -480,6 +480,17 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
+/// KRW 금액을 콤마 포맷으로 변환한다.
+String _formatKrw(int amount) {
+  final str = amount.toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < str.length; i++) {
+    if (i > 0 && (str.length - i) % 3 == 0) buffer.write(',');
+    buffer.write(str[i]);
+  }
+  return buffer.toString();
+}
+
 /// 개별 ETF 카드 위젯.
 class _EtfCard extends StatelessWidget {
   final EtfInfo etf;
@@ -522,9 +533,23 @@ class _EtfCard extends StatelessWidget {
             // 가격 + 변동률
             Row(
               children: [
-                Text(
-                  '\$${etf.currentPrice?.toStringAsFixed(2) ?? '-'}',
-                  style: Theme.of(context).textTheme.headlineSmall,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '\$${etf.currentPrice?.toStringAsFixed(2) ?? '-'}',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    if (etf.priceKrw != null)
+                      Text(
+                        '\u20a9${_formatKrw(etf.priceKrw!)}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontFamily: 'Inter',
+                          fontSize: 12,
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(width: PortfiqSpacing.space12),
                 if (etf.changePct != null)

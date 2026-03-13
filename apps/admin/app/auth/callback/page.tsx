@@ -2,14 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { api } from "@/lib/api";
 import { Suspense } from "react";
 
 /**
- * 세션에서 유저 정보를 localStorage에 저장.
- * 추가 네트워크 호출 없이 세션 데이터만 사용.
+ * Supabase access_token으로 백엔드 verifyLogin 호출 후 유저 정보를 localStorage에 저장.
+ * verifyLogin 실패 시 viewer fallback.
  */
-function storeUser(session: { user: { email?: string; id: string } }) {
-  const userData = { email: session.user.email, role: "viewer", id: session.user.id };
+async function storeUser(session: { user: { email?: string; id: string }; access_token: string }) {
+  let role = "viewer";
+  try {
+    const loginRes = await api.verifyLogin(session.access_token);
+    role = loginRes.user.role;
+  } catch (err) {
+    console.warn("[auth/callback] verifyLogin failed, falling back to viewer:", err);
+  }
+  const userData = { email: session.user.email, role, id: session.user.id };
   console.log("[auth/callback] Storing user:", userData);
   localStorage.setItem("portfiq_admin_user", JSON.stringify(userData));
 }
@@ -41,7 +49,7 @@ function CallbackHandler() {
 
           if (data.session) {
             console.log("[auth/callback] Session obtained, storing user...");
-            storeUser(data.session);
+            await storeUser(data.session);
             console.log("[auth/callback] Redirecting to / via full page reload...");
             window.location.href = "/";
             return;
@@ -54,7 +62,7 @@ function CallbackHandler() {
         const { data } = await supabase.auth.getSession();
         if (data.session) {
           console.log("[auth/callback] Existing session found, storing user...");
-          storeUser(data.session);
+          await storeUser(data.session);
           window.location.href = "/";
           return;
         }

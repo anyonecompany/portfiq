@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../config/app_config.dart';
@@ -49,8 +50,7 @@ class EventTracker with WidgetsBindingObserver {
   /// Track a named event with optional properties.
   void track(String name, {Map<String, dynamic>? properties}) {
     if (!_initialized) {
-      // ignore: avoid_print
-      print('[EventTracker] Not initialized — dropping event "$name"');
+      if (kDebugMode) print('[EventTracker] Not initialized — dropping event "$name"');
       return;
     }
 
@@ -72,8 +72,7 @@ class EventTracker with WidgetsBindingObserver {
     );
 
     if (_flavor == Flavor.local) {
-      // ignore: avoid_print
-      print('[EventTracker][LOCAL] $event');
+      if (kDebugMode) print('[EventTracker][LOCAL] $event');
       return;
     }
 

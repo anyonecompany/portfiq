@@ -1,30 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Sidebar } from "./sidebar";
 
+/**
+ * AdminShell — 레이아웃 컴포넌트.
+ * 인증 검사는 AuthGuard가 담당하므로 여기서는 하지 않음.
+ * AuthGuard를 통과한 경우에만 이 컴포넌트가 렌더링됨.
+ */
 export function AdminShell({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const [checked, setChecked] = useState(false);
-
-  useEffect(() => {
-    const user = localStorage.getItem("portfiq_admin_user");
-    if (!user) {
-      router.replace("/login");
-    } else {
-      setChecked(true);
-    }
-  }, [router]);
-
-  if (!checked) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-text-secondary">Loading...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />

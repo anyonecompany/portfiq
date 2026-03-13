@@ -6,6 +6,7 @@ import '../../config/theme.dart';
 /// Per MASTER.md:
 /// - Positive: green bg (15% opacity) + green text
 /// - Negative: red bg (15% opacity) + red text
+/// - Neutral (0): gray bg (15% opacity) + gray text
 /// - Font: Inter, 13px, w600
 /// - Border radius: 8px
 class EtfChip extends StatelessWidget {
@@ -20,10 +21,19 @@ class EtfChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isPositive = changePercent >= 0;
-    final color =
-        isPositive ? PortfiqTheme.positive : PortfiqTheme.negative;
-    final sign = isPositive ? '+' : '';
+    final Color color;
+    final String sign;
+
+    if (changePercent > 0) {
+      color = PortfiqTheme.positive;
+      sign = '+';
+    } else if (changePercent < 0) {
+      color = PortfiqTheme.negative;
+      sign = '';
+    } else {
+      color = PortfiqTheme.textTertiary;
+      sign = '';
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(

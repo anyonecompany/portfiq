@@ -61,11 +61,13 @@ class ShareCard extends StatelessWidget {
             ),
 
             // Main content
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 80),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            Positioned.fill(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 80),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                   // Top: Logo / branding
                   _buildHeader(accentColor),
 
@@ -144,6 +146,7 @@ class ShareCard extends StatelessWidget {
                   // Bottom watermark
                   _buildFooter(accentColor),
                 ],
+                ),
               ),
             ),
 
@@ -237,7 +240,7 @@ class ShareCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 28),
-        ...data.etfChanges.map((change) {
+        ...data.etfChanges.take(5).map((change) {
           final isPositive = change.changePercent >= 0;
           final color = isPositive ? PortfiqTheme.positive : PortfiqTheme.negative;
           final sign = isPositive ? '+' : '';
@@ -299,7 +302,7 @@ class ShareCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 28),
-        ...data.checkpoints.asMap().entries.map((entry) {
+        ...data.checkpoints.take(4).toList().asMap().entries.map((entry) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 20),
             child: Container(

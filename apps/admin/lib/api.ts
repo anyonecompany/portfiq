@@ -18,6 +18,9 @@ const API_BASE = typeof window !== "undefined"
   ? "/api/proxy"  // Browser: use same-origin proxy (no CORS)
   : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000");  // SSR: direct call
 
+/** API 요청 타임아웃 (20초) */
+const API_TIMEOUT_MS = 20_000;
+
 async function adminFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const token = await getAccessToken();
 
@@ -30,16 +33,29 @@ async function adminFetch<T>(path: string, options?: RequestInit): Promise<T> {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers,
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+  } catch (err) {
+    clearTimeout(timer);
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error("서버 응답 시간 초과. 잠시 후 다시 시도해주세요.");
+    }
+    throw new Error("서버에 연결할 수 없습니다. 네트워크를 확인해주세요.");
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (res.status === 401) {
     console.warn("[api] 401 Unauthorized from:", path);
-    // 401이 연속 발생하면 세션 만료로 판단하여 로그아웃
-    // 단, 첫 요청 실패(cold start/네트워크)로 인한 강제 로그아웃 방지
-    throw new Error("Unauthorized");
+    throw new Error("인증이 만료되었습니다. 다시 로그인해주세요.");
   }
 
   if (!res.ok) {

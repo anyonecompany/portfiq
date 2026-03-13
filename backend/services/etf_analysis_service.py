@@ -1,7 +1,7 @@
 """ETF 분석 서비스 — 섹터 집중도, 매크로 민감도, ETF 비교, 보유종목 변동.
 
 리텐션 방어 엔진의 분석 API를 위한 핵심 서비스 모듈.
-Claude API를 활용한 ETF 비교 요약 생성과 seed 데이터 기반 정적 분석을 제공한다.
+Gemini API를 활용한 ETF 비교 요약 생성과 seed 데이터 기반 정적 분석을 제공한다.
 
 두 가지 인터페이스를 제공한다:
 1. EtfAnalysisService 클래스 (기존 etf.py 라우터 호환)
@@ -451,13 +451,13 @@ class EtfAnalysisService:
         if cached and (now - cached[0]) < _COMPARISON_CACHE_TTL:
             return {"tickers": normalized, "summary": cached[1], "source": "cached"}
 
-        # Claude API 시도
-        summary = await self._generate_claude_comparison(normalized)
+        # Gemini API 시도
+        summary = await self._generate_gemini_comparison(normalized)
         if summary:
             _comparison_cache[cache_key] = (now, summary)
-            return {"tickers": normalized, "summary": summary, "source": "claude"}
+            return {"tickers": normalized, "summary": summary, "source": "gemini"}
 
-        # Claude 실패 시 시드 데이터에서 매칭
+        # Gemini 실패 시 시드 데이터에서 매칭
         seed_summary = self._find_seed_comparison(normalized)
         if seed_summary:
             _comparison_cache[cache_key] = (now, seed_summary)
@@ -469,8 +469,8 @@ class EtfAnalysisService:
             "source": "unavailable",
         }
 
-    async def _generate_claude_comparison(self, tickers: list[str]) -> str | None:
-        """Claude API로 ETF 비교 요약을 생성한다.
+    async def _generate_gemini_comparison(self, tickers: list[str]) -> str | None:
+        """Gemini API로 ETF 비교 요약을 생성한다.
 
         스레드 풀에서 실행하고 12초 타임아웃을 적용한다.
 
@@ -483,11 +483,11 @@ class EtfAnalysisService:
         import asyncio
 
         try:
-            from anthropic import Anthropic
+            from google import genai
             from config import settings
 
-            if not settings.ANTHROPIC_API_KEY:
-                logger.info("ANTHROPIC_API_KEY 미설정, Claude 비교 생략")
+            if not settings.GEMINI_API_KEY:
+                logger.info("GEMINI_API_KEY 미설정, Gemini 비교 생략")
                 return None
 
             # 각 ETF 정보 수집
@@ -517,16 +517,12 @@ class EtfAnalysisService:
             )
 
             def _call_sync() -> str:
-                client = Anthropic(
-                    api_key=settings.ANTHROPIC_API_KEY,
-                    timeout=12.0,
+                client = genai.Client(api_key=settings.GEMINI_API_KEY)
+                response = client.models.generate_content(
+                    model=settings.GEMINI_MODEL,
+                    contents=prompt,
                 )
-                response = client.messages.create(
-                    model=settings.ANTHROPIC_MODEL,
-                    max_tokens=300,
-                    messages=[{"role": "user", "content": prompt}],
-                )
-                return response.content[0].text.strip()
+                return (response.text or "").strip()
 
             text = await asyncio.wait_for(
                 asyncio.to_thread(_call_sync),
@@ -535,10 +531,10 @@ class EtfAnalysisService:
             return text
 
         except asyncio.TimeoutError:
-            logger.warning("Claude ETF 비교 타임아웃 (12s)")
+            logger.warning("Gemini ETF 비교 타임아웃 (12s)")
             return None
         except Exception as e:
-            logger.warning("Claude ETF 비교 생성 실패: %s", e)
+            logger.warning("Gemini ETF 비교 생성 실패: %s", e)
             return None
 
     def _find_seed_comparison(self, tickers: list[str]) -> str | None:

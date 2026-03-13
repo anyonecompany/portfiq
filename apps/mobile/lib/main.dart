@@ -12,7 +12,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await Hive.openBox('settings');
-  AppConfig.initialize(Flavor.local);
+  AppConfig.initialize(Flavor.production);
 
   // Generate a stable device ID from platform
   final deviceId = await _getDeviceId();

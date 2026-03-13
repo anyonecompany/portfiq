@@ -58,7 +58,7 @@ class _LoadingShimmerState extends State<LoadingShimmer>
               end: Alignment(1.0 + 2.0 * _controller.value, 0),
               colors: const [
                 PortfiqTheme.secondaryBg, // #16181F
-                PortfiqTheme.tertiaryBg, // #1E2028
+                PortfiqTheme.shimmerHighlight, // #252730 (brighter)
                 PortfiqTheme.secondaryBg, // #16181F
               ],
               stops: const [0.0, 0.5, 1.0],

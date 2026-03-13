@@ -33,7 +33,7 @@ function generateDauTrend(currentDau: number): { date: string; dau: number }[] {
 }
 
 export default function DashboardPage() {
-  const { data, loading, error } = useFetch<DashboardResponse>(
+  const { data, loading, error, refetch } = useFetch<DashboardResponse>(
     () => api.getDashboard(),
     []
   );
@@ -49,8 +49,14 @@ export default function DashboardPage() {
         </div>
 
         {error && (
-          <div className="bg-negative/10 border border-negative/30 rounded-btn px-4 py-3 text-sm text-negative">
-            서버 연결 실패: {error}
+          <div className="bg-negative/10 border border-negative/30 rounded-btn px-4 py-3 text-sm text-negative flex items-center justify-between">
+            <span>서버 연결 실패: {error}</span>
+            <button
+              onClick={refetch}
+              className="ml-4 px-3 py-1 bg-accent text-white text-xs rounded-btn hover:bg-accent/90 transition-colors"
+            >
+              다시 시도
+            </button>
           </div>
         )}
 

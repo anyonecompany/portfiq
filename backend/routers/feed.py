@@ -19,10 +19,10 @@ async def get_feed(
     """
     tickers = await etf_service.get_registered(device_id)
     if not tickers:
-        # No ETFs registered — return empty feed
-        return {"items": [], "total": 0, "message": "No ETFs registered. Register ETFs first."}
-
-    items = await news_service.get_news_for_etfs(tickers)
+        # ETF 미등록 시 전체 뉴스 반환
+        items = await news_service.get_all_news()
+    else:
+        items = await news_service.get_news_for_etfs(tickers)
     return {
         "items": [item.model_dump() for item in items],
         "total": len(items),

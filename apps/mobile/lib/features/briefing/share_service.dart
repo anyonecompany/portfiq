@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path_provider/path_provider.dart';
@@ -67,8 +67,7 @@ class ShareService {
 
       return true;
     } catch (e) {
-      // ignore: avoid_print
-      print('[ShareService] Error capturing/sharing: $e');
+      if (kDebugMode) print('[ShareService] Error capturing/sharing: $e');
       return false;
     }
   }

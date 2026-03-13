@@ -39,6 +39,12 @@ async def get_popular_etfs() -> dict:
     return {"etfs": [r.model_dump() for r in results], "total": len(results)}
 
 
+@router.get("/trending")
+async def get_trending_etfs() -> dict:
+    """Get trending ETFs (alias for /popular)."""
+    return await get_popular_etfs()
+
+
 @router.get("/compare")
 async def compare_etfs(
     tickers: str = Query(..., description="Comma-separated ETF tickers (2-3)"),

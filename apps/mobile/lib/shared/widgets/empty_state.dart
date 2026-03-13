@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../config/theme.dart';
 
 /// A centered empty state widget with icon, message, and optional action button.
+///
+/// Per MASTER.md: dark bg, glass-style icon container, accent action button.
 class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
@@ -25,29 +27,32 @@ class EmptyState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 72,
-              height: 72,
+              width: 80,
+              height: 80,
               decoration: BoxDecoration(
-                color: PortfiqTheme.surface,
+                color: PortfiqTheme.surfaceCard.withValues(alpha: 0.7),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: PortfiqTheme.divider.withValues(alpha: 0.3),
+                ),
+                boxShadow: const [PortfiqShadows.glassCard],
               ),
               child: Icon(
                 icon,
                 size: 32,
-                color: PortfiqTheme.textSecondary,
+                color: PortfiqTheme.textTertiary,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: PortfiqTheme.textSecondary,
-                    height: 1.5,
-                  ),
+              style: PortfiqTypography.body.copyWith(
+                color: PortfiqTheme.textSecondary,
+              ),
             ),
             if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               OutlinedButton(
                 onPressed: onAction,
                 child: Text(actionLabel!),

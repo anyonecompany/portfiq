@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../../config/constants.dart';
 import '../../config/theme.dart';
 import '../../shared/tracking/event_tracker.dart';
 import '../../shared/widgets/glass_card.dart';
@@ -23,19 +26,27 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  // Registered ETFs (mock initial data)
-  final List<_RegisteredEtf> _registeredEtfs = [
-    const _RegisteredEtf(ticker: 'QQQ', name: 'Invesco QQQ Trust'),
-    const _RegisteredEtf(ticker: 'SPY', name: 'SPDR S&P 500 ETF'),
-    const _RegisteredEtf(ticker: 'TLT', name: 'iShares 20+ Year Treasury'),
-    const _RegisteredEtf(ticker: 'GLD', name: 'SPDR Gold Shares'),
-  ];
+  List<_RegisteredEtf> _registeredEtfs = [];
 
   @override
   void initState() {
     super.initState();
     EventTracker.instance.track('screen_viewed', properties: {
       'screen_name': 'settings',
+    });
+    _loadRegisteredEtfs();
+  }
+
+  void _loadRegisteredEtfs() {
+    final box = Hive.box('settings');
+    final stored = box.get('registered_etfs');
+    final tickers = (stored is List)
+        ? stored.cast<String>()
+        : kDefaultEtfs;
+    setState(() {
+      _registeredEtfs = tickers
+          .map((t) => _RegisteredEtf(ticker: t, name: t))
+          .toList();
     });
   }
 
@@ -147,11 +158,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          color: PortfiqTheme.textSecondary,
+        title.toUpperCase(),
+        style: PortfiqTypography.label.copyWith(
+          color: PortfiqTheme.textTertiary,
         ),
       ),
     );
@@ -353,11 +362,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
       value: value,
-      onChanged: onChanged,
+      onChanged: (v) {
+        HapticFeedback.selectionClick();
+        onChanged(v);
+      },
       activeThumbColor: PortfiqTheme.accent,
-      activeTrackColor: PortfiqTheme.accent.withAlpha(77),
-      inactiveThumbColor: PortfiqTheme.textSecondary,
-      inactiveTrackColor: PortfiqTheme.surface,
+      activeTrackColor: PortfiqTheme.accent,
+      inactiveThumbColor: PortfiqTheme.textPrimary,
+      inactiveTrackColor: PortfiqTheme.divider,
     );
   }
 
@@ -368,11 +380,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       padding: EdgeInsets.zero,
       child: Column(
         children: [
-          ListTile(
+          const ListTile(
             dense: true,
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-            title: const Text(
+                EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+            title: Text(
               '버전',
               style: TextStyle(
                 fontSize: 15,
@@ -380,7 +392,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: PortfiqTheme.textPrimary,
               ),
             ),
-            trailing: const Text(
+            trailing: Text(
               '1.0.0',
               style: TextStyle(
                 fontSize: 14,
@@ -518,25 +530,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
 4. 제3자 제공
 - Supabase (데이터 저장): 미국 소재
-- Anthropic Claude API (AI 분석): 미국 소재
+- Google Gemini API (AI 분석): 미국 소재
 - 뉴스 분석 시 개인정보는 전달되지 않습니다
 
 5. 개인정보 삭제 요청
 앱 설정에서 데이터 초기화 또는 support@portfiq.com으로 요청
 
 6. AI 서비스 고지
-본 앱은 AI(Claude)를 활용하여 뉴스를 분석합니다.
+본 앱은 AI(Google Gemini)를 활용하여 뉴스를 분석합니다.
 AI 분석 결과는 참고 정보이며 투자 조언이 아닙니다.
 ''';
 
   Widget _buildAiDisclosure() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: PortfiqSpacing.space16),
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: PortfiqSpacing.space16),
       child: GlassCard(
-        padding: const EdgeInsets.all(PortfiqSpacing.space16),
+        padding: EdgeInsets.all(PortfiqSpacing.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
               'AI 기반 서비스 고지',
               style: TextStyle(
@@ -547,7 +559,7 @@ AI 분석 결과는 참고 정보이며 투자 조언이 아닙니다.
             ),
             SizedBox(height: 8),
             Text(
-              '본 앱의 뉴스 분석 및 브리핑은 AI(Claude)가 생성한 참고 정보이며, '
+              '본 앱의 뉴스 분석 및 브리핑은 AI(Google Gemini)가 생성한 참고 정보이며, '
               '투자 조언이 아닙니다.',
               style: TextStyle(
                 fontSize: 12,

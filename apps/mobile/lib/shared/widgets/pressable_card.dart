@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../config/theme.dart';
 
 /// Card wrapper with press-down animation feedback.
@@ -7,11 +8,16 @@ import '../../config/theme.dart';
 /// - Press: scale 0.98, opacity 0.85, 100ms
 /// - Release: scale 1.0, opacity 1.0, 150ms
 /// - Curve: easeOutCubic
+/// - Haptic: lightImpact on tap (configurable)
+/// - Respects MediaQuery.disableAnimations
 class PressableCard extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
   final double pressScale;
   final double pressOpacity;
+
+  /// Whether to trigger haptic feedback on tap. Default true per MASTER.md.
+  final bool hapticOnTap;
 
   const PressableCard({
     super.key,
@@ -19,6 +25,7 @@ class PressableCard extends StatefulWidget {
     this.onTap,
     this.pressScale = 0.98,
     this.pressOpacity = 0.85,
+    this.hapticOnTap = true,
   });
 
   @override
@@ -46,6 +53,9 @@ class _PressableCardState extends State<PressableCard>
   }
 
   void _onTapDown(TapDownDetails _) {
+    if (widget.hapticOnTap) {
+      HapticFeedback.lightImpact();
+    }
     _controller.forward();
   }
 
@@ -60,6 +70,20 @@ class _PressableCardState extends State<PressableCard>
 
   @override
   Widget build(BuildContext context) {
+    final disableAnimations = MediaQuery.of(context).disableAnimations;
+
+    if (disableAnimations) {
+      return GestureDetector(
+        onTap: () {
+          if (widget.hapticOnTap) {
+            HapticFeedback.lightImpact();
+          }
+          widget.onTap?.call();
+        },
+        child: widget.child,
+      );
+    }
+
     return GestureDetector(
       onTapDown: _onTapDown,
       onTapUp: _onTapUp,

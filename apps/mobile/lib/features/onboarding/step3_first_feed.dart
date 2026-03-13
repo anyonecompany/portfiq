@@ -1,27 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/theme.dart';
+import '../../shared/services/api_client.dart';
+import '../feed/feed_models.dart';
 import 'onboarding_provider.dart';
 
-/// Mock news item for the first feed experience.
-class _MockNewsItem {
-  const _MockNewsItem({
-    required this.title,
-    required this.summary,
-    required this.impact,
-    required this.relatedTickers,
-    required this.timeAgo,
-  });
-
-  final String title;
-  final String summary;
-  final String impact; // 'high', 'medium', 'low'
-  final List<String> relatedTickers;
-  final String timeAgo;
-}
-
-/// Step 3: Aha Moment — First Feed with mock news cards.
+/// Step 3: Aha Moment — First Feed with real news from API.
 class Step3FirstFeed extends ConsumerStatefulWidget {
   const Step3FirstFeed({super.key, required this.onShowPushSheet});
 
@@ -35,52 +21,82 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
     with TickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   bool _sheetShown = false;
-  late List<AnimationController> _cardControllers;
-  late List<Animation<double>> _cardAnimations;
+  List<AnimationController> _cardControllers = [];
+  List<Animation<double>> _cardAnimations = [];
 
-  static const _mockData = [
-    _MockNewsItem(
-      title: 'Fed 금리 동결 시사 — 기술주 랠리 지속 전망',
-      summary: '연준 의장이 당분간 금리를 동결할 수 있음을 시사했습니다. '
-          'NASDAQ 선물은 장 후 1.2% 상승했습니다.',
-      impact: 'high',
-      relatedTickers: ['QQQ', 'TQQQ', 'VOO'],
-      timeAgo: '2시간 전',
-    ),
-    _MockNewsItem(
-      title: 'TSMC 실적 서프라이즈 — 반도체 섹터 급등',
-      summary: 'TSMC가 시장 예상을 15% 상회하는 실적을 발표했습니다. '
-          'AI 수요가 핵심 성장 동력으로 확인되었습니다.',
-      impact: 'high',
-      relatedTickers: ['SOXL', 'QQQ'],
-      timeAgo: '3시간 전',
-    ),
-    _MockNewsItem(
-      title: 'S&P 500 사상 최고치 경신',
-      summary: 'S&P 500 지수가 사상 최고치를 경신하며 마감했습니다. '
-          '기술/헬스케어 섹터가 강세를 이끌었습니다.',
-      impact: 'medium',
-      relatedTickers: ['VOO', 'SPY'],
-      timeAgo: '5시간 전',
-    ),
-    _MockNewsItem(
-      title: '배당 ETF 자금 유입 지속',
-      summary: '고배당 ETF로의 자금 유입이 3주 연속 이어지고 있습니다. '
-          '금리 인하 기대감이 반영된 것으로 분석됩니다.',
-      impact: 'low',
-      relatedTickers: ['SCHD', 'JEPI'],
-      timeAgo: '6시간 전',
-    ),
-  ];
+  bool _isLoading = true;
+  List<NewsItem> _newsItems = [];
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _fetchNews();
+  }
 
-    // Staggered entrance animation (0.2s interval)
+  Future<void> _fetchNews() async {
+    try {
+      final response = await ApiClient.instance.get(
+        '/api/v1/feed/latest',
+        queryParameters: {'offset': 0, 'limit': 4},
+      );
+      final data = response.data as Map<String, dynamic>;
+      final items = data['items'] as List<dynamic>;
+
+      final newsItems = items.map((item) {
+        final map = item as Map<String, dynamic>;
+        final impacts = (map['impacts'] as List<dynamic>? ?? []).map((imp) {
+          final impMap = imp as Map<String, dynamic>;
+          return EtfImpact(
+            etfTicker: impMap['etf_ticker'] as String? ?? '',
+            level: _parseImpactLevel(impMap['level'] as String? ?? 'Low'),
+          );
+        }).toList();
+
+        return NewsItem(
+          id: map['id']?.toString() ?? '',
+          headline: map['headline'] as String? ?? '',
+          impactReason: map['impact_reason'] as String? ?? '',
+          source: map['source'] as String? ?? '',
+          sourceUrl: map['source_url'] as String? ?? '',
+          publishedAt:
+              DateTime.tryParse(map['published_at'] ?? '') ?? DateTime.now(),
+          impacts: impacts,
+        );
+      }).toList();
+
+      if (!mounted) return;
+      setState(() {
+        _newsItems = newsItems;
+        _isLoading = false;
+      });
+      _setupAnimations();
+    } catch (e) {
+      if (kDebugMode) print('[Step3FirstFeed] API 실패: $e');
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  ImpactLevel _parseImpactLevel(String level) {
+    switch (level.toLowerCase()) {
+      case 'high':
+        return ImpactLevel.high;
+      case 'medium':
+        return ImpactLevel.medium;
+      default:
+        return ImpactLevel.low;
+    }
+  }
+
+  void _setupAnimations() {
+    for (final c in _cardControllers) {
+      c.dispose();
+    }
     _cardControllers = List.generate(
-      _mockData.length,
+      _newsItems.length,
       (i) => AnimationController(
         vsync: this,
         duration: const Duration(milliseconds: 400),
@@ -104,10 +120,8 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
   }
 
   void _onScroll() {
-    // Show push permission sheet after scrolling past 1-2 cards
     if (!_sheetShown && _scrollController.offset > 120) {
       _sheetShown = true;
-      // Slight delay so the scroll feels natural
       Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted) {
           widget.onShowPushSheet();
@@ -129,12 +143,11 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
   Widget build(BuildContext context) {
     final selectedEtfs = ref.watch(onboardingProvider).selectedEtfs;
 
-    // Filter mock data to show items related to user's selected ETFs (at least
-    // one ticker overlap). If nothing matches, show all.
-    final relevant = _mockData.where((item) {
-      return item.relatedTickers.any((t) => selectedEtfs.contains(t));
+    // Filter to show items related to user's selected ETFs
+    final relevant = _newsItems.where((item) {
+      return item.impacts.any((imp) => selectedEtfs.contains(imp.etfTicker));
     }).toList();
-    final items = relevant.isNotEmpty ? relevant : _mockData;
+    final items = relevant.isNotEmpty ? relevant : _newsItems;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,30 +172,60 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
         ),
         const SizedBox(height: 20),
         Expanded(
-          child: ListView.separated(
-            controller: _scrollController,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              final animIndex =
-                  index < _cardAnimations.length ? index : _cardAnimations.length - 1;
-              return FadeTransition(
-                opacity: _cardAnimations[animIndex],
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, 0.15),
-                    end: Offset.zero,
-                  ).animate(_cardAnimations[animIndex]),
-                  child: _NewsCard(
-                    item: item,
-                    selectedEtfs: selectedEtfs,
+          child: _isLoading
+              ? const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(color: PortfiqTheme.accent),
+                      SizedBox(height: 16),
+                      Text(
+                        '뉴스를 불러오는 중...',
+                        style: TextStyle(
+                          color: PortfiqTheme.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              );
-            },
-          ),
+                )
+              : items.isEmpty
+                  ? const Center(
+                      child: Text(
+                        '뉴스를 불러오는 중...',
+                        style: TextStyle(
+                          color: PortfiqTheme.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 4),
+                      itemCount: items.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final item = items[index];
+                        final animIndex = index < _cardAnimations.length
+                            ? index
+                            : _cardAnimations.length - 1;
+                        if (animIndex < 0) return _NewsCard(item: item, selectedEtfs: selectedEtfs);
+                        return FadeTransition(
+                          opacity: _cardAnimations[animIndex],
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, 0.15),
+                              end: Offset.zero,
+                            ).animate(_cardAnimations[animIndex]),
+                            child: _NewsCard(
+                              item: item,
+                              selectedEtfs: selectedEtfs,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
         ),
         // CTA button to proceed
         Padding(
@@ -204,29 +247,36 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
 class _NewsCard extends StatelessWidget {
   const _NewsCard({required this.item, required this.selectedEtfs});
 
-  final _MockNewsItem item;
+  final NewsItem item;
   final List<String> selectedEtfs;
 
   Color _impactColor() {
-    switch (item.impact) {
-      case 'high':
+    switch (item.highestImpact) {
+      case ImpactLevel.high:
         return PortfiqTheme.impactHigh;
-      case 'medium':
+      case ImpactLevel.medium:
         return PortfiqTheme.impactMedium;
-      default:
+      case ImpactLevel.low:
         return PortfiqTheme.impactLow;
     }
   }
 
   String _impactLabel() {
-    switch (item.impact) {
-      case 'high':
+    switch (item.highestImpact) {
+      case ImpactLevel.high:
         return '높음';
-      case 'medium':
+      case ImpactLevel.medium:
         return '보통';
-      default:
+      case ImpactLevel.low:
         return '낮음';
     }
+  }
+
+  String _timeAgo() {
+    final diff = DateTime.now().difference(item.publishedAt);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}분 전';
+    if (diff.inHours < 24) return '${diff.inHours}시간 전';
+    return '${diff.inDays}일 전';
   }
 
   @override
@@ -264,7 +314,7 @@ class _NewsCard extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                item.timeAgo,
+                _timeAgo(),
                 style: Theme.of(context).textTheme.labelMedium,
               ),
             ],
@@ -273,28 +323,29 @@ class _NewsCard extends StatelessWidget {
 
           // Title
           Text(
-            item.title,
+            item.headline,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 6),
 
           // Summary
-          Text(
-            item.summary,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: PortfiqTheme.textSecondary,
-                ),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
+          if (item.impactReason.isNotEmpty)
+            Text(
+              item.impactReason,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: PortfiqTheme.textSecondary,
+                  ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
           const SizedBox(height: 12),
 
           // Ticker badges
           Wrap(
             spacing: 6,
             runSpacing: 6,
-            children: item.relatedTickers.map((ticker) {
-              final isUserEtf = selectedEtfs.contains(ticker);
+            children: item.impacts.map((impact) {
+              final isUserEtf = selectedEtfs.contains(impact.etfTicker);
               return Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -311,7 +362,7 @@ class _NewsCard extends StatelessWidget {
                       : null,
                 ),
                 child: Text(
-                  ticker,
+                  impact.etfTicker,
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 12,

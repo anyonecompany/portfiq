@@ -23,7 +23,6 @@ class NewsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sentiment = item.sentiment;
-    final accentColor = _sentimentColor(sentiment);
 
     return PressableCard(
       onTap: onTap,
@@ -139,7 +138,7 @@ class NewsCard extends StatelessWidget {
             ),
           ),
 
-          // Left accent bar based on sentiment
+          // Left accent bar — gradient per MASTER.md (not solid!)
           if (sentiment != NewsSentiment.neutral)
             Positioned(
               left: 0,
@@ -149,7 +148,7 @@ class NewsCard extends StatelessWidget {
                 width: 3,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(1.5),
-                  color: accentColor,
+                  gradient: _sentimentGradient(sentiment),
                 ),
               ),
             ),
@@ -158,14 +157,14 @@ class NewsCard extends StatelessWidget {
     );
   }
 
-  Color _sentimentColor(NewsSentiment sentiment) {
+  LinearGradient? _sentimentGradient(NewsSentiment sentiment) {
     switch (sentiment) {
       case NewsSentiment.positive:
-        return PortfiqTheme.positive;
+        return PortfiqGradients.positiveAccent;
       case NewsSentiment.negative:
-        return PortfiqTheme.negative;
+        return PortfiqGradients.highImpact;
       case NewsSentiment.neutral:
-        return const Color(0xFF9CA3AF);
+        return null;
     }
   }
 }

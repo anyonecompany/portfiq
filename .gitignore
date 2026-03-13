@@ -24,12 +24,16 @@ apps/mobile/.flutter-plugins
 apps/mobile/.flutter-plugins-dependencies
 apps/mobile/pubspec.lock
 apps/mobile/.metadata
-apps/mobile/ios/
-apps/mobile/android/
 apps/mobile/macos/
 apps/mobile/linux/
 apps/mobile/windows/
 apps/mobile/web/
+
+# Flutter platform - keep key.properties out
+apps/mobile/android/key.properties
+apps/mobile/android/.gradle/
+apps/mobile/android/app/build/
+apps/mobile/ios/Pods/
 
 # IDE
 .idea/

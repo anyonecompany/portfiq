@@ -218,6 +218,17 @@ class _EtfDetailScreenState extends ConsumerState<EtfDetailScreen> {
                   '\$${etf.currentPrice?.toStringAsFixed(2) ?? '-'}',
                   style: Theme.of(context).textTheme.displaySmall,
                 ),
+                if (etf.priceKrw != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      '\u20a9${_formatKrw(etf.priceKrw!)}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -837,6 +848,21 @@ class _EtfDetailScreenState extends ConsumerState<EtfDetailScreen> {
 
     return EtfHoldingsChangesWidget(changes: _holdingsChanges);
   }
+}
+
+// ════════════════════════════════════════════════════════════════
+// Helpers
+// ════════════════════════════════════════════════════════════════
+
+/// KRW 금액을 콤마 포맷으로 변환한다.
+String _formatKrw(int amount) {
+  final str = amount.toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < str.length; i++) {
+    if (i > 0 && (str.length - i) % 3 == 0) buffer.write(',');
+    buffer.write(str[i]);
+  }
+  return buffer.toString();
 }
 
 // ════════════════════════════════════════════════════════════════

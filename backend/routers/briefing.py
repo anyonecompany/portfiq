@@ -1,7 +1,8 @@
 """Briefing router — AI-generated ETF briefings (morning & night)."""
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 
+from middleware.rate_limit import limiter
 from services.briefing_service import briefing_service
 
 router = APIRouter()
@@ -26,7 +27,9 @@ async def get_night_briefing(
 
 
 @router.post("/generate")
+@limiter.limit("5/hour")
 async def generate_briefing(
+    request: Request,
     device_id: str = Query(..., description="Device identifier"),
 ) -> dict:
     """Manually trigger briefing generation (stub for Claude API integration)."""

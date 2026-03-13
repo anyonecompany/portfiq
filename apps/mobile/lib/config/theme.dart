@@ -27,6 +27,7 @@ class PortfiqTheme {
 
   // ─── Semantic ───────────────────────────────────────────────
   static const Color positive = Color(0xFF10B981);
+  static const Color positiveGradientEnd = Color(0xFF059669);
   static const Color negative = Color(0xFFEF4444);
   static const Color warning = Color(0xFFF59E0B);
   static const Color warningLight = Color(0xFFFBBF24);
@@ -48,6 +49,9 @@ class PortfiqTheme {
   // ─── Animation ──────────────────────────────────────────────
   static const Duration screenTransition = Duration(milliseconds: 250);
   static const Duration microInteraction = Duration(milliseconds: 150);
+
+  // ─── Shimmer ────────────────────────────────────────────────
+  static const Color shimmerHighlight = Color(0xFF252730);
 
   // ─── Splash ─────────────────────────────────────────────────
   static const Color splashCenter = Color(0xFF1A1B2E);
@@ -419,6 +423,30 @@ class PortfiqTypography {
   );
 }
 
+/// MASTER.md Depth / Elevation System
+class PortfiqDepth {
+  PortfiqDepth._();
+
+  // Level 1 — list items, subtle containers
+  static const double blurLevel1 = 8;
+  static const double opacityLevel1 = 0.70;
+  static const double borderOpacityLevel1 = 0.30;
+
+  // Level 2 — standard glass cards
+  static const double blurLevel2 = 10;
+  static const double opacityLevel2 = 0.75;
+  static const double borderOpacityLevel2 = 0.50;
+
+  // Level 3 — bottom sheets, modals
+  static const double blurLevel3 = 12;
+  static const double opacityLevel3 = 0.80;
+  static const double borderOpacityLevel3 = 0.70;
+
+  // Level 4 — tooltips, popovers
+  static const double blurLevel4 = 16;
+  static const double opacityLevel4 = 0.90;
+}
+
 /// MASTER.md Gradient Definitions
 class PortfiqGradients {
   PortfiqGradients._();
@@ -450,6 +478,18 @@ class PortfiqGradients {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [PortfiqTheme.impactMedium, PortfiqTheme.impactMediumDark],
+  );
+
+  /// Positive accent bar gradient (top to bottom)
+  static const positiveAccent = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [PortfiqTheme.positive, PortfiqTheme.positiveGradientEnd],
+  );
+
+  /// Accent fade gradient (for subtle highlighted card borders)
+  static const accentFade = LinearGradient(
+    colors: [PortfiqTheme.accent, Color(0x006366F1)],
   );
 
   /// Splash screen radial gradient
@@ -545,9 +585,21 @@ class PortfiqAnimations {
   /// Card release duration
   static const Duration cardRelease = Duration(milliseconds: 150);
 
+  /// Splash fade-in / scale-in
+  static const Duration splash = Duration(milliseconds: 600);
+
+  /// Price count-up animation
+  static const Duration priceCountUp = Duration(milliseconds: 800);
+
   /// Standard easing curve
   static const Curve defaultCurve = Curves.easeOutCubic;
 
   /// Subtle bounce for added items
   static const Curve bounceCurve = Curves.elasticOut;
+
+  /// Overshoot spring for card entry
+  static const Curve springCurve = Curves.easeOutBack;
+
+  /// Number count-up, value animations
+  static const Curve decelerateCurve = Curves.easeOutExpo;
 }

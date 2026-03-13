@@ -83,7 +83,7 @@ _ETF_MASTER: dict[str, ETFInfo] = _build_etf_master_from_seed()
 
 _yf_cache: dict[str, tuple[datetime, ETFInfo | None]] = {}
 _YF_CACHE_TTL = timedelta(hours=24)
-_YF_LOOKUP_TIMEOUT = 8  # yfinance info 호출 타임아웃 (초)
+_YF_LOOKUP_TIMEOUT = 4  # yfinance info 호출 타임아웃 (초) — 8s → 4s로 단축
 
 
 def _lookup_yfinance_sync(ticker: str) -> ETFInfo | None:
@@ -209,28 +209,45 @@ class EtfService:
     async def get_detail(self, ticker: str) -> ETFInfo | None:
         """Get detailed ETF information including holdings.
 
+        Uses TTL cache (15분) to avoid repeated Supabase/yfinance calls.
+        Priority: cache → in-memory master → Supabase → yfinance (4s timeout).
+
         Args:
             ticker: ETF ticker symbol.
 
         Returns:
             ETFInfo if found, None otherwise.
         """
+        from services.cache import get_cached, set_cached
+
+        t = ticker.upper()
+        cache_key = f"etf_detail_{t}"
+        cached = get_cached(cache_key)
+        if cached is not None:
+            return cached
+
+        # 1. In-memory master (가장 빠름 — JSON seed에서 로드)
+        info = _ETF_MASTER.get(t)
+        if info:
+            set_cached(cache_key, info)
+            return info
+
+        # 2. Supabase
         sb = _get_sb()
         if sb is not None:
             try:
                 resp = (
                     sb.table("etf_master")
                     .select("*")
-                    .eq("ticker", ticker.upper())
+                    .eq("ticker", t)
                     .limit(1)
                     .execute()
                 )
                 if resp.data:
                     row = resp.data[0]
-                    t = row["ticker"].upper()
                     # Prefer structured holdings from JSON seed
                     holdings = _HOLDINGS_MAP.get(t, row.get("top_holdings", []))
-                    return ETFInfo(
+                    result = ETFInfo(
                         ticker=row["ticker"],
                         name=row["name"],
                         name_kr=_NAME_KR_MAP.get(t),
@@ -239,18 +256,17 @@ class EtfService:
                         expense_ratio=row.get("expense_ratio"),
                         top_holdings=holdings or [],
                     )
-                # Supabase returned empty — fall through to mock
-                logger.info("ETF '%s' not in Supabase, trying mock", ticker)
+                    set_cached(cache_key, result)
+                    return result
+                logger.info("ETF '%s' not in Supabase, trying yfinance", ticker)
             except Exception as e:
-                logger.warning("Supabase get_detail failed, falling back to mock: %s", e)
+                logger.warning("Supabase get_detail failed, falling back to yfinance: %s", e)
 
-        # Fallback: in-memory master
-        info = _ETF_MASTER.get(ticker.upper())
-        if info:
-            return info
-
-        # Final fallback: yfinance dynamic lookup
-        return await _lookup_yfinance(ticker)
+        # 3. Final fallback: yfinance dynamic lookup (4s timeout)
+        result = await _lookup_yfinance(ticker)
+        if result:
+            set_cached(cache_key, result)
+        return result
 
     async def get_popular(self) -> list[ETFSearchResult]:
         """Return the top 10 popular ETFs based on device registration count.

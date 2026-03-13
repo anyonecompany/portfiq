@@ -287,6 +287,7 @@ const _morningBriefing = BriefingData(
     EtfChange(ticker: 'SCHD', changePercent: -0.3),
   ],
   checkpoints: [],
+  isMock: true,
 );
 
 const _nightBriefing = BriefingData(
@@ -299,4 +300,5 @@ const _nightBriefing = BriefingData(
     'NVIDIA 실적 발표 (한국시간 06:20) — AI 투자 모멘텀 확인',
     '미국 주간 신규실업수당 청구건수 — 고용시장 냉각 신호 여부',
   ],
+  isMock: true,
 );

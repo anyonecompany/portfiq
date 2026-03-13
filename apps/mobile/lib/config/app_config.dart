@@ -12,7 +12,7 @@ class AppConfig {
       case Flavor.qa:
         apiBaseUrl = 'https://qa-api.portfiq.com';
       case Flavor.production:
-        apiBaseUrl = 'https://api.portfiq.com';
+        apiBaseUrl = 'https://portfiq.fly.dev';
     }
   }
 }

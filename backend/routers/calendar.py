@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+@router.get("")
 @router.get("/events")
 async def get_calendar_events(
     from_date: date = Query(

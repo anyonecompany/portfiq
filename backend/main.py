@@ -40,6 +40,13 @@ async def lifespan(app: FastAPI):
                 settings.BRIEFING_MORNING_HOUR, settings.BRIEFING_MORNING_MINUTE,
                 settings.BRIEFING_NIGHT_HOUR)
 
+    # GEMINI_API_KEY 설정 확인 (Fly.io 디버깅용)
+    if settings.GEMINI_API_KEY:
+        masked = settings.GEMINI_API_KEY[:8] + "..." + settings.GEMINI_API_KEY[-4:]
+        logger.info("GEMINI_API_KEY 설정됨: %s (len=%d)", masked, len(settings.GEMINI_API_KEY))
+    else:
+        logger.warning("GEMINI_API_KEY 미설정 — 브리핑/번역이 mock 모드로 동작합니다")
+
     # Initialize Firebase Admin SDK (non-blocking)
     try:
         from services.push_service import init_firebase

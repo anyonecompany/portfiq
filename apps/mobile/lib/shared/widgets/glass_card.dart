@@ -7,6 +7,9 @@ import '../../config/theme.dart';
 ///
 /// Uses a translucent background with optional backdrop blur and
 /// a subtle border for the frosted glass effect.
+///
+/// The [depth] parameter controls the elevation level (1-4) per
+/// MASTER.md Depth/Elevation system. Level 2 is the default for cards.
 class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -14,6 +17,10 @@ class GlassCard extends StatelessWidget {
   final Color? borderColor;
   final Gradient? borderGradient;
   final bool enableBlur;
+
+  /// Depth level (1-4). When set, overrides blur/opacity/border values
+  /// using PortfiqDepth constants. Default is 2 (standard card).
+  final int depth;
 
   const GlassCard({
     super.key,
@@ -23,7 +30,36 @@ class GlassCard extends StatelessWidget {
     this.borderColor,
     this.borderGradient,
     this.enableBlur = false,
+    this.depth = 2,
   });
+
+  double get _blur => switch (depth) {
+        1 => PortfiqDepth.blurLevel1,
+        3 => PortfiqDepth.blurLevel3,
+        4 => PortfiqDepth.blurLevel4,
+        _ => PortfiqDepth.blurLevel2,
+      };
+
+  double get _surfaceOpacity => switch (depth) {
+        1 => PortfiqDepth.opacityLevel1,
+        3 => PortfiqDepth.opacityLevel3,
+        4 => PortfiqDepth.opacityLevel4,
+        _ => PortfiqDepth.opacityLevel2,
+      };
+
+  double get _borderOpacity => switch (depth) {
+        1 => PortfiqDepth.borderOpacityLevel1,
+        3 => PortfiqDepth.borderOpacityLevel3,
+        4 => 0.20, // accent-colored border for Level 4
+        _ => PortfiqDepth.borderOpacityLevel2,
+      };
+
+  BoxShadow get _shadow => switch (depth) {
+        1 => PortfiqShadows.sm,
+        3 => PortfiqShadows.lg,
+        4 => PortfiqShadows.glow,
+        _ => PortfiqShadows.glassCard,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -50,14 +86,18 @@ class GlassCard extends StatelessWidget {
   }
 
   Widget _buildCard(Widget content) {
+    final effectiveBorderColor = depth == 4
+        ? PortfiqTheme.accent.withValues(alpha: _borderOpacity)
+        : (borderColor ?? PortfiqTheme.divider.withValues(alpha: _borderOpacity));
+
     final decoration = BoxDecoration(
-      color: PortfiqTheme.surfaceCard.withValues(alpha: 0.7),
+      color: PortfiqTheme.surfaceCard.withValues(alpha: _surfaceOpacity),
       borderRadius: BorderRadius.circular(borderRadius),
       border: Border.all(
-        color: borderColor ?? PortfiqTheme.divider.withValues(alpha: 0.5),
+        color: effectiveBorderColor,
         width: 1,
       ),
-      boxShadow: const [PortfiqShadows.glassCard],
+      boxShadow: [_shadow],
     );
 
     if (enableBlur) {
@@ -66,7 +106,7 @@ class GlassCard extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(borderRadius),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            filter: ImageFilter.blur(sigmaX: _blur, sigmaY: _blur),
             child: content,
           ),
         ),

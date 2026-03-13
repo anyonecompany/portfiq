@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../config/app_config.dart';
 import 'event_models.dart';
@@ -30,13 +31,10 @@ class EventSender {
           response.statusCode! >= 200 &&
           response.statusCode! < 300;
     } on DioException catch (e) {
-      // Log but never crash
-      // ignore: avoid_print
-      print('[EventSender] Failed to send batch: ${e.message}');
+      if (kDebugMode) print('[EventSender] Failed to send batch: ${e.message}');
       return false;
     } catch (e) {
-      // ignore: avoid_print
-      print('[EventSender] Unexpected error: $e');
+      if (kDebugMode) print('[EventSender] Unexpected error: $e');
       return false;
     }
   }

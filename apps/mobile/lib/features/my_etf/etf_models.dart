@@ -10,6 +10,9 @@ class EtfInfo {
   final double? currentPrice;
   final double? changePct;
   final double? changeAmount;
+  final int? priceKrw;
+  final int? changeAmountKrw;
+  final double? exchangeRate;
 
   const EtfInfo({
     required this.ticker,
@@ -22,6 +25,9 @@ class EtfInfo {
     this.currentPrice,
     this.changePct,
     this.changeAmount,
+    this.priceKrw,
+    this.changeAmountKrw,
+    this.exchangeRate,
   });
 
   EtfInfo copyWith({
@@ -35,6 +41,9 @@ class EtfInfo {
     double? currentPrice,
     double? changePct,
     double? changeAmount,
+    int? priceKrw,
+    int? changeAmountKrw,
+    double? exchangeRate,
   }) {
     return EtfInfo(
       ticker: ticker ?? this.ticker,
@@ -47,6 +56,9 @@ class EtfInfo {
       currentPrice: currentPrice ?? this.currentPrice,
       changePct: changePct ?? this.changePct,
       changeAmount: changeAmount ?? this.changeAmount,
+      priceKrw: priceKrw ?? this.priceKrw,
+      changeAmountKrw: changeAmountKrw ?? this.changeAmountKrw,
+      exchangeRate: exchangeRate ?? this.exchangeRate,
     );
   }
 }

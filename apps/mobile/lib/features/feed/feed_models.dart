@@ -62,6 +62,7 @@ class BriefingData {
   final String summary;
   final List<EtfChange> etfChanges;
   final List<String> checkpoints;
+  final bool isMock;
 
   const BriefingData({
     required this.type,
@@ -69,5 +70,6 @@ class BriefingData {
     required this.summary,
     required this.etfChanges,
     required this.checkpoints,
+    this.isMock = false,
   });
 }

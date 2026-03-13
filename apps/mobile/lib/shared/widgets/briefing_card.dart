@@ -140,6 +140,43 @@ class _BriefingCardState extends State<BriefingCard> {
                 ),
                 const SizedBox(height: PortfiqSpacing.space12),
 
+                // Mock 데이터 배너
+                if (data.isMock) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: PortfiqSpacing.space12,
+                      vertical: PortfiqSpacing.space8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: PortfiqTheme.warning.withAlpha(26),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: PortfiqTheme.warning.withAlpha(77),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.auto_awesome,
+                          size: 14,
+                          color: PortfiqTheme.warning,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'AI 분석 준비 중 — 샘플 데이터입니다',
+                          style: PortfiqTypography.caption.copyWith(
+                            color: PortfiqTheme.warning,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: PortfiqSpacing.space12),
+                ],
+
                 if (isMorning) ...[
                   // ETF change chips
                   Wrap(

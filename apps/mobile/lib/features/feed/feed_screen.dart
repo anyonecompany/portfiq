@@ -49,7 +49,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     _staggerController?.dispose();
     _staggerController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 300 + (itemCount * 50)),
+      duration: Duration(milliseconds: 300 + (itemCount * 80)),
     )..forward();
   }
 
@@ -64,6 +64,24 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
   Widget build(BuildContext context) {
     final feedState = ref.watch(feedProvider);
 
+    // Show error snackbar when errorMessage is set
+    ref.listen<FeedState>(feedProvider, (prev, next) {
+      if (next.errorMessage != null && next.errorMessage != prev?.errorMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('뉴스를 불러오지 못했습니다. 다시 시도해주세요.'),
+            backgroundColor: PortfiqTheme.secondaryBg,
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: '재시도',
+              textColor: PortfiqTheme.accent,
+              onPressed: () => ref.read(feedProvider.notifier).refreshFeed(),
+            ),
+          ),
+        );
+      }
+    });
+
     // Initialize stagger animation when data loads
     if (!feedState.isLoading && _staggerController == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -76,12 +94,18 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     return Scaffold(
       backgroundColor: PortfiqTheme.primaryBg,
       appBar: AppBar(
-        backgroundColor: PortfiqTheme.primaryBg,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          'Portfiq',
-          style: PortfiqTypography.title.copyWith(
-            fontSize: 20,
+        title: ShaderMask(
+          shaderCallback: (bounds) =>
+              PortfiqGradients.indigo.createShader(bounds),
+          child: const Text(
+            'Portfiq',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
           ),
         ),
         centerTitle: false,
@@ -90,108 +114,151 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
           ? const Center(
               child: CircularProgressIndicator(color: PortfiqTheme.accent),
             )
-          : RefreshIndicator(
-              color: PortfiqTheme.accent,
-              backgroundColor: PortfiqTheme.secondaryBg,
-              onRefresh: () {
-                EventTracker.instance.track('feed_pull_refresh', properties: {});
-                EventTracker.instance.track('feed_refreshed', properties: {
-                  'source': 'pull_to_refresh',
-                });
-                _staggerController?.dispose();
-                _staggerController = null;
-                return ref.read(feedProvider.notifier).refreshFeed().then((_) {
-                  if (mounted) {
-                    _initStaggerAnimation(
-                      ref.read(feedProvider).newsItems.length + 1,
-                    );
-                  }
-                });
-              },
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.fromLTRB(
-                  PortfiqSpacing.space16,
-                  PortfiqSpacing.space8,
-                  PortfiqSpacing.space16,
-                  PortfiqSpacing.space24,
-                ),
-                // +1 for briefing, +1 for loading indicator at bottom
-                itemCount: feedState.newsItems.length + 1 + (feedState.isLoadingMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  // First item: Briefing card
-                  if (index == 0) {
-                    final briefing = feedState.briefing;
-                    if (briefing == null) return const SizedBox.shrink();
-                    return _buildStaggeredItem(
-                      index: 0,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: PortfiqSpacing.space16,
-                        ),
-                        child: BriefingCard(
-                          data: briefing,
-                          onTap: () => _openBriefingDetail(context, briefing),
-                        ),
-                      ),
-                    );
-                  }
+          : feedState.newsItems.isEmpty
+              ? _buildEmptyState()
+              : RefreshIndicator(
+                  color: PortfiqTheme.accent,
+                  backgroundColor: Colors.transparent,
+                  strokeWidth: 2.5,
+                  displacement: 40,
+                  onRefresh: () {
+                    EventTracker.instance.track('feed_pull_refresh', properties: {});
+                    EventTracker.instance.track('feed_refreshed', properties: {
+                      'source': 'pull_to_refresh',
+                    });
+                    _staggerController?.dispose();
+                    _staggerController = null;
+                    return ref.read(feedProvider.notifier).refreshFeed().then((_) {
+                      if (mounted) {
+                        _initStaggerAnimation(
+                          ref.read(feedProvider).newsItems.length + 1,
+                        );
+                      }
+                    });
+                  },
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.fromLTRB(
+                      PortfiqSpacing.space16,
+                      PortfiqSpacing.space8,
+                      PortfiqSpacing.space16,
+                      PortfiqSpacing.space24,
+                    ),
+                    // +1 for briefing, +1 for loading indicator at bottom
+                    itemCount: feedState.newsItems.length + 1 + (feedState.isLoadingMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      // First item: Briefing card
+                      if (index == 0) {
+                        final briefing = feedState.briefing;
+                        if (briefing == null) return const SizedBox.shrink();
+                        return _buildStaggeredItem(
+                          index: 0,
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: PortfiqSpacing.space16,
+                            ),
+                            child: BriefingCard(
+                              data: briefing,
+                              onTap: () => _openBriefingDetail(context, briefing),
+                            ),
+                          ),
+                        );
+                      }
 
-                  // Loading indicator at the very bottom
-                  if (index == feedState.newsItems.length + 1) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
-                      child: Center(
-                        child: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: PortfiqTheme.textTertiary,
+                      // Loading indicator at the very bottom
+                      if (index == feedState.newsItems.length + 1) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: PortfiqTheme.textTertiary,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      // News cards
+                      final item = feedState.newsItems[index - 1];
+
+                      // Track viewport entry for news cards
+                      if (index > _maxScrolledIndex) {
+                        _maxScrolledIndex = index;
+                        EventTracker.instance.track('news_card_viewed', properties: {
+                          'news_id': item.id,
+                          'position': index - 1,
+                        });
+                        EventTracker.instance.track('feed_scrolled_depth', properties: {
+                          'max_index': index - 1,
+                          'total_items': feedState.newsItems.length,
+                        });
+                      }
+
+                      return _buildStaggeredItem(
+                        index: index,
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: PortfiqSpacing.space12,
+                          ),
+                          child: NewsCard(
+                            item: item,
+                            onTap: () => _showNewsDetail(context, item),
+                            onSourceTap: () {
+                              EventTracker.instance.track('news_source_tap', properties: {
+                                'news_id': item.id,
+                                'source': item.source,
+                              });
+                              _openUrl(item.sourceUrl);
+                            },
                           ),
                         ),
-                      ),
-                    );
-                  }
+                      );
+                    },
+                  ),
+                ),
+    );
+  }
 
-                  // News cards
-                  final item = feedState.newsItems[index - 1];
-
-                  // Track viewport entry for news cards
-                  if (index > _maxScrolledIndex) {
-                    _maxScrolledIndex = index;
-                    EventTracker.instance.track('news_card_viewed', properties: {
-                      'news_id': item.id,
-                      'position': index - 1,
-                    });
-                    EventTracker.instance.track('feed_scrolled_depth', properties: {
-                      'max_index': index - 1,
-                      'total_items': feedState.newsItems.length,
-                    });
-                  }
-
-                  return _buildStaggeredItem(
-                    index: index,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        bottom: PortfiqSpacing.space12,
-                      ),
-                      child: NewsCard(
-                        item: item,
-                        onTap: () => _showNewsDetail(context, item),
-                        onSourceTap: () {
-                          EventTracker.instance.track('news_source_tap', properties: {
-                            'news_id': item.id,
-                            'source': item.source,
-                          });
-                          _openUrl(item.sourceUrl);
-                        },
-                      ),
-                    ),
-                  );
-                },
+  /// Empty state when no news items and not loading.
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.article_outlined,
+            size: 48,
+            color: PortfiqTheme.textTertiary,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            '아직 뉴스가 없습니다',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: PortfiqTheme.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: () => ref.read(feedProvider.notifier).refreshFeed(),
+            icon: const Icon(Icons.refresh, size: 18),
+            label: const Text('새로고침'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: PortfiqTheme.accent,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(PortfiqTheme.radiusButton),
               ),
             ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -208,7 +275,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       curve: Interval(
         startInterval,
         endInterval,
-        curve: PortfiqAnimations.defaultCurve,
+        curve: PortfiqAnimations.springCurve,
       ),
     );
 
@@ -341,7 +408,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                               children: [
                                 Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.auto_awesome,
                                       size: 14,
                                       color: PortfiqTheme.accent,
@@ -414,7 +481,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                         // Source + 전문 보러가기
                         Container(
                           width: double.infinity,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             border: Border(
                               top: BorderSide(color: PortfiqTheme.divider, width: 1),
                             ),
@@ -465,7 +532,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                           const SizedBox(height: PortfiqSpacing.space20),
                           Container(
                             width: double.infinity,
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               border: Border(
                                 top: BorderSide(color: PortfiqTheme.divider, width: 1),
                               ),
@@ -476,7 +543,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                               children: [
                                 Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.link_rounded,
                                       size: 16,
                                       color: PortfiqTheme.textSecondary,
@@ -503,9 +570,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                                         Future.delayed(
                                           const Duration(milliseconds: 300),
                                           () {
-                                            if (mounted) {
-                                              _showNewsDetail(context, related);
-                                            }
+                                            if (!mounted) return;
+                                            _showNewsDetail(this.context, related);
                                           },
                                         );
                                       },
@@ -561,7 +627,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                                                             ),
                                                             child: Text(
                                                               imp.etfTicker,
-                                                              style: TextStyle(
+                                                              style: const TextStyle(
                                                                 fontSize: 10,
                                                                 fontWeight: FontWeight.w600,
                                                                 color: PortfiqTheme.accent,

@@ -4,7 +4,9 @@
 추가로 일간 메트릭 집계, 퍼널 코호트 집계, 주말 브리핑 Job도 관리한다.
 """
 
+import asyncio
 import logging
+import threading
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -14,6 +16,25 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
+
+def _run_in_thread(coro_fn):
+    """코루틴 함수를 별도 스레드 + 별도 event loop에서 실행.
+
+    메인 event loop을 전혀 블로킹하지 않으므로 /health 등 API가 항상 응답 가능.
+    """
+    def _wrapper():
+        def _target():
+            loop = asyncio.new_event_loop()
+            try:
+                loop.run_until_complete(coro_fn())
+            except Exception as e:
+                logger.error("Background job failed: %s", e)
+            finally:
+                loop.close()
+        t = threading.Thread(target=_target, daemon=True)
+        t.start()
+    return _wrapper
+
 scheduler: AsyncIOScheduler | None = None
 
 
@@ -22,19 +43,28 @@ def start_scheduler() -> AsyncIOScheduler:
     global scheduler
     scheduler = AsyncIOScheduler()
 
-    # 1. 뉴스 수집: 3분마다 (실시간 금융 뉴스 서비스)
+    # 1. 뉴스 수집: 10분마다 (별도 스레드에서 실행 — 메인 event loop 보호)
     scheduler.add_job(
-        _run_news_collection,
-        IntervalTrigger(minutes=3),
+        _run_in_thread(_run_news_collection_async),
+        IntervalTrigger(minutes=10),
         id="news_collector",
         name="뉴스 수집",
+        replace_existing=True,
+    )
+
+    # 1.5. 미번역 뉴스 재번역: 5분마다
+    scheduler.add_job(
+        _run_in_thread(_retry_untranslated_news),
+        IntervalTrigger(minutes=5),
+        id="translation_retry",
+        name="미번역 뉴스 재번역",
         replace_existing=True,
     )
 
     # 2. 아침 브리핑: 매일 설정된 시간 KST (UTC로 변환: KST - 9)
     morning_utc_hour = (settings.BRIEFING_MORNING_HOUR - 9) % 24
     scheduler.add_job(
-        _run_morning_briefing,
+        _run_in_thread(_run_morning_briefing),
         CronTrigger(hour=morning_utc_hour, minute=settings.BRIEFING_MORNING_MINUTE),
         id="morning_briefing",
         name="아침 브리핑 생성",
@@ -44,21 +74,39 @@ def start_scheduler() -> AsyncIOScheduler:
     # 3. 밤 체크포인트: 매일 설정된 시간 KST (UTC로 변환: KST - 9)
     night_utc_hour = (settings.BRIEFING_NIGHT_HOUR - 9) % 24
     scheduler.add_job(
-        _run_night_briefing,
+        _run_in_thread(_run_night_briefing),
         CronTrigger(hour=night_utc_hour, minute=0),
         id="night_briefing",
         name="밤 체크포인트 생성",
         replace_existing=True,
     )
 
-    # 4. 서버 시작 직후 뉴스 수집 1회 즉시 실행 (5초 후)
+    # 4. 서버 시작 직후 뉴스 수집 1회 즉시 실행 (5초 후, 별도 스레드)
     from datetime import datetime, timedelta
     scheduler.add_job(
-        _run_news_collection,
+        _run_in_thread(_run_news_collection_async),
         "date",
         run_date=datetime.now() + timedelta(seconds=5),
         id="news_collector_initial",
         name="초기 뉴스 수집",
+    )
+
+    # 4.5. 서버 시작 15초 후 모닝+나이트 브리핑 즉시 생성 (캐시에 없을 때만)
+    scheduler.add_job(
+        _run_in_thread(_run_initial_morning_briefing),
+        "date",
+        run_date=datetime.now() + timedelta(seconds=15),
+        id="morning_briefing_initial",
+        name="초기 모닝 브리핑 생성",
+    )
+
+    # 4.6. 서버 시작 20초 후 나이트 브리핑 1회 즉시 생성 (캐시에 없을 때만)
+    scheduler.add_job(
+        _run_in_thread(_run_initial_night_briefing),
+        "date",
+        run_date=datetime.now() + timedelta(seconds=20),
+        id="night_briefing_initial",
+        name="초기 나이트 브리핑 생성",
     )
 
     # 5. 일간 메트릭 집계: 01:00 KST = 16:00 UTC
@@ -114,7 +162,7 @@ def start_scheduler() -> AsyncIOScheduler:
 
     scheduler.start()
     logger.info(
-        "스케줄러 시작: 뉴스(3분), 아침(%02d:%02d KST), 밤(%02d:00 KST), "
+        "스케줄러 시작: 뉴스(10분), 재번역(5분), 아침(%02d:%02d KST), 밤(%02d:00 KST), "
         "집계(01:00 KST), 퍼널(01:30 KST), 주말(토08:35/일22:00 KST), 스냅샷(월01:00 KST)",
         settings.BRIEFING_MORNING_HOUR,
         settings.BRIEFING_MORNING_MINUTE,
@@ -131,16 +179,17 @@ def stop_scheduler() -> None:
         logger.info("스케줄러 중지")
 
 
-async def _run_news_collection() -> None:
-    """뉴스 수집 Job 실행."""
+async def _run_news_collection_async() -> None:
+    """뉴스 수집 Job 실행 (별도 스레드의 event loop에서 호출됨)."""
     from jobs.news_collector import collect_news
     await collect_news()
 
 
 async def _generate_and_push_for_all_devices(briefing_type: str) -> None:
-    """모든 등록 디바이스에 대해 브리핑 생성 + 푸시 전송.
+    """브리핑을 전역 캐시에 생성하고, 등록 디바이스에 푸시 전송.
 
-    각 디바이스별로 독립 처리하여 한 디바이스의 실패가 다른 디바이스에 영향을 주지 않는다.
+    브리핑 생성은 디바이스 유무와 무관하게 항상 수행한다.
+    푸시 전송은 등록된 디바이스가 있을 때만 수행한다.
 
     Args:
         briefing_type: "morning" 또는 "night".
@@ -149,13 +198,27 @@ async def _generate_and_push_for_all_devices(briefing_type: str) -> None:
     from services.push_service import send_briefing_push, _get_all_device_tokens
 
     type_label = "아침 브리핑" if briefing_type == "morning" else "밤 체크포인트"
+
+    # 브리핑은 디바이스 유무와 관계없이 항상 생성 (전역 캐시)
+    logger.info("%s 생성 시작", type_label)
+    try:
+        if briefing_type == "morning":
+            briefing = await briefing_service.generate_morning_briefing_background("__scheduler__")
+        else:
+            briefing = await briefing_service.generate_night_briefing_background("__scheduler__")
+        logger.info("%s 생성 완료: %s (is_mock=%s)", type_label, briefing.title, briefing.is_mock)
+    except Exception as e:
+        logger.error("%s 생성 실패: %s", type_label, e)
+        return
+
+    # 푸시 전송은 등록 디바이스가 있을 때만
     devices = _get_all_device_tokens()
 
     if not devices:
-        logger.info("%s: 등록된 디바이스 없음, 스킵", type_label)
+        logger.info("%s: 등록된 디바이스 없음, 푸시 스킵 (브리핑은 캐시에 저장됨)", type_label)
         return
 
-    logger.info("%s 생성 시작: %d개 디바이스 대상", type_label, len(devices))
+    logger.info("%s 푸시 전송 시작: %d개 디바이스 대상", type_label, len(devices))
 
     success_count = 0
     fail_count = 0
@@ -163,13 +226,7 @@ async def _generate_and_push_for_all_devices(briefing_type: str) -> None:
     for device_info in devices:
         device_id = device_info["device_id"]
         try:
-            # 디바이스별 브리핑 생성
-            if briefing_type == "morning":
-                briefing = await briefing_service.get_morning_briefing(device_id)
-            else:
-                briefing = await briefing_service.get_night_briefing(device_id)
-
-            # 푸시 전송
+            # 푸시 전송 (브리핑은 이미 생성됨)
             emoji = "\U0001f305" if briefing_type == "morning" else "\U0001f319"
             push_body = f"{emoji} {briefing.summary[:80]}" if briefing.summary else ""
 
@@ -198,6 +255,38 @@ async def _generate_and_push_for_all_devices(briefing_type: str) -> None:
         "%s 완료: 성공=%d, 실패=%d, 전체=%d",
         type_label, success_count, fail_count, len(devices),
     )
+
+
+async def _run_initial_morning_briefing() -> None:
+    """서버 시작 15초 후 모닝 브리핑 1회 생성. 캐시에 이미 있으면 스킵."""
+    from services.cache import get_cached
+
+    cached = get_cached("briefing_morning")
+    if cached is not None:
+        logger.info("초기 모닝 브리핑: 캐시에 이미 존재, 스킵")
+        return
+
+    logger.info("초기 모닝 브리핑 생성 시작")
+    try:
+        await _generate_and_push_for_all_devices("morning")
+    except Exception as e:
+        logger.error("초기 모닝 브리핑 생성 실패: %s", e)
+
+
+async def _run_initial_night_briefing() -> None:
+    """서버 시작 20초 후 나이트 브리핑 1회 생성. 캐시에 이미 있으면 스킵."""
+    from services.cache import get_cached
+
+    cached = get_cached("briefing_night")
+    if cached is not None:
+        logger.info("초기 나이트 브리핑: 캐시에 이미 존재, 스킵")
+        return
+
+    logger.info("초기 나이트 브리핑 생성 시작")
+    try:
+        await _generate_and_push_for_all_devices("night")
+    except Exception as e:
+        logger.error("초기 나이트 브리핑 생성 실패: %s", e)
 
 
 async def _run_morning_briefing() -> None:
@@ -308,3 +397,12 @@ async def _run_holdings_snapshot() -> None:
 
     except Exception as e:
         logger.error("보유종목 스냅샷 실패: %s", e)
+
+
+async def _retry_untranslated_news() -> None:
+    """미번역 뉴스를 백그라운드에서 재번역한다."""
+    from services.news_service import _translate_cached_articles_sync
+    try:
+        await asyncio.to_thread(_translate_cached_articles_sync)
+    except Exception as e:
+        logger.error("미번역 뉴스 재번역 실패: %s", e)

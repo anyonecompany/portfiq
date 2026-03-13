@@ -1,11 +1,11 @@
-"""Impact analysis service — classifies news impact on ETFs via Claude API + keyword fallback."""
+"""Impact analysis service — classifies news impact on ETFs via Gemini API + keyword fallback."""
 
 from __future__ import annotations
 
 import json
 import logging
 
-import anthropic
+from google import genai
 
 from config import settings
 from models.schemas import ETFImpact
@@ -13,37 +13,34 @@ from prompts.impact import IMPACT_PROMPT
 
 logger = logging.getLogger(__name__)
 
-MODEL = "claude-sonnet-4-5-20250929"
-
-_client: anthropic.Anthropic | None = None
-
-
-def _get_client() -> anthropic.Anthropic:
-    """Return a lazily-initialised Anthropic client."""
-    global _client
-    if _client is None:
-        _client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-    return _client
+_GEMINI_MODEL = settings.GEMINI_MODEL
+_gemini_client: genai.Client | None = None
 
 
-def _call_claude(prompt: str) -> list | None:
-    """Claude API 호출 + JSON 배열 파싱.
+def _get_gemini_client() -> genai.Client:
+    """Return a lazily-initialised Gemini client."""
+    global _gemini_client
+    if _gemini_client is None:
+        _gemini_client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    return _gemini_client
+
+
+def _call_gemini(prompt: str) -> list | None:
+    """Gemini API 호출 + JSON 배열 파싱.
 
     Args:
-        prompt: The formatted prompt to send to Claude.
+        prompt: The formatted prompt to send to Gemini.
 
     Returns:
         Parsed JSON list on success, None on failure.
     """
     try:
-        client = _get_client()
-        response = client.messages.create(
-            model=MODEL,
-            max_tokens=2048,
-            messages=[{"role": "user", "content": prompt}],
+        client = _get_gemini_client()
+        response = client.models.generate_content(
+            model=_GEMINI_MODEL,
+            contents=prompt,
         )
-        block = response.content[0]
-        text = block.text if hasattr(block, "text") else ""
+        text = response.text or ""
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
         elif "```" in text:
@@ -53,7 +50,7 @@ def _call_claude(prompt: str) -> list | None:
             return result
         return None
     except Exception as e:
-        logger.error("Claude API 호출 실패: %s", e)
+        logger.error("Gemini API 호출 실패: %s", e)
         return None
 
 
@@ -183,7 +180,7 @@ def _keyword_classify(text: str, target_tickers: list[str] | None = None) -> lis
 
 
 class ImpactService:
-    """Classifies news impact on ETFs via Claude API with keyword fallback."""
+    """Classifies news impact on ETFs via Gemini API with keyword fallback."""
 
     def classify(self, text: str, target_tickers: list[str] | None = None) -> list[ETFImpact]:
         """Classify the impact of a piece of text on ETFs.
@@ -242,8 +239,8 @@ class ImpactService:
             List of dicts with article_id, ticker, impact_score, direction,
             affected_holdings, and reasoning.
         """
-        if not settings.ANTHROPIC_API_KEY:
-            logger.warning("ANTHROPIC_API_KEY 미설정 — keyword fallback 사용")
+        if not settings.GEMINI_API_KEY:
+            logger.warning("GEMINI_API_KEY 미설정 — keyword fallback 사용")
             return await self._batch_analyze_keyword(articles, tickers)
 
         results: list[dict] = []
@@ -251,7 +248,7 @@ class ImpactService:
 
         for i in range(0, len(articles), batch_size):
             batch = articles[i:i + batch_size]
-            batch_results = await self._batch_analyze_claude(batch, tickers)
+            batch_results = await self._batch_analyze_gemini(batch, tickers)
             if batch_results is None:
                 # Fallback to keyword for this batch
                 batch_results = await self._batch_analyze_keyword(batch, tickers)
@@ -259,10 +256,10 @@ class ImpactService:
 
         return results
 
-    async def _batch_analyze_claude(
+    async def _batch_analyze_gemini(
         self, articles: list[dict], tickers: list[str]
     ) -> list[dict] | None:
-        """Send a batch of articles to Claude for impact classification.
+        """Send a batch of articles to Gemini for impact classification.
 
         Args:
             articles: Batch of article dicts (max 10).
@@ -271,6 +268,8 @@ class ImpactService:
         Returns:
             List of result dicts, or None on failure.
         """
+        import asyncio
+
         # Build news list text
         news_lines: list[str] = []
         for idx, article in enumerate(articles):
@@ -282,25 +281,25 @@ class ImpactService:
         etf_holdings = ", ".join(tickers)
 
         prompt = IMPACT_PROMPT.format(etf_holdings=etf_holdings, news_list=news_list)
-        claude_results = _call_claude(prompt)
+        gemini_results = await asyncio.to_thread(_call_gemini, prompt)
 
-        if claude_results is None:
+        if gemini_results is None:
             return None
 
-        # Parse Claude response into result dicts
+        # Parse Gemini response into result dicts
         results: list[dict] = []
         impact_map: dict[int, list[dict]] = {}
-        for item in claude_results:
+        for item in gemini_results:
             news_idx = item.get("news_index", 0)
             impacts = item.get("impacts", [])
             impact_map[news_idx] = impacts
 
         for idx, article in enumerate(articles):
             article_id = article.get("id", f"unknown-{idx}")
-            claude_impacts = impact_map.get(idx, [])
+            ai_impacts = impact_map.get(idx, [])
 
-            if claude_impacts:
-                for imp in claude_impacts:
+            if ai_impacts:
+                for imp in ai_impacts:
                     ticker = imp.get("ticker", "")
                     level = imp.get("level", "Low")
                     reason = imp.get("reason", "")
@@ -311,10 +310,9 @@ class ImpactService:
                         "impact_score": score,
                         "direction": "positive",
                         "affected_holdings": [],
-                        "reasoning": f"Claude 분류: {reason}",
+                        "reasoning": f"Gemini 분류: {reason}",
                     })
             else:
-                # No impacts from Claude for this article — add neutral entries
                 for ticker in tickers:
                     results.append({
                         "article_id": article_id,
@@ -322,7 +320,7 @@ class ImpactService:
                         "impact_score": 0.0,
                         "direction": "neutral",
                         "affected_holdings": [],
-                        "reasoning": "Claude 분류: 관련 없음",
+                        "reasoning": "Gemini 분류: 관련 없음",
                     })
 
         return results

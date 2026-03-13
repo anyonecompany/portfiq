@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../config/theme.dart';
+import '../../shared/services/api_client.dart';
 import '../../shared/tracking/event_tracker.dart';
 import 'onboarding_provider.dart';
 
@@ -176,14 +180,36 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: notifier.canProceed
-                      ? () {
+                      ? () async {
+                          final tickers = state.selectedEtfs;
                           EventTracker.instance.track(
                             'etf_registered',
                             properties: {
-                              'tickers': state.selectedEtfs,
-                              'count': state.selectedEtfs.length,
+                              'tickers': tickers,
+                              'count': tickers.length,
                             },
                           );
+
+                          // Hive에 registered_etfs 저장
+                          final box = Hive.box('settings');
+                          await box.put('registered_etfs', tickers);
+
+                          // POST /api/v1/etf/register (실패해도 onNext 진행)
+                          final deviceId = box.get('device_id') as String?;
+                          try {
+                            await ApiClient.instance.post(
+                              '/api/v1/etf/register',
+                              data: {
+                                'device_id': deviceId,
+                                'tickers': tickers,
+                              },
+                            );
+                          } catch (e) {
+                            if (kDebugMode) {
+                              print('[Step1EtfSelect] ETF register API failed: $e');
+                            }
+                          }
+
                           widget.onNext();
                         }
                       : null,
@@ -198,7 +224,12 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
   }
 }
 
-/// Animated ETF selection chip.
+/// Animated ETF selection chip with haptic + scale bounce.
+///
+/// Per onboarding.md:
+/// - Default: #1E2028 bg, #9CA3AF text, pill shape
+/// - Selected: #6366F1 @ 20% bg, #6366F1 text, #6366F1 border
+/// - Tap: scale bounce 0.95 → 1.02 → 1.0, haptic selectionClick
 class _EtfChip extends StatelessWidget {
   const _EtfChip({
     required this.ticker,
@@ -213,17 +244,20 @@ class _EtfChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
       child: AnimatedContainer(
-        duration: PortfiqTheme.microInteraction,
-        curve: Curves.easeInOut,
+        duration: PortfiqAnimations.normal,
+        curve: PortfiqAnimations.springCurve,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         constraints: const BoxConstraints(minHeight: 44),
         decoration: BoxDecoration(
           color: selected
-              ? PortfiqTheme.accent.withAlpha(26)
-              : PortfiqTheme.surface,
-          borderRadius: BorderRadius.circular(PortfiqTheme.radiusChip),
+              ? PortfiqTheme.accent.withAlpha(51) // 20%
+              : PortfiqTheme.tertiaryBg,
+          borderRadius: BorderRadius.circular(PortfiqTheme.radiusPill),
           border: Border.all(
             color: selected ? PortfiqTheme.accent : Colors.transparent,
             width: 1.5,
@@ -240,7 +274,7 @@ class _EtfChip extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 color: selected
                     ? PortfiqTheme.accent
-                    : PortfiqTheme.textPrimary,
+                    : PortfiqTheme.textSecondary,
               ),
             ),
             if (selected) ...[

@@ -72,6 +72,7 @@ class FeedItem(BaseModel):
     source_url: str | None = None
     published_at: str | None = None
     impacts: list[ETFImpact] = Field(default_factory=list)
+    is_mock: bool = False
 
 
 # ──────────────────────────────────────────────
@@ -94,6 +95,7 @@ class BriefingResponse(BaseModel):
     etf_changes: list[ETFChange] = Field(default_factory=list)
     checkpoints: list[str] = Field(default_factory=list)
     generated_at: str | None = None
+    is_mock: bool = False
 
 
 # ──────────────────────────────────────────────

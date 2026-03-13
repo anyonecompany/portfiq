@@ -4,8 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-// Auth-guard가 보호하지 않는 공개 경로
 const PUBLIC_PATHS = ["/login", "/auth/callback"];
+
+/** Promise.race 기반 타임아웃 래퍼 */
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out (${ms}ms)`)), ms),
+    ),
+  ]);
+}
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -16,15 +25,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
   useEffect(() => {
-    console.log("[auth-guard] useEffect fired — pathname:", pathname, "isPublic:", isPublic, "checked:", checked.current, "ready:", ready);
-
-    // 공개 페이지는 즉시 렌더링
     if (isPublic) {
       setReady(true);
       return;
     }
 
-    // 이미 검증 완료된 경우 재실행 방지 (pathname 변경 시 불필요한 재검증 차단)
     if (checked.current) {
       setReady(true);
       return;
@@ -33,66 +38,51 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     let cancelled = false;
 
     const checkSession = async () => {
-      console.log("[auth-guard] checkSession() running, pathname:", pathname);
-
-      // 1) localStorage에 유저 정보가 있으면 즉시 통과 (가장 빠른 경로)
+      // 1) localStorage — 즉시 통과
       const stored = localStorage.getItem("portfiq_admin_user");
-      console.log("[auth-guard] localStorage portfiq_admin_user:", stored ? "EXISTS" : "MISSING");
       if (stored) {
         checked.current = true;
         setReady(true);
-        console.log("[auth-guard] ✅ Passed via localStorage");
         return;
       }
 
-      // 2) localStorage에 없으면 Supabase 세션 확인
+      // 2) Supabase 세션 (5초 타임아웃 — 행 방지)
       try {
-        console.log("[auth-guard] Checking Supabase session...");
-        const { data } = await supabase.auth.getSession();
+        const { data } = await withTimeout(
+          supabase.auth.getSession(),
+          5000,
+          "Supabase getSession",
+        );
         if (cancelled) return;
 
         if (!data.session) {
-          console.log("[auth-guard] ❌ No Supabase session, redirecting to /login");
           router.replace("/login");
           return;
         }
 
-        console.log("[auth-guard] Supabase session found, trying backend verify...");
-        // 세션 있으면 백엔드 검증 시도
-        try {
-          const res = await fetch(
-            "/api/proxy/api/v1/admin/auth/login",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ access_token: data.session.access_token }),
+        const fallbackUser = {
+          email: data.session.user.email,
+          role: "viewer",
+          id: data.session.user.id,
+        };
+        localStorage.setItem("portfiq_admin_user", JSON.stringify(fallbackUser));
+        checked.current = true;
+        setReady(true);
+
+        // 백엔드 role 업그레이드 (비동기, 실패 무시)
+        fetch("/api/proxy/api/v1/admin/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ access_token: data.session.access_token }),
+          signal: AbortSignal.timeout(8000),
+        })
+          .then((res) => res.ok ? res.json() : null)
+          .then((json) => {
+            if (!cancelled && json?.user) {
+              localStorage.setItem("portfiq_admin_user", JSON.stringify(json.user));
             }
-          );
-          if (!res.ok) throw new Error("Verification failed");
-          const json = await res.json();
-          if (cancelled) return;
-          localStorage.setItem("portfiq_admin_user", JSON.stringify(json.user));
-          checked.current = true;
-          setReady(true);
-          console.log("[auth-guard] ✅ Passed via backend verify");
-        } catch (backendErr) {
-          console.warn("[auth-guard] Backend verify failed:", backendErr);
-          if (cancelled) return;
-          // 백엔드 실패 시 Supabase 유저 정보로 fallback
-          const { data: recheck } = await supabase.auth.getUser();
-          if (recheck.user) {
-            localStorage.setItem("portfiq_admin_user", JSON.stringify({
-              email: recheck.user.email,
-              role: "viewer",
-            }));
-            checked.current = true;
-            setReady(true);
-            console.log("[auth-guard] ✅ Passed via Supabase user fallback");
-          } else {
-            console.log("[auth-guard] ❌ No Supabase user, redirecting to /login");
-            router.replace("/login");
-          }
-        }
+          })
+          .catch(() => {});
       } catch (err) {
         console.warn("[auth-guard] Session check failed:", err);
         if (cancelled) return;
@@ -102,7 +92,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     checkSession();
 
-    // 로그아웃 감지
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT" && !cancelled) {
         localStorage.removeItem("portfiq_admin_user");

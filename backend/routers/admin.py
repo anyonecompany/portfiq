@@ -294,6 +294,70 @@ async def get_events(
 
 
 # ──────────────────────────────────────────────
+# 6.5. Push Logs (기간별 통계)
+# ──────────────────────────────────────────────
+
+@router.get("/push")
+async def get_push_stats(
+    start_date: date | None = Query(None, description="시작일 (YYYY-MM-DD)"),
+    end_date: date | None = Query(None, description="종료일 (YYYY-MM-DD)"),
+    admin: dict[str, Any] = Depends(get_current_admin),
+) -> dict[str, Any]:
+    """푸시 발송 로그 통계를 반환한다.
+
+    push_logs 테이블에서 기간별 발송 건수, 성공/실패 통계를 조회한다.
+    테이블이 없으면 빈 데이터로 fallback한다.
+
+    Args:
+        start_date: 시작일 (기본: 7일 전).
+        end_date: 종료일 (기본: 오늘).
+
+    Returns:
+        푸시 통계 딕셔너리.
+    """
+    if start_date is None:
+        start_date = date.today() - timedelta(days=7)
+    if end_date is None:
+        end_date = date.today()
+
+    try:
+        from services.supabase_client import get_supabase
+
+        sb = get_supabase()
+        resp = (
+            sb.table("push_logs")
+            .select("*")
+            .gte("created_at", start_date.isoformat())
+            .lte("created_at", (end_date + timedelta(days=1)).isoformat())
+            .execute()
+        )
+        rows = resp.data or []
+
+        total = len(rows)
+        success = sum(1 for r in rows if r.get("success"))
+        failed = total - success
+
+        return {
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "total": total,
+            "success": success,
+            "failed": failed,
+            "logs": rows,
+        }
+    except Exception as e:
+        logger.warning("push_logs 조회 실패 (테이블 미존재 가능): %s", e)
+        return {
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "total": 0,
+            "success": 0,
+            "failed": 0,
+            "logs": [],
+        }
+
+
+# ──────────────────────────────────────────────
 # 7. Push Send
 # ──────────────────────────────────────────────
 
