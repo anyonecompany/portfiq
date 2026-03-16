@@ -1,6 +1,6 @@
 # Portfiq
 
-AI-powered ETF briefing app. Get personalized daily briefings on your ETF portfolio, powered by Claude.
+AI-powered ETF briefing app. Get personalized daily briefings on your ETF portfolio, powered by Google Gemini.
 
 ## Structure
 
@@ -30,5 +30,5 @@ make flutter-run
 ## Tech Stack
 
 - **Mobile:** Flutter 3.41+ / Riverpod / GoRouter / Hive
-- **Backend:** FastAPI / Supabase / Anthropic Claude API
+- **Backend:** FastAPI / Supabase / Google Gemini API
 - **Infra:** Docker / GitHub Actions

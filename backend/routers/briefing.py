@@ -32,6 +32,6 @@ async def generate_briefing(
     request: Request,
     device_id: str = Query(..., description="Device identifier"),
 ) -> dict:
-    """Manually trigger briefing generation (stub for Claude API integration)."""
+    """Manually trigger briefing generation (stub for Gemini API integration)."""
     briefing = await briefing_service.generate_briefing(device_id)
     return {"status": "generated", "briefing": briefing.model_dump()}

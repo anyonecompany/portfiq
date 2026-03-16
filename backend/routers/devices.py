@@ -2,7 +2,7 @@
 
 import logging
 
-from fastapi import APIRouter, Path, HTTPException
+from fastapi import APIRouter, Path
 
 from models.schemas import NotificationPreferences
 
@@ -12,6 +12,7 @@ router = APIRouter()
 
 # Default preferences for new devices
 _DEFAULT_PREFS = NotificationPreferences()
+_PREFERENCE_FALLBACKS: dict[str, dict[str, bool]] = {}
 
 
 @router.get("/{device_id}/preferences")
@@ -48,6 +49,9 @@ async def get_preferences(
             }
     except Exception as e:
         logger.warning("Supabase 기기 설정 조회 실패: %s", e)
+
+    if device_id in _PREFERENCE_FALLBACKS:
+        return _PREFERENCE_FALLBACKS[device_id]
 
     # Device not found or Supabase error — return defaults
     return _DEFAULT_PREFS.model_dump()
@@ -87,5 +91,6 @@ async def update_preferences(
         return {"success": True, **prefs.model_dump()}
 
     except Exception as e:
-        logger.error("알림 설정 저장 실패: device=%s, error=%s", device_id, e)
-        raise HTTPException(status_code=500, detail="설정 저장에 실패했습니다.") from e
+        logger.warning("Supabase 설정 저장 실패, 인메모리 fallback 사용: device=%s, error=%s", device_id, e)
+        _PREFERENCE_FALLBACKS[device_id] = prefs.model_dump()
+        return {"success": True, **prefs.model_dump(), "is_fallback": True}

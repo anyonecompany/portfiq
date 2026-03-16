@@ -1,7 +1,7 @@
 """In-memory TTL cache utilities for expensive API calls.
 
 Provides a thread-safe TTLCache wrapper to avoid repeated calls to
-Anthropic API, Supabase, and other slow external services.
+Gemini API, Supabase, and other slow external services.
 
 Usage:
     from services.cache import get_cached, set_cached, clear_cache

@@ -1,5 +1,13 @@
 # Portfiq 최종 QA 리포트
 
+## 2026-03-14 Update
+
+- 이 문서는 2026-03-11 기준 검증 결과를 담고 있으며, 현재 코드 상태와 일부 차이가 있다.
+- 2026-03-14 추가 검증에서 `flutter analyze`, backend `py_compile`, backend release smoke tests(`7 passed`)가 통과했다.
+- analytics 응답 계약은 `{"status":"accepted","count":N,"accepted":N}`으로 정리되었고, 모바일 디바이스 등록 payload는 `platform`, `app_version`을 포함한다.
+- `backend/migrations/005_device_preferences_and_deploy_steps.sql`가 추가되어 `devices` 알림 설정 컬럼과 `deploy_history.steps` 컬럼 누락을 보완했다.
+- 최종 출시 판정은 이 문서 단독이 아니라 최신 `docs/release_qa_report.md`와 프로덕션 Supabase 실데이터 검증을 함께 기준으로 삼아야 한다.
+
 ## 검증 일시
 2026-03-11
 
@@ -53,7 +61,7 @@
 - `/health` -> 200 OK, `{"status":"ok","version":"1.0.0","environment":"local"}`
 - `/api/v1/feed/latest` -> 200 OK, 정상 JSON 응답 (keys: items, total)
 - `/api/v1/etf/popular` -> 타임아웃 (10초 초과)
-  - 원인: news_service에서 Anthropic API로 뉴스 번역 배치 처리 (70건, 10건씩 배치)
+  - 원인: news_service에서 Gemini API로 뉴스 번역 배치 처리 (70건, 10건씩 배치)
   - 1배치당 약 60초 소요 -> 전체 약 7배치 = ~420초 예상
   - **운영 환경에서는 캐싱/사전 처리로 해결해야 할 성능 이슈**
 
@@ -70,7 +78,7 @@
 ## 잔여 이슈
 
 ### 성능 (P1)
-1. **ETF popular 엔드포인트 응답 시간**: 뉴스 번역이 실시간으로 Anthropic API를 호출하여 수 분 소요. 캐싱 레이어 또는 사전 번역 배치 작업 필요.
+1. **ETF popular 엔드포인트 응답 시간**: 뉴스 번역이 실시간으로 Gemini API를 호출하여 수 분 소요. 캐싱 레이어 또는 사전 번역 배치 작업 필요.
 
 ### 경고 (P2)
 2. **Android debug symbols strip 실패**: NDK 도구 설치 확인 필요. 앱 크기에 영향 있을 수 있으나 기능에는 무관.

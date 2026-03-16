@@ -15,6 +15,7 @@ import asyncio
 import json
 import logging
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 from google import genai
 
@@ -25,13 +26,13 @@ from prompts.briefing import MORNING_PROMPT, NIGHT_PROMPT
 logger = logging.getLogger(__name__)
 
 _GEMINI_MODEL = settings.GEMINI_MODEL
-_GEMINI_TIMEOUT = 12  # Gemini API 호출 타임아웃 (초)
+_GEMINI_TIMEOUT = 30  # Gemini API 호출 타임아웃 (초) — 프롬프트 복잡도 증가로 12→30s
 
 _gemini_client: genai.Client | None = None
 
 # 마지막으로 성공한 브리핑 저장 (캐시 만료 후에도 반환 가능)
-_last_morning_briefing: BriefingResponse | None = None
-_last_night_briefing: BriefingResponse | None = None
+_last_morning_briefings: dict[str, BriefingResponse] = {}
+_last_night_briefings: dict[str, BriefingResponse] = {}
 
 
 def _get_gemini_client() -> genai.Client:
@@ -142,7 +143,7 @@ def _build_briefing_from_ai(data: dict, briefing_type: str) -> BriefingResponse:
 
 def _today_title(suffix: str) -> str:
     """오늘 날짜로 동적 브리핑 제목 생성."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(ZoneInfo("Asia/Seoul"))
     return f"{now.month}월 {now.day}일 {suffix}"
 
 
@@ -171,16 +172,15 @@ _MOCK_NIGHT = BriefingResponse(
     type="night",
     is_mock=True,
     title="나이트 체크포인트",  # get 시 동적으로 덮어씀
-    summary="오늘 하루 기술주 중심 강세 마감. 야간에 발표될 3가지 이벤트에 주목하세요.",
+    summary="오늘 하루 시장 마감 후 주요 이벤트를 확인하세요. AI 브리핑이 곧 생성됩니다.",
     etf_changes=[
-        ETFChange(ticker="QQQ", change_pct=1.5, direction="up", cause="기술주 매수세 지속"),
-        ETFChange(ticker="VOO", change_pct=0.9, direction="up", cause="S&P 500 +0.9% 마감"),
-        ETFChange(ticker="SOXL", change_pct=4.2, direction="up", cause="반도체 섹터 랠리"),
+        ETFChange(ticker="QQQ", change_pct=0.0, direction="flat", cause="시장 데이터 로딩 중"),
+        ETFChange(ticker="VOO", change_pct=0.0, direction="flat", cause="시장 데이터 로딩 중"),
     ],
     checkpoints=[
-        "21:30 — 미국 소비자물가지수(CPI) 발표 예정",
-        "22:00 — 연준 이사 월러 연설: 금리 전망 힌트 가능성",
-        "익일 장전 — 유럽중앙은행(ECB) 금리 결정 영향 체크",
+        "22:30 KST — 미국 시장 정규 거래 시작: ETF 가격 변동 확인",
+        "AI 브리핑이 자동 생성되면 실시간 경제 일정이 표시됩니다",
+        "설정에서 알림 시간을 변경할 수 있습니다",
     ],
     generated_at=datetime.now(timezone.utc).isoformat(),
 )
@@ -245,6 +245,163 @@ def _get_news_summary() -> str:
     return ", ".join(headlines)
 
 
+def _normalize_tickers(tickers: list[str]) -> list[str]:
+    """Normalize tickers while preserving order and uniqueness."""
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for ticker in tickers:
+        upper = ticker.strip().upper()
+        if upper and upper not in seen:
+            normalized.append(upper)
+            seen.add(upper)
+    return normalized
+
+
+def _briefing_signature(tickers: list[str]) -> str:
+    """Build a stable signature for a personalized ETF set."""
+    normalized = _normalize_tickers(tickers)
+    return "-".join(normalized) if normalized else "default"
+
+
+def _daily_cache_key(prefix: str, tickers: list[str]) -> str:
+    """Cache key segmented by KST date and ETF signature."""
+    today = datetime.now(ZoneInfo("Asia/Seoul")).date().isoformat()
+    return f"{prefix}:{today}:{_briefing_signature(tickers)}"
+
+
+def _to_direction(change_pct: float) -> str:
+    """Map change percentage to BriefingResponse direction enum."""
+    if change_pct > 0:
+        return "up"
+    if change_pct < 0:
+        return "down"
+    return "flat"
+
+
+def _trim_cause(text: str, max_len: int = 20) -> str:
+    """Keep short briefing causes compact and readable."""
+    compact = " ".join(text.split())
+    if len(compact) <= max_len:
+        return compact
+    return compact[: max_len - 1].rstrip() + "…"
+
+
+async def _get_personalized_tickers(device_id: str) -> list[str]:
+    """Resolve the ETF set used for a personalized briefing."""
+    from services.etf_service import etf_service
+
+    registered = _normalize_tickers(await etf_service.get_registered(device_id))
+    if registered:
+        return registered[:6]
+    return _FALLBACK_ETFS[:4]
+
+
+async def _build_price_snapshot(tickers: list[str]) -> list[dict]:
+    """Build a compact price snapshot for briefing generation."""
+    from services.price_service import get_batch_prices, _get_mock_price
+
+    try:
+        prices = await asyncio.wait_for(get_batch_prices(tickers[:4]), timeout=5)
+        if prices:
+            return prices
+    except Exception as e:
+        logger.warning("브리핑 가격 스냅샷 생성 실패, mock 사용: %s", e)
+
+    return [_get_mock_price(ticker) for ticker in tickers[:4]]
+
+
+async def _get_news_items_for_tickers(tickers: list[str]) -> list:
+    """Load recent news relevant to the target tickers."""
+    from services.news_service import news_service
+
+    items = await news_service.get_news_for_etfs(tickers)
+    return items[:5]
+
+
+def _build_price_summary(prices: list[dict]) -> str:
+    """Convert ETF prices into a compact prompt summary."""
+    if not prices:
+        return "가격 데이터 없음"
+    rows = []
+    for price in prices:
+        rows.append(
+            f"{price.get('ticker', '')}: {price.get('change_pct', 0):+.2f}%"
+        )
+    return ", ".join(rows)
+
+
+def _build_news_summary_from_items(items: list) -> str:
+    """Convert personalized news items into prompt-friendly text."""
+    if not items:
+        return "관련 뉴스 없음"
+    parts = []
+    for item in items[:5]:
+        source = f"[{item.source}] " if item.source else ""
+        parts.append(f"{source}{item.headline}")
+    return " | ".join(parts)
+
+
+async def _build_dynamic_morning_fallback(device_id: str) -> BriefingResponse:
+    """Build a personalized non-LLM morning briefing."""
+    tickers = await _get_personalized_tickers(device_id)
+    prices = await _build_price_snapshot(tickers)
+    news_items = await _get_news_items_for_tickers(tickers)
+
+    changes: list[ETFChange] = []
+    for price in prices[:4]:
+        ticker = str(price.get("ticker", "")).upper()
+        related = next(
+            (
+                item
+                for item in news_items
+                if any(imp.etf_ticker == ticker for imp in item.impacts)
+            ),
+            None,
+        )
+        cause_source = (
+            related.headline
+            if related is not None
+            else f"{ticker} 최근 가격 흐름 반영"
+        )
+        changes.append(
+            ETFChange(
+                ticker=ticker,
+                change_pct=float(price.get("change_pct", 0.0) or 0.0),
+                direction=_to_direction(float(price.get("change_pct", 0.0) or 0.0)),
+                cause=_trim_cause(cause_source),
+            )
+        )
+
+    if changes:
+        top_mover = max(changes, key=lambda item: abs(item.change_pct))
+        summary = (
+            f"간밤에는 {top_mover.ticker}가 {top_mover.change_pct:+.2f}%로 가장 크게 움직였습니다. "
+            f"{news_items[0].headline if news_items else '사용자 ETF 기준 핵심 뉴스와 가격 변화를 정리했습니다.'}"
+        )
+    else:
+        summary = "간밤 사용자 ETF 기준 핵심 뉴스와 가격 변화를 정리했습니다."
+
+    checkpoints = [
+        item.headline for item in news_items[:3]
+    ]
+    if not checkpoints:
+        checkpoints = [
+            "간밤 사용자 ETF 관련 핵심 뉴스 수집 중",
+            "다음 장 시작 전 ETF 가격 흐름 점검 필요",
+            "푸시 알림으로 신규 영향도를 확인할 수 있습니다",
+        ]
+
+    return BriefingResponse(
+        type="morning",
+        title=_today_title("모닝 브리핑"),
+        summary=summary,
+        etf_changes=changes,
+        checkpoints=checkpoints,
+        generated_at=datetime.now(timezone.utc).isoformat(),
+        is_mock=False,
+    )
+
+
 class BriefingService:
     """Generates personalized ETF briefings using Gemini API with mock fallback."""
 
@@ -262,27 +419,27 @@ class BriefingService:
         Returns:
             A BriefingResponse with morning briefing content.
         """
-        global _last_morning_briefing
         from services.cache import get_cached, set_cached
 
-        cache_key = "briefing_morning"
+        tickers = await _get_personalized_tickers(device_id)
+        cache_key = _daily_cache_key("briefing_morning", tickers)
         cached = get_cached(cache_key)
         if cached is not None:
             logger.debug("Cache hit for %s", cache_key)
             return cached
 
-        if _last_morning_briefing is not None:
-            logger.info("TTL 캐시 만료, last_morning_briefing 반환 (stale)")
-            set_cached(cache_key, _last_morning_briefing)
-            return _last_morning_briefing
+        signature = _briefing_signature(tickers)
+        stale = _last_morning_briefings.get(signature)
+        if stale is not None:
+            logger.info("TTL 캐시 만료, personalized stale morning briefing 반환 (%s)", signature)
+            set_cached(cache_key, stale)
+            return stale
 
-        logger.info("브리핑 미생성 — mock morning briefing 즉시 반환")
-        return _MOCK_MORNING.model_copy(
-            update={
-                "generated_at": datetime.now(timezone.utc).isoformat(),
-                "title": _today_title("모닝 브리핑"),
-            }
-        )
+        logger.info("개인화 모닝 브리핑 미생성 — dynamic fallback 즉시 반환 (%s)", signature)
+        fallback = await _build_dynamic_morning_fallback(device_id)
+        set_cached(cache_key, fallback)
+        _last_morning_briefings[signature] = fallback
+        return fallback
 
     async def get_night_briefing(self, device_id: str) -> BriefingResponse:
         """Return night checkpoint for the device.
@@ -298,27 +455,32 @@ class BriefingService:
         Returns:
             A BriefingResponse with night checkpoint content.
         """
-        global _last_night_briefing
         from services.cache import get_cached, set_cached
 
-        cache_key = "briefing_night"
+        tickers = await _get_personalized_tickers(device_id)
+        cache_key = _daily_cache_key("briefing_night", tickers)
         cached = get_cached(cache_key)
         if cached is not None:
             logger.debug("Cache hit for %s", cache_key)
             return cached
 
-        if _last_night_briefing is not None:
-            logger.info("TTL 캐시 만료, last_night_briefing 반환 (stale)")
-            set_cached(cache_key, _last_night_briefing)
-            return _last_night_briefing
+        signature = _briefing_signature(tickers)
+        stale = _last_night_briefings.get(signature)
+        if stale is not None:
+            logger.info("TTL 캐시 만료, personalized stale night briefing 반환 (%s)", signature)
+            set_cached(cache_key, stale)
+            return stale
 
         logger.info("브리핑 미생성 — mock night briefing 즉시 반환")
-        return _MOCK_NIGHT.model_copy(
+        fallback = _MOCK_NIGHT.model_copy(
             update={
                 "generated_at": datetime.now(timezone.utc).isoformat(),
                 "title": _today_title("나이트 체크포인트"),
             }
         )
+        set_cached(cache_key, fallback)
+        _last_night_briefings[signature] = fallback
+        return fallback
 
     async def generate_briefing(self, device_id: str) -> BriefingResponse:
         """Manually trigger briefing generation.
@@ -343,30 +505,40 @@ class BriefingService:
         Returns:
             A BriefingResponse with morning briefing content.
         """
-        global _last_morning_briefing
         from services.cache import set_cached
 
+        tickers = await _get_personalized_tickers(device_id)
+        signature = _briefing_signature(tickers)
+        cache_key = _daily_cache_key("briefing_morning", tickers)
+        fallback = await _build_dynamic_morning_fallback(device_id)
+
         if not settings.GEMINI_API_KEY:
-            logger.warning("GEMINI_API_KEY 미설정 — mock 데이터 반환")
-            return _MOCK_MORNING.model_copy(
-                update={"generated_at": datetime.now(timezone.utc).isoformat(), "is_mock": True}
-            )
+            logger.warning("GEMINI_API_KEY 미설정 — personalized dynamic fallback 반환")
+            set_cached(cache_key, fallback)
+            _last_morning_briefings[signature] = fallback
+            return fallback
 
-        etf_list = ", ".join(await _get_dynamic_etf_list())
-        news_summary = _get_news_summary()
-
-        prompt = MORNING_PROMPT.format(etf_list=etf_list, news_summary=news_summary)
+        price_summary = _build_price_summary(await _build_price_snapshot(tickers))
+        news_summary = _build_news_summary_from_items(await _get_news_items_for_tickers(tickers))
+        prompt = MORNING_PROMPT.format(
+            today_date=datetime.now(ZoneInfo("Asia/Seoul")).date().isoformat(),
+            etf_list=", ".join(tickers),
+            price_summary=price_summary,
+            news_summary=news_summary,
+        )
         data = await _call_gemini(prompt)
 
         if data is None:
-            logger.warning("Gemini API 실패 — mock morning briefing 반환")
-            return _MOCK_MORNING.model_copy(
-                update={"generated_at": datetime.now(timezone.utc).isoformat(), "is_mock": True}
-            )
+            logger.warning("Gemini API 실패 — personalized dynamic fallback 반환")
+            set_cached(cache_key, fallback)
+            _last_morning_briefings[signature] = fallback
+            return fallback
 
         result = _build_briefing_from_ai(data, "morning")
-        _last_morning_briefing = result
-        set_cached("briefing_morning", result)
+        if not result.etf_changes:
+            result = fallback.model_copy(update={"summary": result.summary or fallback.summary})
+        _last_morning_briefings[signature] = result
+        set_cached(cache_key, result)
         return result
 
     async def generate_night_briefing_background(self, device_id: str) -> BriefingResponse:
@@ -380,30 +552,44 @@ class BriefingService:
         Returns:
             A BriefingResponse with night checkpoint content.
         """
-        global _last_night_briefing
         from services.cache import set_cached
+
+        tickers = await _get_personalized_tickers(device_id)
+        signature = _briefing_signature(tickers)
+        cache_key = _daily_cache_key("briefing_night", tickers)
 
         if not settings.GEMINI_API_KEY:
             logger.warning("GEMINI_API_KEY 미설정 — mock 데이터 반환")
-            return _MOCK_NIGHT.model_copy(
+            fallback = _MOCK_NIGHT.model_copy(
                 update={"generated_at": datetime.now(timezone.utc).isoformat(), "is_mock": True}
             )
+            set_cached(cache_key, fallback)
+            _last_night_briefings[signature] = fallback
+            return fallback
 
-        etf_list = ", ".join(await _get_dynamic_etf_list())
+        etf_list = ", ".join(tickers)
         news_summary = _get_news_summary()
+        today_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-        prompt = NIGHT_PROMPT.format(etf_list=etf_list, news_summary=news_summary)
+        prompt = NIGHT_PROMPT.format(
+            etf_list=etf_list,
+            news_summary=news_summary,
+            today_date=today_date,
+        )
         data = await _call_gemini(prompt)
 
         if data is None:
             logger.warning("Gemini API 실패 — mock night briefing 반환")
-            return _MOCK_NIGHT.model_copy(
+            fallback = _MOCK_NIGHT.model_copy(
                 update={"generated_at": datetime.now(timezone.utc).isoformat(), "is_mock": True}
             )
+            set_cached(cache_key, fallback)
+            _last_night_briefings[signature] = fallback
+            return fallback
 
         result = _build_briefing_from_ai(data, "night")
-        _last_night_briefing = result
-        set_cached("briefing_night", result)
+        _last_night_briefings[signature] = result
+        set_cached(cache_key, result)
         return result
 
 

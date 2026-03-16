@@ -158,5 +158,10 @@ async def get_holdings_changes(
 async def register_device(request: DeviceRegisterRequest) -> dict:
     """디바이스 + 푸시 토큰 등록."""
     from services.push_service import register_token
-    success = register_token(request.device_id, request.push_token)
+    success = register_token(
+        request.device_id,
+        request.push_token,
+        request.platform,
+        request.app_version,
+    )
     return {"success": success}

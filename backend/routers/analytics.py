@@ -33,4 +33,8 @@ async def track_events_batch(
     count = await analytics_service.store_events(device_id, events_data)
 
     logger.info("Received %d events from device %s", count, device_id)
-    return {"status": "accepted", "count": count}
+    return {
+        "status": "accepted",
+        "count": count,
+        "accepted": count,
+    }

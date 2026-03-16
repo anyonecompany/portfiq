@@ -25,8 +25,6 @@ Fly.io 배포 시 필요한 환경변수 목록입니다.
 | `HOST` | 서버 바인딩 호스트 | `0.0.0.0` |
 | `DEBUG` | 디버그 로깅 활성화 | `false` |
 | `GEMINI_MODEL` | 사용할 Gemini 모델 ID | `gemini-2.5-flash-lite` |
-| `ANTHROPIC_API_KEY` | Anthropic API 키 (Claude 브리핑 생성용, Gemini와 병행 시) | -- |
-| `ANTHROPIC_MODEL` | 사용할 Claude 모델 ID | `claude-sonnet-4-20250514` |
 | `CORS_ORIGINS` | 허용 오리진 (쉼표 구분) | `http://localhost:3000,http://localhost:8080,https://portfiq-admin.vercel.app,https://admin-seven-nu-34.vercel.app` |
 | `ADMIN_ALLOWED_EMAILS` | 관리자 허용 이메일 (쉼표 구분) | `hyeonsong@anyonecompany.kr,geonyong@anyonecompany.kr` |
 

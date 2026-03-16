@@ -17,14 +17,20 @@ void main() async {
   // Initialize API client with a stable device ID
   final settingsBox = Hive.box('settings');
   var deviceId = settingsBox.get('device_id') as String?;
+  var isFirstOpen = false;
   if (deviceId == null) {
     deviceId = 'local-${DateTime.now().millisecondsSinceEpoch}';
     await settingsBox.put('device_id', deviceId);
+    isFirstOpen = true;
   }
   ApiClient.instance.init(deviceId: deviceId);
 
-  // Initialize event tracker with session management
-  EventTracker.instance.initialize(AppConfig.flavor, deviceId);
+  // Initialize event tracker with Hive persistence + 30s timer
+  await EventTracker.instance.initialize(AppConfig.flavor, deviceId);
+  EventTracker.instance.track('app_opened', properties: {
+    'is_first_open': isFirstOpen,
+    'platform': defaultTargetPlatform.name,
+  });
 
   // Firebase 초기화
   try {

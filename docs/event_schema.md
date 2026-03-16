@@ -1,14 +1,14 @@
 # Portfiq Event Tracking Schema
 
-> Version: 2.0.0
-> Last updated: 2026-03-10
+> Version: 2.1.0
+> Last updated: 2026-03-16
 
 All client-side events are sent to `POST /api/v1/analytics/events` with the following base structure:
 
 ```json
 {
   "event_name": "string",
-  "user_id": "string",
+  "device_id": "string",
   "timestamp": "ISO 8601",
   "properties": {
     "session_id": "string (auto-injected)"
@@ -16,7 +16,7 @@ All client-side events are sent to `POST /api/v1/analytics/events` with the foll
 }
 ```
 
-**Note:** `session_id` is automatically injected into all event properties by EventTracker.
+**Note:** `session_id` is automatically injected into all event properties by EventTracker. The client also sends `X-Device-ID` in the request header.
 
 ---
 
@@ -639,6 +639,210 @@ All client-side events are sent to `POST /api/v1/analytics/events` with the foll
   }
 }
 ```
+
+---
+
+## App Lifecycle Events (v2.1.0)
+
+### app_opened
+
+**Trigger:** App is opened (cold start or from background after session timeout).
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| is_first_open | bool | yes | Whether this is the first ever open |
+| platform | string | yes | "ios" or "android" |
+
+### aha_moment_feed_viewed
+
+**Trigger:** User sees personalized feed for the first time during onboarding (Step 3).
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| etf_count | int | yes | Number of ETFs registered |
+
+---
+
+## ETF Report Events (v2.1.0)
+
+### etf_report_viewed
+
+**Trigger:** User opens the ETF analysis report screen.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| ticker | string | yes | ETF ticker symbol |
+
+### etf_report_section_viewed
+
+**Trigger:** User scrolls to a specific section in the ETF report.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| ticker | string | yes | ETF ticker symbol |
+| section | string | yes | "sector", "macro", "holdings_changes", "comparison" |
+
+### etf_report_button_tapped
+
+**Trigger:** User taps the "해부 리포트" button on ETF detail screen.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| ticker | string | yes | ETF ticker symbol |
+
+### etf_comparison_viewed
+
+**Trigger:** User views ETF comparison analysis.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| ticker | string | yes | Source ETF ticker |
+| compared_with | string[] | no | Tickers compared against |
+
+### etf_macro_sensitivity_viewed
+
+**Trigger:** User views ETF macro sensitivity analysis.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| ticker | string | yes | ETF ticker symbol |
+
+### etf_holdings_changes_viewed
+
+**Trigger:** User views weekly holdings changes.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| ticker | string | yes | ETF ticker symbol |
+
+### etf_sector_warning_viewed
+
+**Trigger:** User sees a sector concentration warning badge.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| ticker | string | yes | ETF ticker symbol |
+| warning | string | yes | Warning text |
+
+### etf_card_tap
+
+**Trigger:** User taps an ETF card in the "My ETF" tab.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| ticker | string | yes | ETF ticker symbol |
+
+---
+
+## Company/Holdings Events (v2.1.0)
+
+### company_etf_tap
+
+**Trigger:** User taps a company holding to view related ETFs.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| company_ticker | string | yes | Company stock ticker |
+| source_etf | string | yes | ETF the holding was viewed from |
+
+### company_search_button_tap
+
+**Trigger:** User taps the search button on company ETFs screen.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| company_ticker | string | yes | Company ticker being searched |
+
+---
+
+## Calendar Events (v2.1.0)
+
+### date_select
+
+**Trigger:** User selects a date in the economic calendar.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| date | string | yes | Selected date (YYYY-MM-DD) |
+
+### event_tap
+
+**Trigger:** User taps an economic event in the calendar.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| event_name | string | yes | Economic event name |
+| date | string | yes | Event date |
+
+---
+
+## ETF Management Events (v2.1.0)
+
+### add_etf_button_tap
+
+**Trigger:** User taps the "ETF 추가" button in settings or my_etf.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| source | string | yes | "settings" or "my_etf" |
+
+---
+
+## Push Notification Events (v2.1.0)
+
+### push_notification_opened
+
+**Trigger:** User opens the app from a push notification tap.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| notification_type | string | yes | "morning", "night", or "urgent" |
+
+### push_received
+
+**Trigger:** Push notification received while app is in foreground.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| notification_type | string | yes | Type of push notification |
+
+### push_tapped
+
+**Trigger:** User taps an in-app push notification banner.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| notification_type | string | yes | Type of push notification |
+
+---
+
+## Share Events (v2.1.0)
+
+### share_channel_selected
+
+**Trigger:** User selects a share channel from the share sheet.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| channel | string | yes | Selected share channel name |
+| content_type | string | yes | "briefing" or "weekly_summary" |
+
+### share_card_shared
+
+**Trigger:** Share card image was successfully generated and shared.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| content_type | string | yes | "briefing" or "weekly_summary" |
+| channel | string | yes | Share channel used |
+
+### weekly_share_generated
+
+**Trigger:** Weekly summary share card was generated.
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| etf_count | int | yes | Number of ETFs in the summary |
 
 ---
 

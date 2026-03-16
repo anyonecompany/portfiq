@@ -185,7 +185,7 @@ class ImpactService:
     def classify(self, text: str, target_tickers: list[str] | None = None) -> list[ETFImpact]:
         """Classify the impact of a piece of text on ETFs.
 
-        Uses keyword-based classification (synchronous). For Claude API
+        Uses keyword-based classification (synchronous). For Gemini API
         classification, use batch_analyze().
 
         Args:
@@ -226,9 +226,9 @@ class ImpactService:
     async def batch_analyze(
         self, articles: list[dict], tickers: list[str]
     ) -> list[dict]:
-        """Analyse impact of multiple articles on multiple ETFs using Claude API.
+        """Analyse impact of multiple articles on multiple ETFs using Gemini API.
 
-        Sends articles in batches of 10 to Claude for classification.
+        Sends articles in batches of 10 to Gemini for classification.
         Falls back to keyword-based classification on API failure.
 
         Args:

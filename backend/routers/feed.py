@@ -1,9 +1,13 @@
 """Feed router — personalized ETF news feed."""
 
+import logging
+
 from fastapi import APIRouter, Query
 
 from services.news_service import news_service
 from services.etf_service import etf_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -11,6 +15,8 @@ router = APIRouter()
 @router.get("")
 async def get_feed(
     device_id: str = Query(..., description="Device identifier"),
+    offset: int = Query(0, ge=0, description="Number of items to skip"),
+    limit: int = Query(20, ge=1, le=100, description="Number of items to return"),
 ) -> dict:
     """Get personalized feed for a device based on their registered ETFs.
 
@@ -23,9 +29,13 @@ async def get_feed(
         items = await news_service.get_all_news()
     else:
         items = await news_service.get_news_for_etfs(tickers)
+    paged_items = items[offset:offset + limit]
     return {
-        "items": [item.model_dump() for item in items],
+        "items": [item.model_dump() for item in paged_items],
         "total": len(items),
+        "offset": offset,
+        "limit": limit,
+        "has_more": offset + limit < len(items),
     }
 
 
@@ -45,4 +55,49 @@ async def get_latest_feed(
         "offset": offset,
         "limit": limit,
         "has_more": offset + limit < total,
+    }
+
+
+@router.post("/refresh")
+async def refresh_feed() -> dict:
+    """Clear all caches and regenerate news + briefings.
+
+    Clears: TTL cache, news cache, briefing cache.
+    Then triggers fresh news collection + translation + briefing generation.
+    """
+    from services.cache import clear_cache
+    from services.briefing_service import briefing_service, _last_morning_briefing, _last_night_briefing
+    import services.briefing_service as bs
+
+    # 1. Clear all caches
+    cleared = clear_cache()
+    logger.info("TTL 캐시 클리어: %d entries", cleared)
+
+    # 2. Clear news in-memory cache
+    from services.news_service import _news_cache
+    import services.news_service as ns
+    old_count = len(ns._news_cache)
+    ns._news_cache = []
+    logger.info("뉴스 캐시 클리어: %d articles", old_count)
+
+    # 3. Clear stale briefing cache
+    bs._last_morning_briefing = None
+    bs._last_night_briefing = None
+    logger.info("브리핑 stale 캐시 클리어")
+
+    # 4. Trigger fresh news collection + translation
+    from services.news_service import fetch_and_store_news
+    news_count = await fetch_and_store_news()
+    logger.info("뉴스 재수집 완료: %d articles", news_count)
+
+    # 5. Trigger briefing regeneration (both morning and night)
+    morning = await briefing_service.generate_morning_briefing_background("system")
+    night = await briefing_service.generate_night_briefing_background("system")
+
+    return {
+        "cache_cleared": cleared,
+        "news_cleared": old_count,
+        "news_collected": news_count,
+        "morning_briefing": "generated" if not morning.is_mock else "mock_fallback",
+        "night_briefing": "generated" if not night.is_mock else "mock_fallback",
     }

@@ -12,9 +12,8 @@ from services.exchange_rate_service import get_usd_krw_rate
 
 logger = logging.getLogger(__name__)
 
-# In-memory price cache (5분 TTL — 가격은 자주 변하므로 15분보다 짧게)
+# In-memory price cache — 적응형 TTL (장중 15분, 장외 6시간)
 _price_cache: dict[str, tuple[float, dict]] = {}  # ticker -> (expires_at, data)
-_PRICE_TTL = 300  # 5분
 _YFINANCE_TIMEOUT = 10  # yfinance 호출 타임아웃 (초) — cold-start 대응 10s
 
 # Stale cache: 실패 시 이전 데이터를 반환하기 위한 장기 캐시 (24시간)
@@ -34,8 +33,10 @@ def _get_cached_price(ticker: str) -> dict | None:
 
 
 def _cache_price(ticker: str, data: dict) -> None:
-    """가격을 캐시에 저장."""
-    _price_cache[ticker] = (time.monotonic() + _PRICE_TTL, data)
+    """가격을 캐시에 저장. 장중/장외 적응형 TTL 적용."""
+    from services.cache_ttl import get_market_aware_price_ttl
+    ttl = get_market_aware_price_ttl()
+    _price_cache[ticker] = (time.monotonic() + ttl, data)
     _stale_cache[ticker] = data  # stale 캐시도 갱신
 
 

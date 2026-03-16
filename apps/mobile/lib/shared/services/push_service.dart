@@ -11,6 +11,7 @@ import 'api_client.dart';
 class PushService {
   PushService._();
   static final PushService instance = PushService._();
+  static const String _appVersion = '1.0.0+1';
 
   FirebaseMessaging? _messaging;
   String? _currentToken;
@@ -116,6 +117,8 @@ class PushService {
         data: {
           'device_id': ApiClient.instance.deviceId,
           'push_token': token,
+          'platform': _platformName,
+          'app_version': _appVersion,
         },
       );
       if (kDebugMode) {
@@ -128,10 +131,26 @@ class PushService {
     }
   }
 
+  String get _platformName {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return 'ios';
+      case TargetPlatform.android:
+        return 'android';
+      default:
+        return defaultTargetPlatform.name;
+    }
+  }
+
   void _onForegroundMessage(RemoteMessage message) {
     if (kDebugMode) {
       print('[PushService] Foreground message: ${message.notification?.title}');
     }
+    EventTracker.instance.track('push_received', properties: {
+      'push_type': message.data['type'] ?? 'unknown',
+      'title': message.notification?.title ?? '',
+      'message_id': message.messageId ?? '',
+    });
     // TODO: 인앱 알림 UI 표시 (snackbar 등)
   }
 
@@ -141,6 +160,11 @@ class PushService {
       print('[PushService] Message opened: ${message.notification?.title}');
     }
 
+    EventTracker.instance.track('push_tapped', properties: {
+      'push_type': message.data['type'] ?? 'unknown',
+      'title': message.notification?.title ?? '',
+      'message_id': message.messageId ?? '',
+    });
     EventTracker.instance.track('push_notification_opened', properties: {
       'title': message.notification?.title ?? '',
       'type': message.data['type'] ?? 'unknown',

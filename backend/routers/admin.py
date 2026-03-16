@@ -325,35 +325,101 @@ async def get_push_stats(
 
         sb = get_supabase()
         resp = (
-            sb.table("push_logs")
+            sb.table("push_metrics")
             .select("*")
-            .gte("created_at", start_date.isoformat())
-            .lte("created_at", (end_date + timedelta(days=1)).isoformat())
+            .gte("metric_date", start_date.isoformat())
+            .lte("metric_date", end_date.isoformat())
+            .order("metric_date")
             .execute()
         )
         rows = resp.data or []
 
-        total = len(rows)
-        success = sum(1 for r in rows if r.get("success"))
-        failed = total - success
+        daily_map: dict[str, dict[str, Any]] = {}
+        total_sent = 0
+        total_delivered = 0
+        total_opened = 0
+        by_type_map: dict[str, dict[str, Any]] = {}
+
+        for row in rows:
+            metric_date = row.get("metric_date")
+            sent = int(row.get("sent_count", 0) or 0)
+            delivered = int(row.get("received_count", 0) or 0)
+            opened = int(row.get("tapped_count", 0) or 0)
+            ctr = round(float(row.get("ctr", 0) or 0) * 100, 1)
+            push_type = row.get("push_type", "unknown")
+
+            total_sent += sent
+            total_delivered += delivered
+            total_opened += opened
+
+            if metric_date not in daily_map:
+                daily_map[metric_date] = {
+                    "date": metric_date,
+                    "sent": 0,
+                    "delivered": 0,
+                    "opened": 0,
+                    "open_rate": 0.0,
+                }
+            daily_map[metric_date]["sent"] += sent
+            daily_map[metric_date]["delivered"] += delivered
+            daily_map[metric_date]["opened"] += opened
+
+            if push_type not in by_type_map:
+                by_type_map[push_type] = {
+                    "push_type": push_type,
+                    "sent": 0,
+                    "delivered": 0,
+                    "opened": 0,
+                    "open_rate": 0.0,
+                    "avg_time_to_open_seconds": 0,
+                }
+            by_type_map[push_type]["sent"] += sent
+            by_type_map[push_type]["delivered"] += delivered
+            by_type_map[push_type]["opened"] += opened
+
+        daily = list(daily_map.values())
+        for row in daily:
+            row["open_rate"] = round(
+                (row["opened"] / row["delivered"] * 100) if row["delivered"] else 0.0,
+                1,
+            )
+        by_type = list(by_type_map.values())
+        for row in by_type:
+            row["open_rate"] = round(
+                (row["opened"] / row["delivered"] * 100) if row["delivered"] else 0.0,
+                1,
+            )
+
+        overall_open_rate = round(
+            (total_opened / total_delivered * 100) if total_delivered else 0.0,
+            1,
+        )
 
         return {
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
-            "total": total,
-            "success": success,
-            "failed": failed,
-            "logs": rows,
+            "summary": {
+                "total_sent": total_sent,
+                "total_delivered": total_delivered,
+                "total_opened": total_opened,
+                "overall_open_rate": overall_open_rate,
+            },
+            "by_type": by_type,
+            "daily": daily,
         }
     except Exception as e:
-        logger.warning("push_logs 조회 실패 (테이블 미존재 가능): %s", e)
+        logger.warning("push_metrics 조회 실패 (테이블 미존재 가능): %s", e)
         return {
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
-            "total": 0,
-            "success": 0,
-            "failed": 0,
-            "logs": [],
+            "summary": {
+                "total_sent": 0,
+                "total_delivered": 0,
+                "total_opened": 0,
+                "overall_open_rate": 0.0,
+            },
+            "by_type": [],
+            "daily": [],
         }
 
 

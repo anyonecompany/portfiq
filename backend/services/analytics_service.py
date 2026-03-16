@@ -45,9 +45,11 @@ class AnalyticsService:
         rows = [
             {
                 "device_id": device_id,
-                "name": event.get("name", "unknown"),
+                "event_name": event.get("event_name")
+                or event.get("name", "unknown"),
                 "properties": event.get("properties", {}),
-                "timestamp": event.get("timestamp", now),
+                "event_timestamp": event.get("timestamp")
+                or event.get("event_timestamp", now),
                 "received_at": now,
             }
             for event in events
@@ -117,7 +119,7 @@ class AnalyticsService:
                     sb.table("events")
                     .select("*")
                     .eq("device_id", device_id)
-                    .order("timestamp", desc=True)
+                    .order("event_timestamp", desc=True)
                     .limit(limit)
                     .execute()
                 )
@@ -224,13 +226,26 @@ class AnalyticsService:
             ),
             "total_events": len(user_events),
             "briefings_viewed": len(
-                [e for e in user_events if e.get("name") == "briefing_viewed"]
+                [
+                    e
+                    for e in user_events
+                    if e.get("event_name") == "briefing_viewed"
+                    or e.get("name") == "briefing_viewed"
+                ]
             ),
             "feed_interactions": len(
-                [e for e in user_events if e.get("name", "").startswith("feed_")]
+                [
+                    e
+                    for e in user_events
+                    if (e.get("event_name") or e.get("name", "")).startswith("feed_")
+                ]
             ),
             "last_active": max(
-                (e.get("timestamp", "") for e in user_events), default=None
+                (
+                    e.get("event_timestamp", "") or e.get("timestamp", "")
+                    for e in user_events
+                ),
+                default=None,
             ),
         }
 

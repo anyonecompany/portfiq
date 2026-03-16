@@ -1,4 +1,4 @@
-.PHONY: dev backend-run flutter-run install-backend lint test clean
+.PHONY: dev backend-run flutter-run install-backend lint test test-smoke clean
 
 # Run both backend and flutter (requires tmux or separate terminals)
 dev:
@@ -32,6 +32,9 @@ lint:
 
 test:
 	cd backend && python3 -m pytest
+
+test-smoke:
+	cd backend && PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest tests/test_release_readiness.py
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +

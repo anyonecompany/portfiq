@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -8,11 +10,12 @@ import 'event_sender.dart';
 
 /// Singleton facade for all analytics tracking.
 ///
-/// Usage:
-/// ```dart
-/// EventTracker.instance.initialize(Flavor.local, 'device-123');
-/// EventTracker.instance.track('etf_registered', properties: {'ticker': 'QQQ'});
-/// ```
+/// Features:
+/// - Hive-backed persistent queue (survives app restarts)
+/// - 30-second periodic flush timer
+/// - 10-event batch threshold flush
+/// - Background flush on app pause
+/// - Max 3 retries per event then drop
 class EventTracker with WidgetsBindingObserver {
   EventTracker._();
 
@@ -24,6 +27,7 @@ class EventTracker with WidgetsBindingObserver {
 
   final EventQueue _queue = EventQueue();
   final EventSender _sender = EventSender();
+  Timer? _flushTimer;
 
   // Session management
   String _sessionId = '';
@@ -32,13 +36,25 @@ class EventTracker with WidgetsBindingObserver {
   int _eventsCount = 0;
 
   /// Initialize the tracker with the current build flavor and device id.
-  void initialize(Flavor flavor, String deviceId) {
+  Future<void> initialize(Flavor flavor, String deviceId) async {
     _flavor = flavor;
     _deviceId = deviceId;
+
+    // Initialize Hive-backed queue
+    await _queue.init();
+
     _initialized = true;
 
     // Start observing app lifecycle
     WidgetsBinding.instance.addObserver(this);
+
+    // Start 30-second periodic flush timer
+    _startFlushTimer();
+
+    // Flush any persisted events from previous session
+    if (_queue.pendingCount > 0 && _flavor != Flavor.local) {
+      _flushAsync();
+    }
 
     // Start first session
     _startNewSession();
@@ -50,7 +66,9 @@ class EventTracker with WidgetsBindingObserver {
   /// Track a named event with optional properties.
   void track(String name, {Map<String, dynamic>? properties}) {
     if (!_initialized) {
-      if (kDebugMode) print('[EventTracker] Not initialized — dropping event "$name"');
+      if (kDebugMode) {
+        print('[EventTracker] Not initialized — dropping event "$name"');
+      }
       return;
     }
 
@@ -94,9 +112,20 @@ class EventTracker with WidgetsBindingObserver {
 
     if (state == AppLifecycleState.paused) {
       _endSession();
+      _flushTimer?.cancel();
+      _flushTimer = null;
     } else if (state == AppLifecycleState.resumed) {
       _startNewSession();
+      _startFlushTimer();
     }
+  }
+
+  void _startFlushTimer() {
+    _flushTimer?.cancel();
+    _flushTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _flushAsync(),
+    );
   }
 
   void _startNewSession() {
@@ -136,15 +165,16 @@ class EventTracker with WidgetsBindingObserver {
 
     final success = await _sender.sendBatch(batch);
     if (!success) {
-      // Re-queue failed events so they retry next flush
+      // Re-queue failed events with incremented retry count
       for (final event in batch) {
-        _queue.add(event);
+        _queue.add(event.withRetry());
       }
     }
   }
 
-  /// Clean up observer when no longer needed.
+  /// Clean up observer and timer when no longer needed.
   void dispose() {
+    _flushTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
   }
 }

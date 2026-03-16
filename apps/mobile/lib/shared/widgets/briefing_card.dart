@@ -45,6 +45,7 @@ class _BriefingCardState extends State<BriefingCard> {
     });
 
     await Future.delayed(const Duration(milliseconds: 100));
+    await WidgetsBinding.instance.endOfFrame;
 
     final success = await ShareService.captureAndShare(
       _shareCardKey,
@@ -247,12 +248,12 @@ class _BriefingCardState extends State<BriefingCard> {
           ),
         ),
 
-        // Offscreen share card for capture
-        Positioned(
-          left: -2000,
-          top: 0,
-          child: ShareCard(data: data, repaintKey: _shareCardKey),
-        ),
+        if (_isSharing)
+          Positioned(
+            left: -2000,
+            top: 0,
+            child: ShareCard(data: data, repaintKey: _shareCardKey),
+          ),
       ],
     );
   }

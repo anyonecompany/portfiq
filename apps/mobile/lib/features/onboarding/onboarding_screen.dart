@@ -28,6 +28,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     super.initState();
     _pageController = PageController();
     _onboardingStartTime = DateTime.now();
+    EventTracker.instance.track('onboarding_started', properties: {
+      'source': 'organic',
+    });
   }
 
   @override

@@ -308,45 +308,25 @@ Remove an ETF from user's watchlist.
 
 ### POST /api/v1/analytics/events
 
-Track a single analytics event.
+Track a batch of analytics events from one device.
+
+**Headers:**
+```http
+X-Device-ID: dev_abc123
+```
 
 **Request Body:**
 ```json
 {
-  "event_name": "screen_viewed",
-  "user_id": "usr_abc123",
-  "timestamp": "2026-03-10T09:00:00Z",
-  "properties": {
-    "screen_name": "feed"
-  }
-}
-```
-
-**Response 200:**
-```json
-{
-  "status": "accepted",
-  "event": "screen_viewed"
-}
-```
-
-### POST /api/v1/analytics/events/batch
-
-Track multiple events in a single request.
-
-**Request Body:**
-```json
-{
+  "device_id": "dev_abc123",
   "events": [
     {
-      "event_name": "session_start",
-      "user_id": "usr_abc123",
+      "event_name": "session_started",
       "timestamp": "2026-03-10T09:00:00Z",
       "properties": {"session_id": "sess_abc"}
     },
     {
       "event_name": "screen_viewed",
-      "user_id": "usr_abc123",
       "timestamp": "2026-03-10T09:00:01Z",
       "properties": {"screen_name": "feed"}
     }
@@ -354,11 +334,12 @@ Track multiple events in a single request.
 }
 ```
 
-**Response 200:**
+**Response 202:**
 ```json
 {
   "status": "accepted",
-  "count": 2
+  "count": 2,
+  "accepted": 2
 }
 ```
 
@@ -366,19 +347,9 @@ Track multiple events in a single request.
 
 ## Admin
 
-### GET /api/v1/admin/stats
+### GET /api/v1/admin/dashboard
 
-Get platform-wide statistics (internal use).
-
-**Response 200:**
-```json
-{
-  "total_users": 0,
-  "active_users_24h": 0,
-  "briefings_generated_today": 0,
-  "total_etfs_tracked": 0
-}
-```
+Get platform-wide dashboard KPIs (internal use).
 
 ### GET /api/v1/admin/users
 

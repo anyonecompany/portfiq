@@ -118,13 +118,19 @@ class FeedNotifier extends StateNotifier<FeedState> {
 
   /// Fetch news from backend API with pagination.
   Future<_FetchResult> _fetchNews({required int offset, required int limit}) async {
+    final deviceId = Hive.box('settings').get('device_id', defaultValue: 'unknown');
     final response = await ApiClient.instance.get(
-      '/api/v1/feed/latest',
-      queryParameters: {'offset': offset, 'limit': limit},
+      '/api/v1/feed',
+      queryParameters: {
+        'device_id': deviceId,
+        'offset': offset,
+        'limit': limit,
+      },
     );
     final data = response.data as Map<String, dynamic>;
     final items = data['items'] as List<dynamic>;
-    final hasMore = data['has_more'] as bool? ?? false;
+    final total = (data['total'] as num?)?.toInt() ?? items.length;
+    final hasMore = data['has_more'] as bool? ?? (offset + items.length < total);
 
     final newsItems = items.map((item) {
       final map = item as Map<String, dynamic>;

@@ -91,9 +91,11 @@ class NewsCard extends StatelessWidget {
 
                 const SizedBox(height: PortfiqSpacing.space8),
 
-                // Row 3: Impact reason
+                // Row 3: Summary (prefer 3-line summary over impact reason)
                 Text(
-                  item.impactReason,
+                  item.summary3line.isNotEmpty
+                      ? item.summary3line.replaceAll('\n', ' ')
+                      : item.impactReason,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: PortfiqTypography.body.copyWith(

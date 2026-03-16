@@ -49,7 +49,7 @@ This Service entrusts personal information processing to the following third par
 | Service Provider | Purpose | Data Shared |
 |-----------------|---------|-------------|
 | Supabase Inc. | Database hosting and storage | Device ID, registered ETF list, event logs |
-| Anthropic (Claude API) | AI-powered news analysis and briefing generation | Registered ETF list (upon analysis request) |
+| Google (Gemini API) | AI-powered news analysis and briefing generation | Registered ETF list (upon analysis request) |
 | Google Firebase | Push notification delivery | Push notification token |
 
 Each service provider is prohibited from using personal information beyond the entrusted purpose and manages data securely in accordance with applicable laws.
@@ -89,7 +89,7 @@ The following measures are implemented to ensure the security of personal inform
 
 ## 8. AI Service Disclosure
 
-This Service uses AI (Claude by Anthropic) to analyze news and generate briefings.
+This Service uses AI (Gemini by Google) to analyze news and generate briefings.
 
 - AI-generated content is labeled with an "AI Analysis" indicator.
 - AI analysis results are **reference information, not investment advice**.

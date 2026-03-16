@@ -52,6 +52,7 @@ class _BriefingDetailScreenState extends State<BriefingDetailScreen> {
 
     // Wait for the share card to be laid out
     await Future.delayed(const Duration(milliseconds: 100));
+    await WidgetsBinding.instance.endOfFrame;
 
     final success = await ShareService.captureAndShare(
       _shareCardKey,
@@ -157,12 +158,12 @@ class _BriefingDetailScreenState extends State<BriefingDetailScreen> {
               ),
             ),
 
-            // Offscreen share card for capture
-            Positioned(
-              left: -2000,
-              top: 0,
-              child: ShareCard(data: data, repaintKey: _shareCardKey),
-            ),
+            if (_isSharing)
+              Positioned(
+                left: -2000,
+                top: 0,
+                child: ShareCard(data: data, repaintKey: _shareCardKey),
+              ),
           ],
         ),
       ),

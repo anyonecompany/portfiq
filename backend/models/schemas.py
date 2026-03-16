@@ -1,6 +1,6 @@
 """Pydantic schemas for request/response validation."""
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 
 # ──────────────────────────────────────────────
@@ -104,14 +104,16 @@ class BriefingResponse(BaseModel):
 
 class EventItem(BaseModel):
     """A single analytics event from the client."""
-    name: str
+    model_config = ConfigDict(populate_by_name=True)
+
+    event_name: str = Field(validation_alias=AliasChoices("event_name", "name"))
     properties: dict = Field(default_factory=dict)
-    timestamp: str
+    timestamp: str = Field(validation_alias=AliasChoices("timestamp", "event_timestamp"))
 
 
 class EventBatchRequest(BaseModel):
     """Batch of analytics events from a device."""
-    device_id: str
+    device_id: str | None = None
     events: list[EventItem]
 
 

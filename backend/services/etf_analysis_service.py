@@ -339,7 +339,7 @@ _COMPARISON_GROUPS = _load_comparison_groups()
 _ETF_MASTER = _load_etf_master()
 
 # ──────────────────────────────────────────────
-# Claude API comparison cache
+# Gemini API comparison cache
 # ──────────────────────────────────────────────
 
 _comparison_cache: dict[str, tuple[datetime, str]] = {}
@@ -433,14 +433,14 @@ class EtfAnalysisService:
     async def compare_etfs(self, tickers: list[str]) -> dict:
         """2-3개 ETF의 구조적 차이를 3줄 한국어 요약으로 비교한다.
 
-        Claude API를 사용하여 비교 요약을 생성하며, 24시간 캐싱한다.
-        Claude API 사용 불가 시 시드 데이터의 사전 작성 비교문을 반환한다.
+        Gemini API를 사용하여 비교 요약을 생성하며, 24시간 캐싱한다.
+        Gemini API 사용 불가 시 시드 데이터의 사전 작성 비교문을 반환한다.
 
         Args:
             tickers: 비교할 ETF 티커 리스트 (2-3개).
 
         Returns:
-            {tickers: list, summary: str, source: "claude" | "seed" | "unavailable"}
+            {tickers: list, summary: str, source: "gemini" | "seed" | "unavailable"}
         """
         normalized = [t.upper() for t in tickers]
         cache_key = _cache_key_for_tickers(normalized)

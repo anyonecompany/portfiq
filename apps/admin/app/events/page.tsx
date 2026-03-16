@@ -14,14 +14,14 @@ const PAGE_SIZE = 50;
 
 const EVENT_NAMES = [
   "전체 이벤트",
-  "session_start",
+  "session_started",
   "onboarding_started",
   "onboarding_completed",
   "etf_registered",
   "briefing_viewed",
   "push_permission_granted",
   "push_permission_denied",
-  "push_notification_opened",
+  "push_tapped",
 ];
 
 export default function EventsPage() {

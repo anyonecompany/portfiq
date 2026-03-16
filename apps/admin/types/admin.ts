@@ -15,6 +15,14 @@ export interface DashboardResponse {
     briefings_generated: KpiMetric;
     push_open_rate: KpiMetric;
   };
+  dau_trend: Array<{
+    date: string;
+    dau: number;
+  }>;
+  event_summary: Array<{
+    name: string;
+    count: number;
+  }>;
   generated_at: string;
 }
 

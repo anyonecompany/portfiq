@@ -8,13 +8,13 @@ interface FunnelChartProps {
 }
 
 const stepLabels: Record<string, string> = {
-  app_install: "App Install",
+  app_opened: "App Opened",
   onboarding_started: "Onboarding Started",
   etf_registered: "ETF Registered",
-  push_permission_responded: "Push Permission",
+  aha_moment_feed_viewed: "Aha Moment",
+  push_permission_granted: "Push Granted",
   onboarding_completed: "Onboarding Completed",
-  first_briefing_viewed: "First Briefing Viewed",
-  day2_return: "Day 2 Return",
+  day7_return: "Day 7 Return",
 };
 
 export function FunnelChart({ steps }: FunnelChartProps) {

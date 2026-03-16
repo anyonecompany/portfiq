@@ -3,6 +3,16 @@
 > 최종 갱신: 2026-03-13
 > 작성자: QA-Release Agent
 
+## 2026-03-14 Verification Note
+
+- 앱/백엔드/어드민 간 analytics 이벤트 계약을 재정렬함 (`app_opened`, `session_started`, `push_received`, `push_tapped` 기준).
+- 어드민 대시보드 KPI/퍼널/푸시 응답 계약을 현재 코드 기준으로 수정함.
+- 디바이스 등록 payload에 `platform`, `app_version`을 포함하도록 수정했고, 알림 설정 저장은 Supabase 장애 시 인메모리 fallback을 사용함.
+- 마이그레이션 `005_device_preferences_and_deploy_steps.sql` 추가로 `devices` 알림 설정 컬럼과 `deploy_history.steps` 컬럼을 보강함.
+- `flutter analyze`, Admin `tsc --noEmit`, Admin `npm run lint`, backend `py_compile`는 2026-03-14 로컬 검증 통과.
+- backend 스모크 테스트(`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest tests/test_release_readiness.py tests/test_health.py tests/test_feed.py`) 2026-03-14 통과.
+- 이 문서의 기존 "RELEASE READY" 판정은 최신 E2E 운영 검증을 대체하지 않음. 실제 출시 판정 전에는 프로덕션 Supabase 데이터로 퍼널/리텐션/푸시 지표를 재검증해야 함.
+
 ---
 
 ## 1. 코드 품질
@@ -31,14 +41,15 @@
 | `GET /api/v1/briefing/night` | **PASS** |
 | `POST /api/v1/briefing/generate` | **PASS** (rate limited: 5/hour) |
 | `GET /api/v1/etf/search?q=QQQ` | **PASS** |
-| `GET /api/v1/etf/detail/QQQ` | **PASS** |
+| `GET /api/v1/etf/QQQ/detail` | **PASS** |
 | `GET /api/v1/etf/trending` | **PASS** |
 | `POST /api/v1/etf/register` | **PASS** |
-| `GET /api/v1/holdings/QQQ` | **PASS** |
+| `POST /api/v1/etf/devices/register` | **PASS** |
+| `GET /api/v1/etf/QQQ/holdings` | **PASS** |
 | `GET /api/v1/calendar` | **PASS** |
-| `GET /api/v1/analytics/events` | **PASS** |
-| `GET /api/v1/admin/stats` | **PASS** |
-| `GET /api/v1/devices/preferences` | **PASS** |
+| `POST /api/v1/analytics/events` | **PASS** |
+| `GET /api/v1/admin/dashboard` | **PASS** |
+| `GET /api/v1/devices/{device_id}/preferences` | **PASS** |
 
 ## 4. 법적/컴플라이언스
 

@@ -67,84 +67,84 @@ class ShareCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                  // Top: Logo / branding
-                  _buildHeader(accentColor),
+                    // Top: Logo / branding
+                    _buildHeader(accentColor),
 
-                  const SizedBox(height: 60),
+                    const SizedBox(height: 44),
 
-                  // Date
-                  Text(
-                    dateStr,
-                    style: const TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 28,
-                      fontWeight: FontWeight.w400,
-                      color: PortfiqTheme.textSecondary,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Title
-                  Text(
-                    data.title,
-                    style: const TextStyle(
-                      fontFamily: 'Pretendard',
-                      fontSize: 56,
-                      fontWeight: FontWeight.w700,
-                      color: PortfiqTheme.textPrimary,
-                      height: 1.3,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-
-                  const SizedBox(height: 48),
-
-                  // Divider
-                  Container(
-                    height: 2,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          accentColor,
-                          accentColor.withValues(alpha: 0.0),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 48),
-
-                  // ETF changes or checkpoints
-                  if (isMorning)
-                    _buildEtfChanges()
-                  else
-                    _buildCheckpoints(),
-
-                  const Spacer(),
-
-                  // Summary
-                  if (data.summary.isNotEmpty) ...[
+                    // Date
                     Text(
-                      data.summary,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
+                      dateStr,
                       style: const TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontSize: 28,
+                        fontFamily: 'Inter',
+                        fontSize: 24,
                         fontWeight: FontWeight.w400,
                         color: PortfiqTheme.textSecondary,
-                        height: 1.6,
                         decoration: TextDecoration.none,
                       ),
                     ),
-                    const SizedBox(height: 48),
-                  ],
 
-                  // Bottom watermark
-                  _buildFooter(accentColor),
-                ],
+                    const SizedBox(height: 20),
+
+                    // Title
+                    Text(
+                      data.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 50,
+                        fontWeight: FontWeight.w700,
+                        color: PortfiqTheme.textPrimary,
+                        height: 1.2,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Divider
+                    Container(
+                      height: 2,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            accentColor,
+                            accentColor.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (isMorning) _buildEtfChanges() else _buildCheckpoints(),
+                          const Spacer(),
+                          if (data.summary.isNotEmpty) ...[
+                            Text(
+                              data.summary,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontFamily: 'Pretendard',
+                                fontSize: 24,
+                                fontWeight: FontWeight.w400,
+                                color: PortfiqTheme.textSecondary,
+                                height: 1.5,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                          ],
+                          _buildFooter(accentColor),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -239,14 +239,14 @@ class ShareCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 28),
-        ...data.etfChanges.take(5).map((change) {
+        ...data.etfChanges.take(4).map((change) {
           final isPositive = change.changePercent >= 0;
           final color = isPositive ? PortfiqTheme.positive : PortfiqTheme.negative;
           final sign = isPositive ? '+' : '';
           return Padding(
-            padding: const EdgeInsets.only(bottom: 20),
+            padding: const EdgeInsets.only(bottom: 16),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
               decoration: BoxDecoration(
                 color: PortfiqTheme.secondaryBg,
                 borderRadius: BorderRadius.circular(16),
@@ -261,7 +261,7 @@ class ShareCard extends StatelessWidget {
                     change.ticker,
                     style: const TextStyle(
                       fontFamily: 'Inter',
-                      fontSize: 34,
+                      fontSize: 30,
                       fontWeight: FontWeight.w700,
                       color: PortfiqTheme.textPrimary,
                       decoration: TextDecoration.none,
@@ -271,7 +271,7 @@ class ShareCard extends StatelessWidget {
                     '$sign${change.changePercent.toStringAsFixed(2)}%',
                     style: TextStyle(
                       fontFamily: 'Inter',
-                      fontSize: 34,
+                      fontSize: 30,
                       fontWeight: FontWeight.w700,
                       color: color,
                       decoration: TextDecoration.none,
@@ -301,11 +301,11 @@ class ShareCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 28),
-        ...data.checkpoints.take(4).toList().asMap().entries.map((entry) {
+        ...data.checkpoints.take(3).toList().asMap().entries.map((entry) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 20),
+            padding: const EdgeInsets.only(bottom: 16),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
               decoration: BoxDecoration(
                 color: PortfiqTheme.secondaryBg,
                 borderRadius: BorderRadius.circular(16),
@@ -344,7 +344,7 @@ class ShareCard extends StatelessWidget {
                         entry.value,
                         style: const TextStyle(
                           fontFamily: 'Pretendard',
-                          fontSize: 28,
+                          fontSize: 24,
                           fontWeight: FontWeight.w400,
                           color: Color(0xFFD1D5DB),
                           height: 1.5,
@@ -378,7 +378,7 @@ class ShareCard extends StatelessWidget {
               '포트픽으로 내 ETF 브리핑 받기',
               style: TextStyle(
                 fontFamily: 'Pretendard',
-                fontSize: 26,
+                fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: PortfiqTheme.textPrimary,
                 decoration: TextDecoration.none,
@@ -389,7 +389,7 @@ class ShareCard extends StatelessWidget {
         const SizedBox(height: 24),
         // Bottom bar
         Container(
-          padding: const EdgeInsets.symmetric(vertical: 24),
+          padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
             border: Border(
               top: BorderSide(

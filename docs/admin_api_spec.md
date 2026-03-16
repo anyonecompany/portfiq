@@ -177,11 +177,12 @@ Returns key performance indicators with comparison to the previous day.
 ```
 
 **Implementation Notes:**
-- `dau`: Count of distinct `device_id` in `events` table where `event_name = 'session_start'` for today.
-- `d7_retention`: Percentage of users who installed 7 days ago and had a `session_start` today.
-- `new_installs`: Count of `devices` created today.
-- `onboarding_conversion`: `onboarding_completed` / `onboarding_started` events for the last 7 days.
-- `change_pct`: Comparison with same metric from yesterday. Positive = growth.
+- `dau`: Count of distinct `device_id` in `daily_metrics.dau`.
+- `d7_retention`: `daily_metrics.d7_retention`.
+- `new_installs`: `daily_metrics.new_users`.
+- `onboarding_conversion`: `daily_metrics.onboarding_conversion`.
+- `push_open_rate`: Mean of `morning_push_ctr` and `night_push_ctr`.
+- `change_pct`: Comparison with the previous daily snapshot.
 
 **Error 500:**
 ```json
@@ -216,8 +217,8 @@ Returns 7-step onboarding funnel data for a date range.
   "steps": [
     {
       "step": 1,
-      "name": "app_install",
-      "event_name": null,
+      "name": "app_opened",
+      "event_name": "app_opened",
       "count": 450,
       "pct_of_total": 100.0,
       "drop_off_pct": 0.0
@@ -240,32 +241,32 @@ Returns 7-step onboarding funnel data for a date range.
     },
     {
       "step": 4,
-      "name": "push_permission_responded",
-      "event_name": "push_permission_granted|push_permission_denied",
+      "name": "aha_moment_feed_viewed",
+      "event_name": "aha_moment_feed_viewed",
       "count": 350,
       "pct_of_total": 77.8,
       "drop_off_pct": 7.9
     },
     {
       "step": 5,
-      "name": "onboarding_completed",
-      "event_name": "onboarding_completed",
+      "name": "push_permission_granted",
+      "event_name": "push_permission_granted",
       "count": 302,
       "pct_of_total": 67.1,
       "drop_off_pct": 13.7
     },
     {
       "step": 6,
-      "name": "first_briefing_viewed",
-      "event_name": "briefing_viewed",
+      "name": "onboarding_completed",
+      "event_name": "onboarding_completed",
       "count": 245,
       "pct_of_total": 54.4,
       "drop_off_pct": 18.9
     },
     {
       "step": 7,
-      "name": "day2_return",
-      "event_name": "session_start (day >= install_date + 1)",
+      "name": "day7_return",
+      "event_name": "session_started (day >= app_opened + 7d)",
       "count": 198,
       "pct_of_total": 44.0,
       "drop_off_pct": 19.2
@@ -275,9 +276,9 @@ Returns 7-step onboarding funnel data for a date range.
 ```
 
 **Implementation Notes:**
-- Step 1 (app_install): Count of `devices.created_at` in range.
-- Steps 2-6: Distinct `device_id` count from `events` table filtered by `event_name`.
-- Step 7 (day2_return): Devices that had a `session_start` event on any day after their `devices.created_at` date.
+- Step 1: Distinct `app_opened` devices in range.
+- Steps 2-6: Distinct `device_id` count from `events` filtered by canonical event names.
+- Step 7: Devices with `session_started` at least 7 days after their first `app_opened` event.
 
 **Error 400:**
 ```json
@@ -338,7 +339,7 @@ Returns a weekly cohort retention matrix (heatmap data).
 
 **Implementation Notes:**
 - A "cohort" is defined by the ISO week of `devices.created_at`.
-- "Active" in week N means the device had at least one `session_start` event during that ISO week.
+- "Active" in week N means the device had at least one `session_started` event during that ISO week.
 - Weeks with no data yet are omitted from the `retention` array.
 
 **Error 400:**
@@ -354,7 +355,7 @@ Returns a weekly cohort retention matrix (heatmap data).
 
 ### GET /api/v1/admin/push
 
-Returns push notification performance metrics grouped by push type.
+Returns push notification performance metrics grouped by push type from `push_metrics`.
 
 **Required Role:** `ceo`, `cto`, `pm`
 

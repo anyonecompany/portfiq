@@ -15,6 +15,74 @@ from services.supabase_client import get_supabase
 logger = logging.getLogger(__name__)
 
 
+async def _get_event_summary(sb: Any, target_date: str | None) -> list[dict[str, Any]]:
+    """Return top event counts for a specific metric day."""
+    if not target_date:
+        return []
+
+    resp = (
+        sb.table("events")
+        .select("event_name")
+        .gte("event_timestamp", target_date)
+        .lt("event_timestamp", (date.fromisoformat(target_date) + timedelta(days=1)).isoformat())
+        .execute()
+    )
+    counts: dict[str, int] = {}
+    for row in resp.data or []:
+        event_name = row.get("event_name")
+        if not event_name:
+            continue
+        counts[event_name] = counts.get(event_name, 0) + 1
+
+    return [
+        {"name": event_name, "count": count}
+        for event_name, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))[:5]
+    ]
+
+
+def _build_etf_distribution(
+    device_ids: list[str],
+    device_etf_rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Build histogram and summary stats for ETF registrations per device."""
+    counts_by_device = {device_id: 0 for device_id in device_ids}
+    for row in device_etf_rows:
+        device_id = row.get("device_id")
+        if not device_id:
+            continue
+        counts_by_device[device_id] = counts_by_device.get(device_id, 0) + 1
+
+    counts = sorted(counts_by_device.values())
+    total_devices = len(counts)
+    if total_devices == 0:
+        return {
+            "avg_etfs_per_user": 0,
+            "median_etfs_per_user": 0,
+            "histogram": [],
+        }
+
+    avg_count = round(sum(counts) / total_devices, 1)
+    midpoint = total_devices // 2
+    if total_devices % 2 == 0:
+        median_count = round((counts[midpoint - 1] + counts[midpoint]) / 2, 1)
+    else:
+        median_count = counts[midpoint]
+
+    histogram_map: dict[int, int] = {}
+    for count in counts:
+        histogram_map[count] = histogram_map.get(count, 0) + 1
+
+    histogram = [
+        {"etf_count": etf_count, "users": users}
+        for etf_count, users in sorted(histogram_map.items())
+    ]
+    return {
+        "avg_etfs_per_user": avg_count,
+        "median_etfs_per_user": median_count,
+        "histogram": histogram,
+    }
+
+
 # ──────────────────────────────────────────────
 # 1. Dashboard KPI
 # ──────────────────────────────────────────────
@@ -34,24 +102,26 @@ async def get_dashboard_stats() -> dict[str, Any]:
     sb = get_supabase()
     today = date.today()
     yesterday = today - timedelta(days=1)
-
-    # 오늘/어제 메트릭 조회 (실제 컬럼: date, total_devices, active_devices,
-    # briefings_generated, news_fetched, events_received, avg_etfs_per_device)
-    today_resp = (
+    metrics_resp = (
         sb.table("daily_metrics")
         .select("*")
-        .eq("date", today.isoformat())
+        .order("metric_date", desc=True)
+        .limit(30)
         .execute()
     )
-    yesterday_resp = (
-        sb.table("daily_metrics")
-        .select("*")
-        .eq("date", yesterday.isoformat())
-        .execute()
-    )
+    rows = metrics_resp.data or []
 
-    today_data = today_resp.data[0] if today_resp.data else {}
-    yesterday_data = yesterday_resp.data[0] if yesterday_resp.data else {}
+    def _row_for(target: date) -> dict[str, Any]:
+        target_str = target.isoformat()
+        for row in rows:
+            if row.get("metric_date") == target_str or row.get("date") == target_str:
+                return row
+        return {}
+
+    today_data = _row_for(today)
+    yesterday_data = _row_for(yesterday)
+    latest_data = today_data or (rows[0] if rows else {})
+    current_data = today_data or latest_data
 
     def _kpi(key: str, is_pct: bool = False) -> dict[str, Any]:
         """단일 KPI 항목을 생성한다.
@@ -63,7 +133,7 @@ async def get_dashboard_stats() -> dict[str, Any]:
         Returns:
             {"value": ..., "change_pct": ..., "direction": ...} 딕셔너리.
         """
-        current = today_data.get(key, 0) or 0
+        current = current_data.get(key, 0) or 0
         previous = yesterday_data.get(key, 0) or 0
 
         if previous and previous != 0:
@@ -85,15 +155,87 @@ async def get_dashboard_stats() -> dict[str, Any]:
         }
 
     return {
-        "date": today.isoformat(),
+        "date": latest_data.get("metric_date") or latest_data.get("date") or today.isoformat(),
         "kpis": {
-            "dau": _kpi("active_devices"),
+            "dau": _kpi("dau"),
             "d7_retention": _kpi("d7_retention", is_pct=True),
-            "new_installs": _kpi("total_devices"),
+            "new_installs": _kpi("new_users"),
             "onboarding_conversion": _kpi("onboarding_conversion", is_pct=True),
             "briefings_generated": _kpi("briefings_generated"),
-            "push_open_rate": _kpi("push_open_rate", is_pct=True),
+            "push_open_rate": {
+                "value": round(
+                    (
+                        (latest_data.get("morning_push_ctr", 0) or 0)
+                        + (latest_data.get("night_push_ctr", 0) or 0)
+                    )
+                    / 2,
+                    1,
+                ),
+                "change_pct": round(
+                    (
+                        (
+                            (
+                                (latest_data.get("morning_push_ctr", 0) or 0)
+                                + (latest_data.get("night_push_ctr", 0) or 0)
+                            )
+                            / 2
+                        )
+                        - (
+                            (
+                                (yesterday_data.get("morning_push_ctr", 0) or 0)
+                                + (yesterday_data.get("night_push_ctr", 0) or 0)
+                            )
+                            / 2
+                        )
+                    )
+                    * 100,
+                    1,
+                )
+                if yesterday_data
+                else 0.0,
+                "direction": (
+                    "up"
+                    if (
+                        (
+                            (latest_data.get("morning_push_ctr", 0) or 0)
+                            + (latest_data.get("night_push_ctr", 0) or 0)
+                        )
+                        / 2
+                    )
+                    > (
+                        (
+                            (yesterday_data.get("morning_push_ctr", 0) or 0)
+                            + (yesterday_data.get("night_push_ctr", 0) or 0)
+                        )
+                        / 2
+                    )
+                    else "down"
+                    if (
+                        (
+                            (latest_data.get("morning_push_ctr", 0) or 0)
+                            + (latest_data.get("night_push_ctr", 0) or 0)
+                        )
+                        / 2
+                    )
+                    < (
+                        (
+                            (yesterday_data.get("morning_push_ctr", 0) or 0)
+                            + (yesterday_data.get("night_push_ctr", 0) or 0)
+                        )
+                        / 2
+                    )
+                    else "flat"
+                ),
+            },
         },
+        "dau_trend": [
+            {
+                "date": row.get("metric_date") or row.get("date"),
+                "dau": row.get("dau", 0) or 0,
+            }
+            for row in reversed(rows[:7])
+        ],
+        "event_summary": await _get_event_summary(sb, latest_data.get("metric_date") or latest_data.get("date")),
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -103,21 +245,13 @@ async def get_dashboard_stats() -> dict[str, Any]:
 # ──────────────────────────────────────────────
 
 FUNNEL_STEPS = [
-    {"step": 1, "name": "app_install", "event_name": None},
+    {"step": 1, "name": "app_opened", "event_name": "app_opened"},
     {"step": 2, "name": "onboarding_started", "event_name": "onboarding_started"},
     {"step": 3, "name": "etf_registered", "event_name": "etf_registered"},
-    {
-        "step": 4,
-        "name": "push_permission_responded",
-        "event_name": "push_permission_granted|push_permission_denied",
-    },
-    {"step": 5, "name": "onboarding_completed", "event_name": "onboarding_completed"},
-    {"step": 6, "name": "first_briefing_viewed", "event_name": "briefing_viewed"},
-    {
-        "step": 7,
-        "name": "day2_return",
-        "event_name": "session_start",
-    },
+    {"step": 4, "name": "aha_moment_feed_viewed", "event_name": "aha_moment_feed_viewed"},
+    {"step": 5, "name": "push_permission_granted", "event_name": "push_permission_granted"},
+    {"step": 6, "name": "onboarding_completed", "event_name": "onboarding_completed"},
+    {"step": 7, "name": "day7_return", "event_name": "day7_return"},
 ]
 
 
@@ -141,15 +275,17 @@ async def get_funnel_data(
     start_str = start_date.isoformat()
     end_str = end_date.isoformat()
 
-    # Step 1: 기간 내 신규 설치 수 (devices.created_at)
-    install_resp = (
-        sb.table("devices")
-        .select("device_id", count="exact")
-        .gte("created_at", start_str)
-        .lte("created_at", end_str + "T23:59:59Z")
+    app_opened_resp = (
+        sb.table("events")
+        .select("device_id, event_timestamp")
+        .eq("event_name", "app_opened")
+        .gte("event_timestamp", start_str)
+        .lte("event_timestamp", end_str + "T23:59:59Z")
         .execute()
     )
-    total_installs = install_resp.count if install_resp.count is not None else len(install_resp.data or [])
+    app_opened_rows = app_opened_resp.data or []
+    app_opened_devices = {row["device_id"] for row in app_opened_rows}
+    total_installs = len(app_opened_devices)
 
     steps_result: list[dict[str, Any]] = []
 
@@ -160,53 +296,40 @@ async def get_funnel_data(
         if step_num == 1:
             count = total_installs
         elif step_num == 7:
-            # Day 2+ return: session_start 이벤트가 install 다음 날 이후에 발생
-            try:
-                resp = (
-                    sb.rpc(
-                        "count_day2_returns",
-                        {"p_start": start_str, "p_end": end_str},
-                    ).execute()
-                )
-                count = resp.data if isinstance(resp.data, int) else len(resp.data or [])
-            except Exception:
-                # RPC 없으면 직접 쿼리 (근사치)
-                resp = (
-                    sb.table("events")
-                    .select("device_id", count="exact")
-                    .eq("event_name", "session_start")
-                    .gte("event_timestamp", start_str)
-                    .lte("event_timestamp", end_str + "T23:59:59Z")
-                    .execute()
-                )
-                count = resp.count if resp.count is not None else len(resp.data or [])
-        elif "|" in (event_name or ""):
-            # 복수 이벤트 (push_permission_granted | push_permission_denied)
-            event_names = [e.strip() for e in event_name.split("|")]
-            count = 0
-            seen_devices: set[str] = set()
-            for en in event_names:
-                resp = (
-                    sb.table("events")
-                    .select("device_id")
-                    .eq("event_name", en)
-                    .gte("event_timestamp", start_str)
-                    .lte("event_timestamp", end_str + "T23:59:59Z")
-                    .execute()
-                )
-                for row in resp.data or []:
-                    seen_devices.add(row["device_id"])
-            count = len(seen_devices)
+            session_resp = (
+                sb.table("events")
+                .select("device_id, event_timestamp")
+                .eq("event_name", "session_started")
+                .gte("event_timestamp", start_str)
+                .lte("event_timestamp", (end_date + timedelta(days=7)).isoformat() + "T23:59:59Z")
+                .execute()
+            )
+            session_rows = session_resp.data or []
+            first_open_by_device = {
+                row["device_id"]: row["event_timestamp"]
+                for row in app_opened_rows
+            }
+            returned_devices = set()
+            for row in session_rows:
+                opened_at = first_open_by_device.get(row["device_id"])
+                session_at = row.get("event_timestamp")
+                if not opened_at or not session_at:
+                    continue
+                opened_dt = datetime.fromisoformat(opened_at.replace("Z", "+00:00"))
+                session_dt = datetime.fromisoformat(session_at.replace("Z", "+00:00"))
+                if (session_dt - opened_dt).days >= 7:
+                    returned_devices.add(row["device_id"])
+            count = len(returned_devices)
         else:
             resp = (
                 sb.table("events")
-                .select("device_id", count="exact")
+                .select("device_id")
                 .eq("event_name", event_name)
                 .gte("event_timestamp", start_str)
                 .lte("event_timestamp", end_str + "T23:59:59Z")
                 .execute()
             )
-            count = resp.count if resp.count is not None else len(resp.data or [])
+            count = len({row["device_id"] for row in (resp.data or [])})
 
         pct_of_total = round((count / total_installs * 100), 1) if total_installs > 0 else 0.0
 
@@ -289,12 +412,12 @@ async def get_retention_data(weeks: int = 8) -> dict[str, Any]:
             if wk == 0:
                 active = cohort_size
             else:
-                # session_start 이벤트로 활성 사용자 확인
+                # session_started 이벤트로 활성 사용자 확인
                 try:
                     active_resp = (
                         sb.table("events")
                         .select("device_id")
-                        .eq("event_name", "session_start")
+                        .eq("event_name", "session_started")
                         .gte("event_timestamp", week_start.isoformat())
                         .lte("event_timestamp", week_end.isoformat() + "T23:59:59Z")
                         .in_("device_id", cohort_devices)
@@ -343,7 +466,8 @@ async def get_user_stats() -> dict[str, Any]:
 
     # 총 설치 수
     install_resp = sb.table("devices").select("device_id", count="exact").execute()
-    total_installs = install_resp.count if install_resp.count is not None else len(install_resp.data or [])
+    install_rows = install_resp.data or []
+    total_installs = install_resp.count if install_resp.count is not None else len(install_rows)
 
     # 7일/30일 활성 사용자
     d7 = (today - timedelta(days=7)).isoformat()
@@ -352,7 +476,7 @@ async def get_user_stats() -> dict[str, Any]:
     active_7d_resp = (
         sb.table("events")
         .select("device_id")
-        .eq("event_name", "session_start")
+        .eq("event_name", "session_started")
         .gte("event_timestamp", d7)
         .execute()
     )
@@ -361,7 +485,7 @@ async def get_user_stats() -> dict[str, Any]:
     active_30d_resp = (
         sb.table("events")
         .select("device_id")
-        .eq("event_name", "session_start")
+        .eq("event_name", "session_started")
         .gte("event_timestamp", d30)
         .execute()
     )
@@ -434,6 +558,10 @@ async def get_user_stats() -> dict[str, Any]:
         "active_devices_30d": active_30d,
         "push_enabled_count": push_enabled,
         "push_enabled_pct": push_pct,
+        "etf_distribution": _build_etf_distribution(
+            [row["device_id"] for row in install_rows],
+            sb.table("device_etfs").select("device_id").execute().data or [],
+        ),
         "platform_breakdown": platform_breakdown,
         "top_etfs": top_etfs,
         "generated_at": datetime.now(timezone.utc).isoformat(),

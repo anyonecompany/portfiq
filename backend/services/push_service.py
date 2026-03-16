@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 # In-memory token store (Supabase 전환 전 fallback)
 _push_tokens: dict[str, str] = {}  # device_id -> push_token
+_device_metadata: dict[str, dict[str, str]] = {}  # device_id -> platform/app_version
 
 # Firebase 초기화 상태
 _firebase_initialized: bool = False
@@ -187,28 +188,45 @@ async def send_push_to_token(
         return False
 
 
-def register_token(device_id: str, push_token: str) -> bool:
+def register_token(
+    device_id: str,
+    push_token: str,
+    platform: str = "",
+    app_version: str = "",
+) -> bool:
     """푸시 토큰을 등록한다.
 
     Args:
         device_id: 디바이스 ID.
         push_token: FCM 푸시 토큰.
+        platform: 클라이언트 플랫폼 정보.
+        app_version: 앱 버전 문자열.
 
     Returns:
         등록 성공 여부.
     """
+    payload: dict[str, str] = {
+        "device_id": device_id,
+        "push_token": push_token,
+    }
+    if platform:
+        payload["platform"] = platform
+    if app_version:
+        payload["app_version"] = app_version
+
     try:
         from services.supabase_client import get_supabase
         sb = get_supabase()
-        sb.table("devices").upsert({
-            "device_id": device_id,
-            "push_token": push_token,
-        }, on_conflict="device_id").execute()
+        sb.table("devices").upsert(payload, on_conflict="device_id").execute()
         logger.info("푸시 토큰 등록: %s", device_id)
         return True
     except Exception as e:
         logger.warning("Supabase 토큰 저장 실패, 인메모리 저장: %s", e)
         _push_tokens[device_id] = push_token
+        _device_metadata[device_id] = {
+            "platform": platform,
+            "app_version": app_version,
+        }
         return True
 
 
@@ -360,6 +378,7 @@ def _remove_invalid_token(device_id: str) -> None:
         logger.warning("Supabase 토큰 제거 실패: %s", e)
 
     _push_tokens.pop(device_id, None)
+    _device_metadata.pop(device_id, None)
 
 
 async def send_push(

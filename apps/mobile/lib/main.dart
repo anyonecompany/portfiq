@@ -15,11 +15,17 @@ void main() async {
   AppConfig.initialize(Flavor.production);
 
   // Generate a stable device ID from platform
-  final deviceId = await _getDeviceId();
+  final deviceIdInfo = await _getDeviceId();
+  final deviceId = deviceIdInfo.$1;
+  final isFirstOpen = deviceIdInfo.$2;
   ApiClient.instance.init(deviceId: deviceId);
 
-  // Initialize event tracker with session management
-  EventTracker.instance.initialize(AppConfig.flavor, deviceId);
+  // Initialize event tracker with Hive persistence + 30s timer
+  await EventTracker.instance.initialize(AppConfig.flavor, deviceId);
+  EventTracker.instance.track('app_opened', properties: {
+    'is_first_open': isFirstOpen,
+    'platform': defaultTargetPlatform.name,
+  });
 
   // Firebase 초기화 (미설정 시 graceful 스킵)
   await _initFirebase();
@@ -43,12 +49,14 @@ Future<void> _initFirebase() async {
   }
 }
 
-Future<String> _getDeviceId() async {
+Future<(String, bool)> _getDeviceId() async {
   final box = Hive.box('settings');
   var id = box.get('device_id') as String?;
+  var isFirstOpen = false;
   if (id == null) {
     id = DateTime.now().microsecondsSinceEpoch.toRadixString(36);
     await box.put('device_id', id);
+    isFirstOpen = true;
   }
-  return id;
+  return (id, isFirstOpen);
 }

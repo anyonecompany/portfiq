@@ -17,21 +17,6 @@ import {
 } from "lucide-react";
 import type { DashboardResponse } from "@/types/admin";
 
-function generateDauTrend(currentDau: number): { date: string; dau: number }[] {
-  const data = [];
-  const today = new Date();
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const variance = Math.round((Math.random() - 0.5) * currentDau * 0.15);
-    data.push({
-      date: d.toLocaleDateString("ko-KR", { month: "short", day: "numeric" }),
-      dau: Math.max(0, currentDau + variance - i * 20),
-    });
-  }
-  return data;
-}
-
 export default function DashboardPage() {
   const { data, loading, error, refetch } = useFetch<DashboardResponse>(
     () => api.getDashboard(),
@@ -124,7 +109,7 @@ export default function DashboardPage() {
             {loading ? (
               <Skeleton className="h-[280px]" />
             ) : data ? (
-              <DauChart data={generateDauTrend(data.kpis.dau.value)} />
+              <DauChart data={data.dau_trend} />
             ) : null}
           </CardContent>
         </Card>
@@ -142,13 +127,7 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                {[
-                  { name: "session_start", label: "세션 시작", count: data?.kpis.dau.value || 0 },
-                  { name: "briefing_viewed", label: "브리핑 조회", count: Math.round((data?.kpis.briefings_generated.value || 0) * 0.7) },
-                  { name: "etf_registered", label: "ETF 등록", count: Math.round((data?.kpis.new_installs.value || 0) * 0.8) },
-                  { name: "push_notification_opened", label: "푸시 알림 오픈", count: Math.round((data?.kpis.dau.value || 0) * (data?.kpis.push_open_rate.value || 0) / 100) },
-                  { name: "onboarding_completed", label: "온보딩 완료", count: Math.round((data?.kpis.new_installs.value || 0) * (data?.kpis.onboarding_conversion.value || 0) / 100) },
-                ].map((event, i) => (
+                {data?.event_summary.map((event, i) => (
                   <div
                     key={event.name}
                     className="flex items-center justify-between px-4 py-2.5 rounded-btn bg-surface/50"
@@ -158,9 +137,6 @@ export default function DashboardPage() {
                         {i + 1}
                       </span>
                       <span className="text-text-primary text-sm font-medium">
-                        {event.label}
-                      </span>
-                      <span className="text-text-secondary text-xs font-mono">
                         {event.name}
                       </span>
                     </div>
