@@ -9,7 +9,7 @@ import '../../shared/tracking/event_tracker.dart';
 import 'etf_chip.dart';
 import 'glass_card.dart';
 import 'pressable_card.dart';
-import 'share_channel_sheet.dart';
+
 
 /// Compact briefing banner card shown at the top of the feed.
 ///
@@ -33,14 +33,9 @@ class _BriefingCardState extends State<BriefingCard> {
   Future<void> _handleShare() async {
     if (_isSharing) return;
 
-    // Show channel selection bottom sheet
-    final channel = await ShareChannelSheet.show(context);
-    if (channel == null || !mounted) return;
-
     setState(() => _isSharing = true);
 
-    EventTracker.instance.track('share_channel_selected', properties: {
-      'channel': channel.name,
+    EventTracker.instance.track('share_initiated', properties: {
       'content_type': 'briefing',
     });
 

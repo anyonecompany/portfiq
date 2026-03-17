@@ -5,7 +5,7 @@ import '../../config/theme.dart';
 import '../../shared/tracking/event_tracker.dart';
 import '../../shared/widgets/etf_chip.dart';
 import '../../shared/widgets/glass_card.dart';
-import '../../shared/widgets/share_channel_sheet.dart';
+
 import '../feed/feed_models.dart';
 import 'share_service.dart';
 import 'widgets/share_card.dart';
@@ -39,14 +39,9 @@ class _BriefingDetailScreenState extends State<BriefingDetailScreen> {
   Future<void> _handleShare() async {
     if (_isSharing) return;
 
-    // Show channel selection bottom sheet
-    final channel = await ShareChannelSheet.show(context);
-    if (channel == null || !mounted) return;
-
     setState(() => _isSharing = true);
 
-    EventTracker.instance.track('share_channel_selected', properties: {
-      'channel': channel.name,
+    EventTracker.instance.track('share_initiated', properties: {
       'content_type': 'briefing',
     });
 

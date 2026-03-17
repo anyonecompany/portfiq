@@ -536,6 +536,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             onTap: () => _showLegalDialog('개인정보처리방침', _privacyText),
           ),
+          const Divider(
+            height: 1,
+            indent: 16,
+            endIndent: 16,
+            color: PortfiqTheme.divider,
+          ),
+          const ListTile(
+            dense: true,
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+            title: Text(
+              '문의',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: PortfiqTheme.textPrimary,
+              ),
+            ),
+            trailing: Text(
+              'contact@anyonecompany.kr',
+              style: TextStyle(
+                fontSize: 13,
+                color: PortfiqTheme.textSecondary,
+              ),
+            ),
+          ),
         ],
       ),
       ),
@@ -619,7 +645,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 - 뉴스 분석 시 개인정보는 전달되지 않습니다
 
 5. 개인정보 삭제 요청
-앱 설정에서 데이터 초기화 또는 support@portfiq.com으로 요청
+앱 설정에서 데이터 초기화 또는 contact@anyonecompany.kr로 요청
 
 6. AI 서비스 고지
 본 앱은 AI(Google Gemini)를 활용하여 뉴스를 분석합니다.
