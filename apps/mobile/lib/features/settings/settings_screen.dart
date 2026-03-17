@@ -139,23 +139,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _buildSectionHeader('ETF 관리'),
           const SizedBox(height: 8),
           _buildEtfSection(),
-          const SizedBox(height: 24),
+          const SizedBox(height: PortfiqSpacing.space32),
 
           // Section 2: 알림 설정
           _buildSectionHeader('알림 설정'),
-          const SizedBox(height: 8),
+          const SizedBox(height: PortfiqSpacing.space8),
           _buildNotificationSection(),
-          const SizedBox(height: 24),
+          const SizedBox(height: PortfiqSpacing.space32),
 
           // Section 3: 앱 정보
           _buildSectionHeader('앱 정보'),
-          const SizedBox(height: 8),
+          const SizedBox(height: PortfiqSpacing.space8),
           _buildAppInfoSection(),
-          const SizedBox(height: 16),
+          const SizedBox(height: PortfiqSpacing.space24),
 
           // AI 서비스 고지
           _buildAiDisclosure(),
-          const SizedBox(height: 24),
+          const SizedBox(height: PortfiqSpacing.space32),
         ],
       ),
     );
@@ -165,9 +165,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Text(
-        title.toUpperCase(),
-        style: PortfiqTypography.label.copyWith(
-          color: PortfiqTheme.textTertiary,
+        title,
+        style: const TextStyle(
+          fontFamily: 'Pretendard',
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: PortfiqTheme.textSecondary,
+          height: 1.3,
         ),
       ),
     );
@@ -549,11 +553,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             endIndent: 16,
             color: PortfiqTheme.divider,
           ),
-          const ListTile(
+          ListTile(
             dense: true,
             contentPadding:
-                EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-            title: Text(
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+            title: const Text(
               '문의',
               style: TextStyle(
                 fontSize: 15,
@@ -561,13 +565,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: PortfiqTheme.textPrimary,
               ),
             ),
-            trailing: Text(
+            trailing: const Text(
               'contact@anyonecompany.kr',
               style: TextStyle(
                 fontSize: 13,
-                color: PortfiqTheme.textSecondary,
+                color: PortfiqTheme.accent,
               ),
             ),
+            onTap: () {
+              Clipboard.setData(
+                const ClipboardData(text: 'contact@anyonecompany.kr'),
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    '이메일 주소가 복사되었습니다',
+                    style: TextStyle(color: PortfiqTheme.textPrimary),
+                  ),
+                  backgroundColor: PortfiqTheme.secondaryBg,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
           ),
         ],
       ),

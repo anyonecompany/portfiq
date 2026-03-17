@@ -259,7 +259,30 @@ class _MyEtfScreenState extends ConsumerState<MyEtfScreen>
                             lastUpdate: state.lastPriceUpdate,
                             isRefreshing: state.isRefreshingPrices,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: PortfiqSpacing.space16),
+                          // Section divider
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: PortfiqSpacing.space12,
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  '보유 ETF',
+                                  style: PortfiqTypography.label.copyWith(
+                                    color: PortfiqTheme.textTertiary,
+                                  ),
+                                ),
+                                const SizedBox(width: PortfiqSpacing.space8),
+                                const Expanded(
+                                  child: Divider(
+                                    color: PortfiqTheme.divider,
+                                    height: 1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                           // ETF list
                           ...state.registeredEtfs.map((etf) {
                             return Padding(
@@ -484,10 +507,15 @@ class _EtfCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isPositive = (etf.changePct ?? 0) >= 0;
-    final changeColor =
-        isPositive ? PortfiqTheme.positive : PortfiqTheme.negative;
-    final sign = isPositive ? '+' : '';
+    final changePctValue = etf.changePct ?? 0;
+    final isPositive = changePctValue >= 0;
+    final isZero = changePctValue == 0;
+    final changeColor = isZero
+        ? PortfiqTheme.textSecondary
+        : isPositive
+            ? PortfiqTheme.positive
+            : PortfiqTheme.negative;
+    final sign = isZero ? '' : isPositive ? '+' : '';
 
     return PressableCard(
       onTap: onTap,

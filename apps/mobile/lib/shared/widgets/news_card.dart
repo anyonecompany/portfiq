@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../../config/theme.dart';
 import '../../core/extensions.dart';
 import '../../features/feed/feed_models.dart';
@@ -20,6 +21,29 @@ class NewsCard extends StatelessWidget {
     this.onSourceTap,
   });
 
+  /// Background tint color per sentiment (5% opacity overlay).
+  Color _sentimentTint(NewsSentiment sentiment) {
+    switch (sentiment) {
+      case NewsSentiment.positive:
+        return PortfiqTheme.positive.withValues(alpha: 0.05);
+      case NewsSentiment.negative:
+        return PortfiqTheme.negative.withValues(alpha: 0.05);
+      case NewsSentiment.neutral:
+        return Colors.transparent;
+    }
+  }
+
+  /// Headline font weight: bold for positive/negative, medium for neutral.
+  FontWeight _headlineWeight(NewsSentiment sentiment) {
+    switch (sentiment) {
+      case NewsSentiment.positive:
+      case NewsSentiment.negative:
+        return FontWeight.w700;
+      case NewsSentiment.neutral:
+        return FontWeight.w500;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final sentiment = item.sentiment;
@@ -28,6 +52,15 @@ class NewsCard extends StatelessWidget {
       onTap: onTap,
       child: Stack(
         children: [
+          // Sentiment background tint overlay
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                color: _sentimentTint(sentiment),
+                borderRadius: BorderRadius.circular(PortfiqTheme.radiusCard),
+              ),
+            ),
+          ),
           GlassCard(
             enableBlur: true,
             padding: const EdgeInsets.fromLTRB(
@@ -39,6 +72,10 @@ class NewsCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Row 0: Sentiment icon indicator
+                _SentimentIcon(sentiment: sentiment),
+                const SizedBox(height: PortfiqSpacing.space8),
+
                 // Row 1: Sentiment badge + ETF tickers + time
                 Row(
                   children: [
@@ -79,13 +116,14 @@ class NewsCard extends StatelessWidget {
 
                 const SizedBox(height: PortfiqSpacing.space12),
 
-                // Row 2: Headline
+                // Row 2: Headline (bold for positive/negative, medium for neutral)
                 Text(
                   item.headline,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: PortfiqTypography.subtitle.copyWith(
                     color: PortfiqTheme.textPrimary,
+                    fontWeight: _headlineWeight(sentiment),
                   ),
                 ),
 
@@ -171,6 +209,23 @@ class NewsCard extends StatelessWidget {
           colors: [Color(0xFF9CA3AF), Color(0xFF6B7280)],
         );
     }
+  }
+}
+
+/// Small sentiment icon shown at the top of the card.
+class _SentimentIcon extends StatelessWidget {
+  final NewsSentiment sentiment;
+  const _SentimentIcon({required this.sentiment});
+
+  @override
+  Widget build(BuildContext context) {
+    final (icon, color) = switch (sentiment) {
+      NewsSentiment.positive => (LucideIcons.trendingUp, PortfiqTheme.positive),
+      NewsSentiment.negative => (LucideIcons.trendingDown, PortfiqTheme.negative),
+      NewsSentiment.neutral => (LucideIcons.minus, PortfiqTheme.textTertiary),
+    };
+
+    return Icon(icon, size: 14, color: color);
   }
 }
 

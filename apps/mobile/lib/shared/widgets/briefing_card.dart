@@ -75,8 +75,9 @@ class _BriefingCardState extends State<BriefingCard> {
           onTap: widget.onTap,
           child: GlassCard(
             enableBlur: true,
+            depth: 3,
             borderGradient: borderGradient,
-            padding: const EdgeInsets.all(PortfiqSpacing.space16),
+            padding: const EdgeInsets.all(PortfiqSpacing.space24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -88,8 +89,11 @@ class _BriefingCardState extends State<BriefingCard> {
                     Expanded(
                       child: Text(
                         data.title,
-                        style: PortfiqTypography.subtitle.copyWith(
+                        style: PortfiqTypography.title.copyWith(
                           color: PortfiqTheme.textPrimary,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          height: 1.25,
                         ),
                       ),
                     ),
@@ -194,6 +198,7 @@ class _BriefingCardState extends State<BriefingCard> {
                     style: PortfiqTypography.body.copyWith(
                       color: PortfiqTheme.textSecondary,
                       fontSize: 14,
+                      height: 1.7,
                     ),
                   ),
                 ] else ...[
@@ -217,6 +222,7 @@ class _BriefingCardState extends State<BriefingCard> {
                               style: PortfiqTypography.body.copyWith(
                                 fontSize: 14,
                                 color: const Color(0xFFD1D5DB),
+                                height: 1.7,
                               ),
                             ),
                           ),

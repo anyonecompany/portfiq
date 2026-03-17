@@ -165,7 +165,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                           index: 0,
                           child: Padding(
                             padding: const EdgeInsets.only(
-                              bottom: PortfiqSpacing.space16,
+                              bottom: PortfiqSpacing.space20,
                             ),
                             child: BriefingCard(
                               data: briefing,
