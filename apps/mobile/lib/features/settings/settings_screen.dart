@@ -62,6 +62,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     setState(() {
       _registeredEtfs.removeAt(index);
     });
+    _saveToHive();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${removed.ticker} 삭제됨'),
@@ -74,10 +75,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             setState(() {
               _registeredEtfs.insert(index, removed);
             });
+            _saveToHive();
           },
         ),
       ),
     );
+  }
+
+  void _saveToHive() {
+    final box = Hive.box('settings');
+    box.put('registered_etfs', _registeredEtfs.map((e) => e.ticker).toList());
   }
 
   void _toggleNotification(String key, bool value) {
@@ -214,7 +221,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: PortfiqTheme.accent,
-                          fontFamily: 'Inter',
+                          fontFamily: 'Pretendard',
                         ),
                       ),
                     ),
@@ -295,7 +302,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   builder: (context, scrollController) =>
                       AddEtfSheet(scrollController: scrollController),
                 ),
-              );
+              ).then((_) => _loadRegisteredEtfs());
             },
           ),
         ],
@@ -405,7 +412,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             fontSize: 13,
             fontWeight: FontWeight.w600,
             color: PortfiqTheme.accent,
-            fontFamily: 'Inter',
+            fontFamily: 'Pretendard',
           ),
         ),
       ),
@@ -482,7 +489,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               style: TextStyle(
                 fontSize: 14,
                 color: PortfiqTheme.textSecondary,
-                fontFamily: 'Inter',
+                fontFamily: 'Pretendard',
               ),
             ),
           ),

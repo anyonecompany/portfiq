@@ -269,7 +269,7 @@ class _EtfChip extends StatelessWidget {
             Text(
               ticker,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: selected

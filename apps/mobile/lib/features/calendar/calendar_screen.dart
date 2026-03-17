@@ -451,7 +451,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: PortfiqTheme.accent,
-                  fontFamily: 'Inter',
+                  fontFamily: 'Pretendard',
                 ),
               ),
             ),
@@ -490,7 +490,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: PortfiqTheme.accentLight,
-                            fontFamily: 'Inter',
+                            fontFamily: 'Pretendard',
                           ),
                         ),
                       );

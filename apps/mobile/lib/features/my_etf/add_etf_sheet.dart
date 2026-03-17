@@ -52,7 +52,7 @@ class _AddEtfSheetState extends ConsumerState<AddEtfSheet> {
     });
   }
 
-  void _onEtfTap(EtfInfo etf) {
+  Future<void> _onEtfTap(EtfInfo etf) async {
     final notifier = ref.read(myEtfProvider.notifier);
     if (notifier.isRegistered(etf.ticker)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -72,14 +72,27 @@ class _AddEtfSheetState extends ConsumerState<AddEtfSheet> {
       'ticker': etf.ticker,
       'source': 'my_etf',
     });
-    notifier.addEtf(etf.ticker);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${etf.ticker}가 추가되었습니다'),
-        backgroundColor: PortfiqTheme.surface,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    await notifier.addEtf(etf.ticker);
+    if (mounted) {
+      Navigator.of(context).pop(); // 바텀시트 닫기 → 목록에서 즉시 확인
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: PortfiqTheme.positive, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                '${etf.ticker} 추가 완료',
+                style: const TextStyle(color: PortfiqTheme.textPrimary),
+              ),
+            ],
+          ),
+          backgroundColor: PortfiqTheme.secondaryBg,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
@@ -91,18 +104,6 @@ class _AddEtfSheetState extends ConsumerState<AddEtfSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 드래그 핸들
-        Center(
-          child: Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 8),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: PortfiqTheme.divider,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-        ),
         // 제목
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

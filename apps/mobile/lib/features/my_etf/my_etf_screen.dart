@@ -103,7 +103,7 @@ class _MyEtfScreenState extends ConsumerState<MyEtfScreen>
       if (success) {
         EventTracker.instance.track('share_card_shared', properties: {
           'content_type': 'weekly_performance',
-          'channel': channel.name,
+          'channel': 'system',
         });
       }
     }
@@ -150,17 +150,6 @@ class _MyEtfScreenState extends ConsumerState<MyEtfScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: PortfiqTheme.divider,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
             Text(
               '기업으로 ETF 찾기',
               style: Theme.of(sheetContext).textTheme.titleLarge,
@@ -540,7 +529,7 @@ class _EtfCard extends StatelessWidget {
                         '\u20a9${_formatKrw(etf.priceKrw!)}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.white.withValues(alpha: 0.5),
-                          fontFamily: 'Inter',
+                          fontFamily: 'Pretendard',
                           fontSize: 12,
                         ),
                       ),
@@ -564,7 +553,7 @@ class _EtfCard extends StatelessWidget {
                         color: changeColor,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        fontFamily: 'Inter',
+                        fontFamily: 'Pretendard',
                       ),
                     ),
                   ),

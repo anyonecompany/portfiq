@@ -364,7 +364,7 @@ class _NewsCard extends StatelessWidget {
                 child: Text(
                   impact.etfTicker,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'Pretendard',
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: isUserEtf

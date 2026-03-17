@@ -101,7 +101,7 @@ class _PriceCountUpState extends State<PriceCountUp>
       return Text(
         '${widget.prefix}${_formatNumber(widget.value)}${widget.suffix}',
         style: widget.style ??
-            PortfiqTypography.display.copyWith(fontFamily: 'Inter'),
+            PortfiqTypography.display.copyWith(fontFamily: 'Pretendard'),
       );
     }
 
@@ -111,7 +111,7 @@ class _PriceCountUpState extends State<PriceCountUp>
         return Text(
           '${widget.prefix}${_formatNumber(_animation.value)}${widget.suffix}',
           style: widget.style ??
-              PortfiqTypography.display.copyWith(fontFamily: 'Inter'),
+              PortfiqTypography.display.copyWith(fontFamily: 'Pretendard'),
         );
       },
     );

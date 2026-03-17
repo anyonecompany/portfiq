@@ -195,7 +195,7 @@ class _CompanyEtfCard extends StatelessWidget {
                   Text(
                     etf.ticker,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontFamily: 'Inter',
+                          fontFamily: 'Pretendard',
                         ),
                   ),
                   const SizedBox(height: 4),
@@ -223,7 +223,7 @@ class _CompanyEtfCard extends StatelessWidget {
                   color: PortfiqTheme.accent,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  fontFamily: 'Inter',
+                  fontFamily: 'Pretendard',
                 ),
               ),
             ),

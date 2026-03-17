@@ -93,7 +93,7 @@ class PortfiqTheme {
           color: textPrimary,
           height: 1.2,
           letterSpacing: -0.5,
-          fontFamily: 'Inter',
+          fontFamily: 'Pretendard',
         ),
         displaySmall: TextStyle(
           fontSize: 24,
@@ -171,7 +171,7 @@ class PortfiqTheme {
           fontWeight: FontWeight.w400,
           color: textSecondary,
           height: 1.3,
-          fontFamily: 'Inter',
+          fontFamily: 'Pretendard',
         ),
         labelSmall: TextStyle(
           fontSize: 11,
@@ -179,7 +179,7 @@ class PortfiqTheme {
           color: textSecondary,
           height: 1.2,
           letterSpacing: 1.2,
-          fontFamily: 'Inter',
+          fontFamily: 'Pretendard',
         ),
       ),
 
@@ -372,7 +372,7 @@ class PortfiqTypography {
   PortfiqTypography._();
 
   static const display = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Pretendard',
     fontSize: 28,
     fontWeight: FontWeight.w800,
     letterSpacing: -0.5,
@@ -381,7 +381,7 @@ class PortfiqTypography {
   );
 
   static const title = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Pretendard',
     fontSize: 22,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.3,
@@ -390,7 +390,7 @@ class PortfiqTypography {
   );
 
   static const subtitle = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Pretendard',
     fontSize: 17,
     fontWeight: FontWeight.w600,
     height: 1.4,
@@ -398,7 +398,7 @@ class PortfiqTypography {
   );
 
   static const body = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Pretendard',
     fontSize: 15,
     fontWeight: FontWeight.w400,
     height: 1.5,
@@ -406,7 +406,7 @@ class PortfiqTypography {
   );
 
   static const caption = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Pretendard',
     fontSize: 12,
     fontWeight: FontWeight.w400,
     height: 1.3,
@@ -414,7 +414,7 @@ class PortfiqTypography {
   );
 
   static const label = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Pretendard',
     fontSize: 11,
     fontWeight: FontWeight.w600,
     letterSpacing: 1.2,

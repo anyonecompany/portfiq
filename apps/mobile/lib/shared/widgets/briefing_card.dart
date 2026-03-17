@@ -53,7 +53,7 @@ class _BriefingCardState extends State<BriefingCard> {
       if (success) {
         EventTracker.instance.track('share_card_shared', properties: {
           'content_type': 'briefing',
-          'channel': channel.name,
+          'channel': 'system',
         });
       }
     }

@@ -227,7 +227,7 @@ class _EtfDetailScreenState extends ConsumerState<EtfDetailScreen> {
                       '\u20a9${_formatKrw(etf.priceKrw!)}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white.withValues(alpha: 0.5),
-                        fontFamily: 'Inter',
+                        fontFamily: 'Pretendard',
                       ),
                     ),
                   ),
@@ -251,7 +251,7 @@ class _EtfDetailScreenState extends ConsumerState<EtfDetailScreen> {
                             color: changeColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            fontFamily: 'Inter',
+                            fontFamily: 'Pretendard',
                           ),
                         ),
                       ),
@@ -263,7 +263,7 @@ class _EtfDetailScreenState extends ConsumerState<EtfDetailScreen> {
                           color: changeColor,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          fontFamily: 'Inter',
+                          fontFamily: 'Pretendard',
                         ),
                       ),
                   ],
@@ -396,7 +396,7 @@ class _EtfDetailScreenState extends ConsumerState<EtfDetailScreen> {
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: PortfiqTheme.accent,
-                      fontFamily: 'Inter',
+                      fontFamily: 'Pretendard',
                     ),
                   ),
                 ),
@@ -707,7 +707,7 @@ class _EtfDetailScreenState extends ConsumerState<EtfDetailScreen> {
                           color: PortfiqTheme.warning,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          fontFamily: 'Inter',
+                          fontFamily: 'Pretendard',
                         ),
                       ),
                     ],
@@ -971,7 +971,7 @@ class _HoldingItem extends StatelessWidget {
               Text(
                 holding.ticker,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Pretendard',
                     ),
               ),
               const SizedBox(width: 8),
@@ -985,7 +985,7 @@ class _HoldingItem extends StatelessWidget {
               Text(
                 '${holding.weight.toStringAsFixed(1)}%',
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Pretendard',
                       color: PortfiqTheme.textPrimary,
                     ),
               ),
@@ -1084,7 +1084,7 @@ class _SectorBar extends StatelessWidget {
               Text(
                 '${percentage.toStringAsFixed(1)}%',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Pretendard',
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: isHighest
@@ -1217,7 +1217,7 @@ class _MacroRow extends StatelessWidget {
                             color: _levelColor(),
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            fontFamily: 'Inter',
+                            fontFamily: 'Pretendard',
                           ),
                         ),
                       ),
@@ -1277,7 +1277,7 @@ class _MacroRow extends StatelessWidget {
                     color: color,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    fontFamily: 'Inter',
+                    fontFamily: 'Pretendard',
                   ),
                 ),
               ),
@@ -1328,7 +1328,7 @@ class _ComparisonCard extends StatelessWidget {
           Text(
             ticker,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Pretendard',
                   fontWeight: FontWeight.w700,
                 ),
           ),

@@ -83,7 +83,7 @@ class _ChangeItem extends StatelessWidget {
                 Text(
                   ticker,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Pretendard',
                       ),
                 ),
                 if (name.isNotEmpty)
@@ -99,7 +99,7 @@ class _ChangeItem extends StatelessWidget {
           Text(
             '${oldWeight.toStringAsFixed(1)}%',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Pretendard',
                   color: PortfiqTheme.textSecondary,
                 ),
           ),
@@ -114,7 +114,7 @@ class _ChangeItem extends StatelessWidget {
           Text(
             '${newWeight.toStringAsFixed(1)}%',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Pretendard',
                   color: changeColor,
                   fontWeight: isSignificant ? FontWeight.w600 : FontWeight.w400,
                 ),

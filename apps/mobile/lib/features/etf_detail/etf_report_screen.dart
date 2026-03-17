@@ -339,7 +339,7 @@ class _HoldingRow extends StatelessWidget {
               Text(
                 ticker,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Pretendard',
                     ),
               ),
               const SizedBox(width: 8),
@@ -353,7 +353,7 @@ class _HoldingRow extends StatelessWidget {
               Text(
                 '${weight.toStringAsFixed(1)}%',
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Pretendard',
                       color: PortfiqTheme.textPrimary,
                       fontWeight: FontWeight.w600,
                     ),
@@ -426,7 +426,7 @@ class _WeightDiffBadge extends StatelessWidget {
           color: color,
           fontSize: 11,
           fontWeight: FontWeight.w600,
-          fontFamily: 'Inter',
+          fontFamily: 'Pretendard',
         ),
       ),
     );
@@ -480,7 +480,7 @@ class _ChangeRow extends StatelessWidget {
                 Text(
                   ticker,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Pretendard',
                       ),
                 ),
                 if (name.isNotEmpty)
@@ -495,7 +495,7 @@ class _ChangeRow extends StatelessWidget {
           Text(
             '${oldWeight.toStringAsFixed(1)}%',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Pretendard',
                   color: PortfiqTheme.textSecondary,
                 ),
           ),
@@ -510,7 +510,7 @@ class _ChangeRow extends StatelessWidget {
           Text(
             '${newWeight.toStringAsFixed(1)}%',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Pretendard',
                   color: changeColor,
                   fontWeight: isSignificant ? FontWeight.w600 : FontWeight.w400,
                 ),
@@ -614,7 +614,7 @@ class _SectorConcentrationSectionState
                           color: PortfiqTheme.warning,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          fontFamily: 'Inter',
+                          fontFamily: 'Pretendard',
                         ),
                       ),
                     ],
@@ -688,7 +688,7 @@ class _SectorBar extends StatelessWidget {
               Text(
                 '${percentage.toStringAsFixed(1)}%',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Pretendard',
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: isHighest
@@ -932,7 +932,7 @@ class _MacroFactorRow extends StatelessWidget {
                             color: _levelColor(),
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            fontFamily: 'Inter',
+                            fontFamily: 'Pretendard',
                           ),
                         ),
                       ),
@@ -995,7 +995,7 @@ class _MacroFactorRow extends StatelessWidget {
                         color: color,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        fontFamily: 'Inter',
+                        fontFamily: 'Pretendard',
                       ),
                     ),
                   ),
@@ -1121,7 +1121,7 @@ class _ThemeComparisonSectionState extends State<_ThemeComparisonSection> {
                     color: PortfiqTheme.accent,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    fontFamily: 'Inter',
+                    fontFamily: 'Pretendard',
                   ),
                 ),
               ),
@@ -1215,7 +1215,7 @@ class _ComparisonCard extends StatelessWidget {
           Text(
             ticker,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Pretendard',
                   fontWeight: FontWeight.w700,
                 ),
           ),

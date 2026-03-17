@@ -76,7 +76,7 @@ class ShareCard extends StatelessWidget {
                     Text(
                       dateStr,
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'Pretendard',
                         fontSize: 24,
                         fontWeight: FontWeight.w400,
                         color: PortfiqTheme.textSecondary,
@@ -183,7 +183,7 @@ class ShareCard extends StatelessWidget {
             child: Text(
               'P',
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'Pretendard',
                 fontSize: 32,
                 fontWeight: FontWeight.w800,
                 color: accentColor,
@@ -199,7 +199,7 @@ class ShareCard extends StatelessWidget {
             Text(
               'PORTFIQ',
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'Pretendard',
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 4,
@@ -260,7 +260,7 @@ class ShareCard extends StatelessWidget {
                   Text(
                     change.ticker,
                     style: const TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Pretendard',
                       fontSize: 30,
                       fontWeight: FontWeight.w700,
                       color: PortfiqTheme.textPrimary,
@@ -270,7 +270,7 @@ class ShareCard extends StatelessWidget {
                   Text(
                     '$sign${change.changePercent.toStringAsFixed(2)}%',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'Pretendard',
                       fontSize: 30,
                       fontWeight: FontWeight.w700,
                       color: color,
@@ -327,7 +327,7 @@ class ShareCard extends StatelessWidget {
                       child: Text(
                         '${entry.key + 1}',
                         style: const TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: 'Pretendard',
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
                           color: PortfiqTheme.warning,
@@ -413,7 +413,7 @@ class ShareCard extends StatelessWidget {
               const Text(
                 'portfiq.com',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'Pretendard',
                   fontSize: 22,
                   fontWeight: FontWeight.w400,
                   color: PortfiqTheme.textSecondary,

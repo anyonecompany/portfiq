@@ -50,7 +50,7 @@ class EtfChip extends StatelessWidget {
           color: color,
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          fontFamily: 'Inter',
+          fontFamily: 'Pretendard',
         ),
       ),
     );
