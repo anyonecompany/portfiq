@@ -97,11 +97,23 @@ class GlassCard extends StatelessWidget {
         color: effectiveBorderColor,
         width: 1,
       ),
-      boxShadow: [_shadow],
+      boxShadow: [
+        _shadow,
+        // Inner subtle shadow for glass depth
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.15),
+          blurRadius: 6,
+          offset: const Offset(0, 1),
+          blurStyle: BlurStyle.inner,
+        ),
+      ],
     );
 
+    // Wrap with subtle gradient border overlay
+    Widget card;
+
     if (enableBlur) {
-      return Container(
+      card = Container(
         decoration: decoration,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(borderRadius),
@@ -111,11 +123,30 @@ class GlassCard extends StatelessWidget {
           ),
         ),
       );
+    } else {
+      card = Container(
+        decoration: decoration,
+        child: content,
+      );
     }
 
+    // Subtle gradient border: white 10% at top-left → transparent
     return Container(
-      decoration: decoration,
-      child: content,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0x1AFFFFFF), // white 10%
+            Color(0x00FFFFFF), // transparent
+          ],
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(1), // 1px gradient border width
+        child: card,
+      ),
     );
   }
 

@@ -140,33 +140,36 @@ class NewsCard extends StatelessWidget {
             ),
           ),
 
-          // Left accent bar — gradient per MASTER.md (not solid!)
-          if (sentiment != NewsSentiment.neutral)
-            Positioned(
-              left: 0,
-              top: PortfiqSpacing.space12,
-              bottom: PortfiqSpacing.space12,
-              child: Container(
-                width: 3,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(1.5),
-                  gradient: _sentimentGradient(sentiment),
-                ),
+          // Left accent bar — sentiment color (green=positive, red=negative, gray=neutral)
+          Positioned(
+            left: 0,
+            top: PortfiqSpacing.space12,
+            bottom: PortfiqSpacing.space12,
+            child: Container(
+              width: 3,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(1.5),
+                gradient: _sentimentGradient(sentiment),
               ),
             ),
+          ),
         ],
       ),
     );
   }
 
-  LinearGradient? _sentimentGradient(NewsSentiment sentiment) {
+  LinearGradient _sentimentGradient(NewsSentiment sentiment) {
     switch (sentiment) {
       case NewsSentiment.positive:
         return PortfiqGradients.positiveAccent;
       case NewsSentiment.negative:
         return PortfiqGradients.highImpact;
       case NewsSentiment.neutral:
-        return null;
+        return const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF9CA3AF), Color(0xFF6B7280)],
+        );
     }
   }
 }

@@ -541,9 +541,9 @@ class PortfiqShadows {
 
   /// Selected tab glow
   static const tabGlow = BoxShadow(
-    color: Color(0x666366F1), // rgba(99,102,241,0.4)
-    blurRadius: 12,
-    spreadRadius: 2,
+    color: Color(0x806366F1), // rgba(99,102,241,0.5)
+    blurRadius: 16,
+    spreadRadius: 3,
   );
 }
 

@@ -154,8 +154,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                       PortfiqSpacing.space16,
                       PortfiqSpacing.space24,
                     ),
-                    // +1 for briefing, +1 for loading indicator at bottom
-                    itemCount: feedState.newsItems.length + 1 + (feedState.isLoadingMore ? 1 : 0),
+                    // +1 for briefing, +1 for section header, +1 for loading indicator at bottom
+                    itemCount: feedState.newsItems.length + 2 + (feedState.isLoadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       // First item: Briefing card
                       if (index == 0) {
@@ -175,8 +175,16 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                         );
                       }
 
+                      // Second item: Section header
+                      if (index == 1) {
+                        return _buildStaggeredItem(
+                          index: 1,
+                          child: _buildSectionHeader(),
+                        );
+                      }
+
                       // Loading indicator at the very bottom
-                      if (index == feedState.newsItems.length + 1) {
+                      if (index == feedState.newsItems.length + 2) {
                         return const Padding(
                           padding: EdgeInsets.symmetric(vertical: 24),
                           child: Center(
@@ -193,17 +201,17 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                       }
 
                       // News cards
-                      final item = feedState.newsItems[index - 1];
+                      final item = feedState.newsItems[index - 2];
 
                       // Track viewport entry for news cards
                       if (index > _maxScrolledIndex) {
                         _maxScrolledIndex = index;
                         EventTracker.instance.track('news_card_viewed', properties: {
                           'news_id': item.id,
-                          'position': index - 1,
+                          'position': index - 2,
                         });
                         EventTracker.instance.track('feed_scrolled_depth', properties: {
-                          'max_index': index - 1,
+                          'max_index': index - 2,
                           'total_items': feedState.newsItems.length,
                         });
                       }
@@ -230,6 +238,48 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                     },
                   ),
                 ),
+    );
+  }
+
+  /// Section header with gradient "오늘의 뉴스" title and date.
+  Widget _buildSectionHeader() {
+    final now = DateTime.now();
+    const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
+    final dateStr = '${now.month}월 ${now.day}일 ${weekdays[now.weekday - 1]}요일';
+
+    return Padding(
+      padding: const EdgeInsets.only(
+        bottom: PortfiqSpacing.space12,
+        top: PortfiqSpacing.space4,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          ShaderMask(
+            shaderCallback: (bounds) =>
+                PortfiqGradients.indigo.createShader(bounds),
+            child: const Text(
+              '오늘의 뉴스',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                height: 1.3,
+              ),
+            ),
+          ),
+          const SizedBox(width: PortfiqSpacing.space8),
+          Text(
+            dateStr,
+            style: PortfiqTypography.caption.copyWith(
+              color: PortfiqTheme.textTertiary,
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
