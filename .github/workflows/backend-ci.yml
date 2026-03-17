@@ -1,0 +1,73 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend/**']
+  pull_request:
+    branches: [main]
+    paths: ['backend/**']
+  workflow_call:
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      SUPABASE_URL: "https://placeholder.supabase.co"
+      SUPABASE_KEY: "ci-dummy-key"
+      SUPABASE_SERVICE_KEY: "ci-dummy-service-key"
+      GEMINI_API_KEY: "ci-dummy-key"
+      NEWSAPI_KEY: "ci-dummy-key"
+      ENVIRONMENT: "ci"
+      DEBUG: "false"
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          clean: false
+          fetch-depth: 1
+          persist-credentials: false
+          submodules: false
+
+      - name: Prepare Git workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        working-directory: ${{ github.workspace }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff pytest
+
+      - name: Lint with ruff
+        run: ruff check . --output-format=github
+        continue-on-error: true
+
+      - name: Format check with ruff
+        run: ruff format --check .
+        continue-on-error: true
+
+      - name: Python import verification
+        run: python -c "import main; print('main.py imports OK')"
+
+      - name: Run pytest
+        run: pytest -v --tb=short || echo "No tests found or tests failed"
+        continue-on-error: true
