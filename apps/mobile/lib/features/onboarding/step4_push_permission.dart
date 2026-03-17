@@ -26,17 +26,6 @@ class Step4PushPermission extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag handle
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.only(bottom: 24),
-            decoration: BoxDecoration(
-              color: PortfiqTheme.divider,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
           // Bell icon
           Container(
             width: 64,

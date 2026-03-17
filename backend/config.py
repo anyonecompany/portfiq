@@ -1,7 +1,4 @@
-"""Application configuration loaded from environment variables.
-
-CI trigger: 2026-03-17
-"""
+"""Application configuration loaded from environment variables."""
 
 import os
 from pathlib import Path

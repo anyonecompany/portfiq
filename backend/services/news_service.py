@@ -54,6 +54,39 @@ def _get_gemini_client() -> genai.Client:
 
 
 # ──────────────────────────────────────────────
+# Keyword-based sentiment fallback
+# ──────────────────────────────────────────────
+
+_POSITIVE_WORDS = [
+    "상승", "호조", "성장", "급등", "반등", "최고", "호재", "수혜",
+    "surge", "rally", "gain", "rise", "jump", "soar", "record",
+    "beat", "exceed", "outperform", "bullish", "upgrade",
+]
+_NEGATIVE_WORDS = [
+    "하락", "급락", "폭락", "악재", "위기", "손실", "둔화", "우려",
+    "리스크", "제재", "규제", "관세", "파산", "디폴트",
+    "drop", "fall", "plunge", "crash", "decline", "loss", "risk",
+    "tariff", "sanction", "downgrade", "bearish", "recession", "layoff",
+]
+
+
+def _keyword_sentiment(text: str) -> str:
+    """Keyword-based sentiment fallback when Gemini is unavailable.
+
+    Returns:
+        "호재", "위험", or "중립".
+    """
+    t = text.lower()
+    pos = sum(1 for w in _POSITIVE_WORDS if w in t)
+    neg = sum(1 for w in _NEGATIVE_WORDS if w in t)
+    if pos > neg:
+        return "호재"
+    if neg > pos:
+        return "위험"
+    return "중립"
+
+
+# ──────────────────────────────────────────────
 # RSS feeds — US financial news (primary)
 # ──────────────────────────────────────────────
 
@@ -317,11 +350,11 @@ async def _translate_batch(headlines: list[str]) -> list[dict[str, str]]:
     Handles Gemini 429 rate limits with backoff.
     Retries up to 3 times with exponential backoff on timeout/transient errors.
     """
-    fallback = [{"ko": h, "impact_reason": "", "summary_3line": "", "sentiment": "중립"} for h in headlines]
+    fallback = [{"ko": h, "impact_reason": "", "summary_3line": "", "sentiment": _keyword_sentiment(h)} for h in headlines]
 
     # Rate limit 상태면 즉시 fallback 반환 (대기하지 않음)
     if _is_gemini_rate_limited():
-        logger.info("Gemini rate limited, 원문 헤드라인 반환 (배치 %d건)", len(headlines))
+        logger.info("Gemini rate limited, 키워드 기반 sentiment 반환 (배치 %d건)", len(headlines))
         return fallback
 
     numbered = "\n".join(f"[{i}] {h}" for i, h in enumerate(headlines))
@@ -572,7 +605,7 @@ def _translate_cached_articles_sync() -> None:
                         if tr.get("impact_reason"):
                             article["summary"] = tr["impact_reason"]
                         article["summary_3line"] = tr.get("summary_3line", "")
-                        article["sentiment"] = tr.get("sentiment", "중립")
+                        article["sentiment"] = tr.get("sentiment") or _keyword_sentiment(article.get("original_headline", article["headline"]))
                         article["translated"] = True
 
                 logger.info("번역 배치 완료: %d~%d / %d", start, start + len(batch), len(headlines))
@@ -754,7 +787,7 @@ async def fetch_and_store_news() -> int:
                             if item.get("impact_reason"):
                                 article["summary"] = item["impact_reason"]
                             article["summary_3line"] = item.get("summary_3line", "")
-                            article["sentiment"] = item.get("sentiment", "중립")
+                            article["sentiment"] = item.get("sentiment") or _keyword_sentiment(article.get("original_headline", article["headline"]))
                             article["translated"] = True
                     logger.info("번역 배치 완료: %d~%d / %d", start, start + len(batch), len(headlines))
                     _time_mod.sleep(1.5)  # rate limit 방지 — 배치 간 1.5초 대기

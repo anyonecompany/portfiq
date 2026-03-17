@@ -18,7 +18,7 @@ class TabShell extends StatefulWidget {
 class _TabShellState extends State<TabShell> {
   int _currentIndex = 0;
 
-  static const _tabNames = ['Home', 'My ETF', 'Calendar', 'Settings'];
+  static const _tabNames = ['홈', '내 ETF', '캘린더', '설정'];
 
   void _onTabTapped(int index) {
     if (index == _currentIndex) return;

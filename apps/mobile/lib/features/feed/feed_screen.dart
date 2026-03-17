@@ -370,19 +370,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Handle bar
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: PortfiqTheme.divider,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: PortfiqSpacing.space16),
-
                 // Scrollable content
                 Flexible(
                   child: SingleChildScrollView(

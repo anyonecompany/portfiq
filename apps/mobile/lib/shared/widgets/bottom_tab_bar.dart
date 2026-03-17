@@ -36,25 +36,25 @@ class BottomTabBar extends StatelessWidget {
             children: [
               _TabItem(
                 icon: LucideIcons.home,
-                label: 'Home',
+                label: '홈',
                 isActive: currentIndex == 0,
                 onTap: () => onTap(0),
               ),
               _TabItem(
                 icon: LucideIcons.barChart2,
-                label: 'My ETF',
+                label: '내 ETF',
                 isActive: currentIndex == 1,
                 onTap: () => onTap(1),
               ),
               _TabItem(
                 icon: LucideIcons.calendar,
-                label: 'Calendar',
+                label: '캘린더',
                 isActive: currentIndex == 2,
                 onTap: () => onTap(2),
               ),
               _TabItem(
                 icon: LucideIcons.slidersHorizontal,
-                label: 'Settings',
+                label: '설정',
                 isActive: currentIndex == 3,
                 onTap: () => onTap(3),
               ),

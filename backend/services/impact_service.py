@@ -145,6 +145,38 @@ _KEYWORD_ETF_MAP: dict[str, list[str]] = {
 
 _LEVEL_THRESHOLDS = {"high": 3, "medium": 2, "low": 1}
 
+# 키워드 기반 direction fallback
+_POSITIVE_KEYWORDS = [
+    "상승", "호조", "성장", "급등", "반등", "최고", "호재", "수혜",
+    "surge", "rally", "gain", "rise", "jump", "soar", "record high",
+    "beat", "exceed", "outperform", "bullish", "upgrade",
+]
+_NEGATIVE_KEYWORDS = [
+    "하락", "급락", "폭락", "악재", "위기", "손실", "둔화", "우려",
+    "리스크", "제재", "규제", "관세", "파산", "디폴트",
+    "drop", "fall", "plunge", "crash", "decline", "loss", "risk",
+    "tariff", "sanction", "downgrade", "bearish", "recession", "layoff",
+]
+
+
+def _keyword_direction(text: str) -> str:
+    """Classify direction from headline keywords.
+
+    Args:
+        text: News headline text.
+
+    Returns:
+        "positive", "negative", or "neutral".
+    """
+    text_lower = text.lower()
+    pos = sum(1 for kw in _POSITIVE_KEYWORDS if kw in text_lower)
+    neg = sum(1 for kw in _NEGATIVE_KEYWORDS if kw in text_lower)
+    if pos > neg:
+        return "positive"
+    if neg > pos:
+        return "negative"
+    return "neutral"
+
 
 def _keyword_classify(text: str, target_tickers: list[str] | None = None) -> list[ETFImpact]:
     """Keyword-based fallback classification.
@@ -216,9 +248,10 @@ class ImpactService:
             level = "Low"
             score = 0.0
 
+        direction = _keyword_direction(headline)
         return {
             "impact_score": score,
-            "direction": "positive",  # simplified; real impl would use sentiment analysis
+            "direction": direction,
             "affected_holdings": [],
             "reasoning": f"Keyword-based classification: {level} impact on {ticker}",
         }
@@ -302,13 +335,14 @@ class ImpactService:
                 for imp in ai_impacts:
                     ticker = imp.get("ticker", "")
                     level = imp.get("level", "Low")
+                    direction = imp.get("direction", "neutral")
                     reason = imp.get("reason", "")
                     score = {"High": 0.9, "Medium": 0.5, "Low": 0.2}.get(level, 0.1)
                     results.append({
                         "article_id": article_id,
                         "ticker": ticker,
                         "impact_score": score,
-                        "direction": "positive",
+                        "direction": direction,
                         "affected_holdings": [],
                         "reasoning": f"Gemini 분류: {reason}",
                     })

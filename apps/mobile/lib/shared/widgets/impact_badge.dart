@@ -21,19 +21,19 @@ class ImpactBadge extends StatelessWidget {
         PortfiqGradients.highImpact,
         null as Color?,
         PortfiqTheme.textPrimary,
-        'High',
+        '높음',
       ),
       ImpactLevel.medium => (
         PortfiqGradients.mediumImpact,
         null as Color?,
         PortfiqTheme.textPrimary,
-        'Medium',
+        '보통',
       ),
       ImpactLevel.low => (
         null as Gradient?,
         PortfiqTheme.divider,
         PortfiqTheme.textSecondary,
-        'Low',
+        '낮음',
       ),
     };
 
