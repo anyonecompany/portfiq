@@ -43,6 +43,7 @@ class Settings:
     # External data APIs
     NEWS_API_KEY: str = os.getenv("NEWS_API_KEY", "")
     MARKET_DATA_API_KEY: str = os.getenv("MARKET_DATA_API_KEY", "")
+    FINNHUB_API_KEY: str = os.getenv("FINNHUB_API_KEY", "")
 
     # Push notifications (FCM / Firebase Admin SDK)
     FCM_SERVER_KEY: str = os.getenv("FCM_SERVER_KEY", "")

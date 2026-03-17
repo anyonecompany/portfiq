@@ -1,7 +1,7 @@
-"""Economic calendar service — recurring US macro event schedule with ETF impact mapping.
+"""Economic calendar service — Finnhub API + recurring US macro event fallback.
 
-Generates a comprehensive schedule of major US economic events (CPI, FOMC, NFP, etc.)
-based on known recurring patterns, and maps each event to affected ETFs using keyword matching.
+Primary: Finnhub API로 실제 경제 이벤트 데이터를 가져온다.
+Fallback: API 실패 시 규칙 기반 스케줄을 생성한다.
 Caches results in memory with 1-hour TTL.
 
 Usage:
@@ -13,9 +13,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from enum import Enum
 
+import httpx
+
+from config import settings
 from services.cache import get_cached, set_cached
 
 logger = logging.getLogger(__name__)
@@ -529,10 +532,131 @@ def _generate_fomc_events(from_date: date, to_date: date) -> list[CalendarEvent]
 # CalendarService
 # ──────────────────────────────────────────────
 
+# ──────────────────────────────────────────────
+# Finnhub 이벤트명 → 한국어 번역
+# ──────────────────────────────────────────────
+
+_EVENT_NAME_KO: dict[str, str] = {
+    "CPI": "CPI (소비자물가지수)",
+    "Core CPI": "근원 CPI",
+    "PPI": "PPI (생산자물가지수)",
+    "Core PPI": "근원 PPI",
+    "Nonfarm Payrolls": "비농업 고용지표 (NFP)",
+    "Non-Farm Payrolls": "비농업 고용지표 (NFP)",
+    "Unemployment Rate": "실업률",
+    "Initial Jobless Claims": "신규 실업수당 청구건수",
+    "Continuing Jobless Claims": "계속 실업수당 청구건수",
+    "GDP": "GDP (국내총생산)",
+    "GDP Growth Rate": "GDP 성장률",
+    "PCE Price Index": "PCE 물가지수",
+    "Core PCE Price Index": "근원 PCE 물가지수",
+    "ISM Manufacturing PMI": "ISM 제조업 PMI",
+    "ISM Non-Manufacturing PMI": "ISM 서비스업 PMI",
+    "ISM Services PMI": "ISM 서비스업 PMI",
+    "Retail Sales": "소매판매",
+    "Consumer Confidence": "소비자신뢰지수",
+    "Michigan Consumer Sentiment": "미시간대 소비자심리지수",
+    "ADP Employment Change": "ADP 민간고용 변화",
+    "Durable Goods Orders": "내구재 주문",
+    "Housing Starts": "주택착공건수",
+    "Existing Home Sales": "기존주택매매",
+    "New Home Sales": "신규주택매매",
+    "FOMC": "FOMC 금리 결정",
+    "Fed Interest Rate Decision": "연준 금리 결정",
+    "FOMC Minutes": "FOMC 의사록 공개",
+    "Fed Chair Press Conference": "연준 의장 기자회견",
+    "Industrial Production": "산업생산",
+    "Building Permits": "건축허가건수",
+    "Trade Balance": "무역수지",
+    "Consumer Spending": "소비자지출",
+    "Personal Income": "개인소득",
+    "Personal Spending": "개인지출",
+    "Pending Home Sales": "주택판매보류",
+    "Philadelphia Fed Manufacturing Index": "필라델피아 연은 제조업지수",
+    "Empire State Manufacturing Index": "뉴욕 연은 제조업지수",
+    "Chicago PMI": "시카고 PMI",
+    "JOLTs Job Openings": "JOLTS 구인건수",
+}
+
+
+def _translate_event_name(name: str) -> str:
+    """Finnhub 이벤트명을 한국어로 번역한다.
+
+    정확한 매칭 → 부분 매칭 → 원문 반환 순서로 시도.
+
+    Args:
+        name: 영문 이벤트명.
+
+    Returns:
+        한국어 번역된 이벤트명.
+    """
+    # 정확한 매칭
+    if name in _EVENT_NAME_KO:
+        return _EVENT_NAME_KO[name]
+
+    # 부분 매칭 (키워드가 이벤트명에 포함)
+    name_lower = name.lower()
+    for key, ko in _EVENT_NAME_KO.items():
+        if key.lower() in name_lower:
+            return ko
+
+    return name  # 번역 없으면 원문
+
+
+# ──────────────────────────────────────────────
+# Finnhub 이벤트 → 영향 ETF 매핑
+# ──────────────────────────────────────────────
+
+_EVENT_ETF_MAP: dict[str, list[str]] = {
+    "cpi": ["TLT", "QQQ", "VOO", "SPY", "GLD", "IEF"],
+    "ppi": ["TLT", "VOO", "SPY", "IEF"],
+    "nonfarm": ["SPY", "QQQ", "VOO", "TLT", "GLD", "DIA"],
+    "non-farm": ["SPY", "QQQ", "VOO", "TLT", "GLD", "DIA"],
+    "payroll": ["SPY", "QQQ", "VOO", "TLT", "GLD", "DIA"],
+    "unemployment": ["SPY", "QQQ", "VOO", "TLT", "DIA"],
+    "jobless": ["SPY", "VOO", "DIA"],
+    "gdp": ["SPY", "QQQ", "VOO", "DIA", "TLT", "IWM"],
+    "pce": ["TLT", "GLD", "QQQ", "VOO", "SPY", "IEF"],
+    "ism": ["SPY", "VOO", "DIA", "XLE", "IWM"],
+    "retail": ["SPY", "VOO", "DIA", "XLY"],
+    "consumer confidence": ["SPY", "VOO", "DIA", "XLY"],
+    "michigan": ["SPY", "VOO", "DIA"],
+    "adp": ["SPY", "VOO", "DIA", "QQQ"],
+    "durable": ["SPY", "DIA", "IWM", "XLI"],
+    "housing": ["VNQ", "XHB", "ITB"],
+    "home sales": ["VNQ", "XHB"],
+    "fomc": ["QQQ", "SPY", "VOO", "TLT", "IEF", "GLD", "DIA", "ARKK"],
+    "fed": ["QQQ", "SPY", "VOO", "TLT", "IEF", "GLD"],
+    "interest rate": ["QQQ", "SPY", "VOO", "TLT", "IEF", "GLD"],
+    "industrial production": ["SPY", "DIA", "XLI"],
+    "trade balance": ["SPY", "DIA"],
+    "jolts": ["SPY", "VOO", "TLT"],
+    "philadelphia": ["SPY", "IWM"],
+    "empire state": ["SPY", "IWM"],
+    "chicago pmi": ["SPY", "DIA"],
+}
+
+
+def _map_event_to_etfs(event_name: str) -> list[str]:
+    """이벤트명에서 영향받는 ETF 티커를 매핑한다.
+
+    Args:
+        event_name: 영문 이벤트명.
+
+    Returns:
+        영향받는 ETF 티커 리스트.
+    """
+    name_lower = event_name.lower()
+    for keyword, tickers in _EVENT_ETF_MAP.items():
+        if keyword in name_lower:
+            return tickers
+    return ["SPY", "VOO"]  # 기본 fallback
+
+
 class CalendarService:
     """경제 캘린더 서비스.
 
-    반복 경제 이벤트 스케줄을 생성하고 캐시하여 제공한다.
+    Finnhub API로 실제 이벤트를 가져오고, 실패 시 규칙 기반 fallback.
     """
 
     def get_events(self, from_date: date, to_date: date) -> list[CalendarEvent]:
@@ -551,14 +675,121 @@ class CalendarService:
             logger.debug("캘린더 캐시 히트: %s", cache_key)
             return cached
 
-        logger.info("캘린더 이벤트 생성: %s ~ %s", from_date, to_date)
-        events = self._build_events(from_date, to_date)
+        logger.info("캘린더 이벤트 조회: %s ~ %s", from_date, to_date)
+
+        # Finnhub API 우선
+        events = self._fetch_finnhub(from_date, to_date)
+
+        # Finnhub 실패 시 규칙 기반 fallback
+        if not events:
+            logger.warning("Finnhub 실패, 규칙 기반 fallback 사용")
+            events = self._build_events_fallback(from_date, to_date)
 
         set_cached(cache_key, events)
         return events
 
-    def _build_events(self, from_date: date, to_date: date) -> list[CalendarEvent]:
-        """기간 내 모든 이벤트를 생성하고 날짜순 정렬한다.
+    def _fetch_finnhub(self, from_date: date, to_date: date) -> list[CalendarEvent]:
+        """Finnhub API에서 경제 캘린더 이벤트를 가져온다.
+
+        Args:
+            from_date: 시작 날짜.
+            to_date: 종료 날짜.
+
+        Returns:
+            CalendarEvent 리스트. 실패 시 빈 리스트.
+        """
+        api_key = settings.FINNHUB_API_KEY
+        if not api_key:
+            logger.warning("FINNHUB_API_KEY 미설정")
+            return []
+
+        try:
+            resp = httpx.get(
+                "https://finnhub.io/api/v1/calendar/economic",
+                params={
+                    "from": from_date.isoformat(),
+                    "to": to_date.isoformat(),
+                    "token": api_key,
+                },
+                timeout=15,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as e:
+            logger.error("Finnhub API 호출 실패: %s", e)
+            return []
+
+        raw_events = data.get("economicCalendar", [])
+        if not raw_events:
+            logger.info("Finnhub 응답 비어있음 (기간: %s ~ %s)", from_date, to_date)
+            return []
+
+        # 미국 이벤트만 필터 + 변환
+        events: list[CalendarEvent] = []
+        for item in raw_events:
+            country = item.get("country", "")
+            if country != "US":
+                continue
+
+            event_name = item.get("event", "")
+            if not event_name:
+                continue
+
+            # 날짜 파싱
+            time_str = item.get("time", "")
+            event_date = from_date  # fallback
+            if time_str:
+                try:
+                    dt = datetime.fromisoformat(time_str.replace("Z", "+00:00"))
+                    event_date = dt.date()
+                    # KST 변환 (UTC+9)
+                    kst_hour = (dt.hour + 9) % 24
+                    time_kst = f"{kst_hour:02d}:{dt.minute:02d}"
+                except (ValueError, AttributeError):
+                    time_kst = ""
+            else:
+                time_kst = ""
+
+            # 영향도 매핑
+            impact_raw = item.get("impact", "").lower()
+            if impact_raw == "high":
+                impact = ImpactLevel.HIGH
+            elif impact_raw == "medium":
+                impact = ImpactLevel.MEDIUM
+            else:
+                impact = ImpactLevel.LOW
+
+            # 이벤트명 → 한국어 번역
+            name_ko = _translate_event_name(event_name)
+
+            # 영향 ETF 매핑
+            affected = _map_event_to_etfs(event_name)
+
+            events.append(CalendarEvent(
+                date=event_date,
+                time=time_kst,
+                name=event_name,
+                name_ko=name_ko,
+                impact_level=impact,
+                affected_tickers=affected,
+                description="",
+            ))
+
+        # 날짜순 정렬 + 중복 제거
+        events.sort(key=lambda e: (e.date, e.time, e.name))
+        seen: set[tuple[date, str]] = set()
+        unique: list[CalendarEvent] = []
+        for event in events:
+            key = (event.date, event.name)
+            if key not in seen:
+                seen.add(key)
+                unique.append(event)
+
+        logger.info("Finnhub 경제 캘린더: US %d건 (원본 %d건)", len(unique), len(raw_events))
+        return unique
+
+    def _build_events_fallback(self, from_date: date, to_date: date) -> list[CalendarEvent]:
+        """규칙 기반 fallback — Finnhub 실패 시 사용.
 
         Args:
             from_date: 시작 날짜.
@@ -569,9 +800,7 @@ class CalendarService:
         """
         all_events: list[CalendarEvent] = []
 
-        # 월별 반복 이벤트 생성
         current = date(from_date.year, from_date.month, 1)
-        # to_date가 속한 월의 마지막 날까지 포함
         if to_date.month == 12:
             end_month = date(to_date.year + 1, 1, 1)
         else:
@@ -580,21 +809,17 @@ class CalendarService:
         while current < end_month:
             monthly = _generate_monthly_events(current.year, current.month)
             all_events.extend(monthly)
-            # 다음 달로
             if current.month == 12:
                 current = date(current.year + 1, 1, 1)
             else:
                 current = date(current.year, current.month + 1, 1)
 
-        # FOMC 이벤트 추가
         fomc_events = _generate_fomc_events(from_date, to_date)
         all_events.extend(fomc_events)
 
-        # 기간 필터링 + 날짜/시간순 정렬
         filtered = [e for e in all_events if from_date <= e.date <= to_date]
         filtered.sort(key=lambda e: (e.date, e.time, e.name))
 
-        # 중복 제거 (같은 날짜, 같은 이벤트명)
         seen: set[tuple[date, str]] = set()
         unique: list[CalendarEvent] = []
         for event in filtered:
