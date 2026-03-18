@@ -101,7 +101,7 @@ class _SplashScreenState extends State<SplashScreen>
                       'Portfiq',
                       style: TextStyle(
                         fontSize: 48,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: Colors.white, // required for ShaderMask
                         letterSpacing: -1,
                       ),

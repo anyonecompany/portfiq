@@ -58,7 +58,7 @@ class _EtfReportScreenState extends ConsumerState<EtfReportScreen> {
       return _buildLoadingState();
     }
 
-    if (state.error != null) {
+    if (state.error != null && state.allSectionsFailed) {
       return _buildErrorState(context, state.error!);
     }
 

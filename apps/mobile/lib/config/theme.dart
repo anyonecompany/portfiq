@@ -89,7 +89,7 @@ class PortfiqTheme {
         ),
         displayMedium: TextStyle(
           fontSize: 28,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           color: textPrimary,
           height: 1.2,
           letterSpacing: -0.5,
@@ -374,7 +374,7 @@ class PortfiqTypography {
   static const display = TextStyle(
     fontFamily: 'Pretendard',
     fontSize: 28,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
     height: 1.2,
     color: PortfiqTheme.textPrimary,

@@ -192,11 +192,19 @@ class FeedNotifier extends StateNotifier<FeedState> {
   }
 
   NewsSentiment _parseSentiment(String value) {
-    switch (value) {
+    switch (value.trim().toLowerCase()) {
       case '호재':
+      case 'positive':
+      case 'bullish':
+      case '긍정':
         return NewsSentiment.positive;
       case '위험':
+      case 'negative':
+      case 'bearish':
+      case '부정':
         return NewsSentiment.negative;
+      case '중립':
+      case 'neutral':
       default:
         return NewsSentiment.neutral;
     }

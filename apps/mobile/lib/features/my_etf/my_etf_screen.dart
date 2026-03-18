@@ -88,8 +88,8 @@ class _MyEtfScreenState extends ConsumerState<MyEtfScreen>
       'etf_count': state.registeredEtfs.length,
     });
 
-    // Wait for the share card to be laid out
-    await Future.delayed(const Duration(milliseconds: 100));
+    // Ensure the offscreen share card has been laid out and painted
+    await Future.delayed(const Duration(milliseconds: 300));
 
     final success = await ShareService.captureAndShareWithText(
       _weeklyShareCardKey,
@@ -105,6 +105,13 @@ class _MyEtfScreenState extends ConsumerState<MyEtfScreen>
           'content_type': 'weekly_performance',
           'channel': 'system',
         });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('공유 카드 생성에 실패했습니다. 다시 시도해주세요.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
       }
     }
   }
@@ -232,6 +239,7 @@ class _MyEtfScreenState extends ConsumerState<MyEtfScreen>
         ],
       ),
       body: Stack(
+        clipBehavior: Clip.none,
         children: [
           state.isLoading
               ? const Center(

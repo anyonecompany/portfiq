@@ -185,7 +185,7 @@ class ShareCard extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 32,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: accentColor,
                 decoration: TextDecoration.none,
               ),
@@ -201,7 +201,7 @@ class ShareCard extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 28,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 letterSpacing: 4,
                 color: PortfiqTheme.textPrimary,
                 decoration: TextDecoration.none,

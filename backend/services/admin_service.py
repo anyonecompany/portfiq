@@ -40,6 +40,15 @@ async def _get_event_summary(sb: Any, target_date: str | None) -> list[dict[str,
     ]
 
 
+async def _safe_event_summary(sb: Any, target_date: str | None) -> list[dict[str, Any]]:
+    """_get_event_summary의 안전한 래퍼. 실패 시 빈 리스트 반환."""
+    try:
+        return await _get_event_summary(sb, target_date)
+    except Exception as e:
+        logger.warning("이벤트 요약 조회 실패: %s", e)
+        return []
+
+
 def _build_etf_distribution(
     device_ids: list[str],
     device_etf_rows: list[dict[str, Any]],
@@ -92,24 +101,27 @@ async def get_dashboard_stats() -> dict[str, Any]:
 
     daily_metrics 테이블에서 최근 데이터를 조회하고,
     전일 대비 변화율을 계산한다.
+    테이블 미존재 또는 빈 데이터 시에도 zeroed KPI를 반환한다.
 
     Returns:
         KPI 데이터 딕셔너리 (dau, d7_retention, new_installs 등).
-
-    Raises:
-        Exception: Supabase 쿼리 실패 시.
     """
     sb = get_supabase()
     today = date.today()
     yesterday = today - timedelta(days=1)
-    metrics_resp = (
-        sb.table("daily_metrics")
-        .select("*")
-        .order("metric_date", desc=True)
-        .limit(30)
-        .execute()
-    )
-    rows = metrics_resp.data or []
+
+    try:
+        metrics_resp = (
+            sb.table("daily_metrics")
+            .select("*")
+            .order("metric_date", desc=True)
+            .limit(30)
+            .execute()
+        )
+        rows = metrics_resp.data or []
+    except Exception as e:
+        logger.warning("daily_metrics 조회 실패 (테이블 미존재 또는 빈 DB): %s", e)
+        rows = []
 
     def _row_for(target: date) -> dict[str, Any]:
         target_str = target.isoformat()
@@ -235,7 +247,7 @@ async def get_dashboard_stats() -> dict[str, Any]:
             }
             for row in reversed(rows[:7])
         ],
-        "event_summary": await _get_event_summary(sb, latest_data.get("metric_date") or latest_data.get("date")),
+        "event_summary": await _safe_event_summary(sb, latest_data.get("metric_date") or latest_data.get("date")),
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
 

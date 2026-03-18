@@ -92,7 +92,7 @@ class _BriefingCardState extends State<BriefingCard> {
                         style: PortfiqTypography.title.copyWith(
                           color: PortfiqTheme.textPrimary,
                           fontSize: 24,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           height: 1.25,
                         ),
                       ),

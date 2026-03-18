@@ -175,7 +175,7 @@ class WeeklyShareCard extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 32,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: PortfiqTheme.accent,
                 decoration: TextDecoration.none,
               ),
@@ -191,7 +191,7 @@ class WeeklyShareCard extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 28,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 letterSpacing: 4,
                 color: PortfiqTheme.textPrimary,
                 decoration: TextDecoration.none,
@@ -311,7 +311,7 @@ class WeeklyShareCard extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 38,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: color,
               decoration: TextDecoration.none,
             ),

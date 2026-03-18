@@ -86,6 +86,34 @@ def _keyword_sentiment(text: str) -> str:
     return "중립"
 
 
+_SENTIMENT_NORMALIZE: dict[str, str] = {
+    "호재": "호재",
+    "위험": "위험",
+    "중립": "중립",
+    "positive": "호재",
+    "negative": "위험",
+    "neutral": "중립",
+    "bullish": "호재",
+    "bearish": "위험",
+    "긍정": "호재",
+    "부정": "위험",
+}
+
+
+def _normalize_sentiment(raw: str) -> str:
+    """Normalize sentiment value from Gemini or other sources to Korean.
+
+    Handles English/Korean variants and returns "호재", "위험", or "중립".
+
+    Args:
+        raw: Raw sentiment string from any source.
+
+    Returns:
+        Normalized Korean sentiment: "호재", "위험", or "중립".
+    """
+    return _SENTIMENT_NORMALIZE.get(raw.strip().lower(), "중립")
+
+
 # ──────────────────────────────────────────────
 # RSS feeds — US financial news (primary)
 # ──────────────────────────────────────────────
@@ -401,7 +429,7 @@ async def _translate_batch(headlines: list[str]) -> list[dict[str, str]]:
                         "ko": ko,
                         "impact_reason": reason,
                         "summary_3line": item.get("summary_3line", ""),
-                        "sentiment": item.get("sentiment", "중립"),
+                        "sentiment": _normalize_sentiment(item.get("sentiment", "중립")),
                     }
 
             return [
@@ -605,7 +633,8 @@ def _translate_cached_articles_sync() -> None:
                         if tr.get("impact_reason"):
                             article["summary"] = tr["impact_reason"]
                         article["summary_3line"] = tr.get("summary_3line", "")
-                        article["sentiment"] = tr.get("sentiment") or _keyword_sentiment(article.get("original_headline", article["headline"]))
+                        raw_sentiment = tr.get("sentiment") or _keyword_sentiment(article.get("original_headline", article["headline"]))
+                        article["sentiment"] = _normalize_sentiment(raw_sentiment)
                         article["translated"] = True
 
                 logger.info("번역 배치 완료: %d~%d / %d", start, start + len(batch), len(headlines))
@@ -787,7 +816,8 @@ async def fetch_and_store_news() -> int:
                             if item.get("impact_reason"):
                                 article["summary"] = item["impact_reason"]
                             article["summary_3line"] = item.get("summary_3line", "")
-                            article["sentiment"] = item.get("sentiment") or _keyword_sentiment(article.get("original_headline", article["headline"]))
+                            raw_sentiment = item.get("sentiment") or _keyword_sentiment(article.get("original_headline", article["headline"]))
+                            article["sentiment"] = _normalize_sentiment(raw_sentiment)
                             article["translated"] = True
                     logger.info("번역 배치 완료: %d~%d / %d", start, start + len(batch), len(headlines))
                     _time_mod.sleep(1.5)  # rate limit 방지 — 배치 간 1.5초 대기
