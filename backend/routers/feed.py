@@ -1,4 +1,8 @@
-"""Feed router — personalized ETF news feed."""
+"""Feed router — personalized ETF news feed.
+
+Supabase 시그널 파이프라인 데이터를 우선 조회하고,
+데이터 없을 시 기존 news_service(메모리 캐시)로 fallback한다.
+"""
 
 import logging
 
@@ -6,6 +10,7 @@ from fastapi import APIRouter, Query
 
 from services.news_service import news_service
 from services.etf_service import etf_service
+from services.signal_feed_service import get_signal_feed, get_latest_signal_feed
 
 logger = logging.getLogger(__name__)
 
@@ -20,12 +25,23 @@ async def get_feed(
 ) -> dict:
     """Get personalized feed for a device based on their registered ETFs.
 
-    Returns news items filtered by the device's registered ETFs,
-    sorted by impact relevance.
+    Supabase 시그널 피드 우선 → 없으면 기존 메모리 캐시 fallback.
     """
+    # 1차: Supabase 시그널 피드 조회
+    signal_items = await get_signal_feed(device_id, offset, limit)
+    if signal_items:
+        return {
+            "items": [item.model_dump() for item in signal_items],
+            "total": len(signal_items),
+            "offset": offset,
+            "limit": limit,
+            "has_more": len(signal_items) >= limit,
+        }
+
+    # Fallback: 기존 메모리 캐시 파이프라인
+    logger.info("시그널 피드 없음, 기존 파이프라인 fallback (device_id=%s)", device_id)
     tickers = await etf_service.get_registered(device_id)
     if not tickers:
-        # ETF 미등록 시 전체 뉴스 반환
         items = await news_service.get_all_news()
     else:
         items = await news_service.get_news_for_etfs(tickers)
@@ -46,8 +62,21 @@ async def get_latest_feed(
 ) -> dict:
     """Get latest news feed with pagination (all news, no personalization).
 
-    Supports browsing past news beyond the 24-hour window via offset/limit.
+    Supabase 번역+분류 완료 기사 우선 → 없으면 기존 fallback.
     """
+    # 1차: Supabase 최신 시그널 피드
+    signal_items, signal_total = await get_latest_signal_feed(offset, limit)
+    if signal_items:
+        return {
+            "items": [item.model_dump() for item in signal_items],
+            "total": signal_total,
+            "offset": offset,
+            "limit": limit,
+            "has_more": offset + limit < signal_total,
+        }
+
+    # Fallback: 기존 메모리 캐시
+    logger.info("최신 시그널 피드 없음, 기존 파이프라인 fallback")
     items, total = await news_service.get_all_news_paginated(offset=offset, limit=limit)
     return {
         "items": [item.model_dump() for item in items],
