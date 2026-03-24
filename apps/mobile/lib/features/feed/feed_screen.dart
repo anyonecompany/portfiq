@@ -31,7 +31,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
   @override
   void initState() {
     super.initState();
-    EventTracker.instance.track('screen_viewed', properties: {'screen_name': 'feed'});
+    EventTracker.instance
+        .track('screen_viewed', properties: {'screen_name': 'feed'});
     _scrollController.addListener(_onScroll);
   }
 
@@ -67,7 +68,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
 
     // Show error snackbar when errorMessage is set
     ref.listen<FeedState>(feedProvider, (prev, next) {
-      if (next.errorMessage != null && next.errorMessage != prev?.errorMessage) {
+      if (next.errorMessage != null &&
+          next.errorMessage != prev?.errorMessage) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('뉴스를 불러오지 못했습니다. 다시 시도해주세요.'),
@@ -132,13 +134,17 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                   strokeWidth: 2.5,
                   displacement: 40,
                   onRefresh: () {
-                    EventTracker.instance.track('feed_pull_refresh', properties: {});
+                    EventTracker.instance
+                        .track('feed_pull_refresh', properties: {});
                     EventTracker.instance.track('feed_refreshed', properties: {
                       'source': 'pull_to_refresh',
                     });
                     _staggerController?.dispose();
                     _staggerController = null;
-                    return ref.read(feedProvider.notifier).refreshFeed().then((_) {
+                    return ref
+                        .read(feedProvider.notifier)
+                        .refreshFeed()
+                        .then((_) {
                       if (mounted) {
                         _initStaggerAnimation(
                           ref.read(feedProvider).newsItems.length + 1,
@@ -155,7 +161,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                       PortfiqSpacing.space24,
                     ),
                     // +1 for briefing, +1 for section header, +1 for loading indicator at bottom
-                    itemCount: feedState.newsItems.length + 2 + (feedState.isLoadingMore ? 1 : 0),
+                    itemCount: feedState.newsItems.length +
+                        2 +
+                        (feedState.isLoadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       // First item: Briefing card
                       if (index == 0) {
@@ -169,7 +177,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                             ),
                             child: BriefingCard(
                               data: briefing,
-                              onTap: () => _openBriefingDetail(context, briefing),
+                              onTap: () =>
+                                  _openBriefingDetail(context, briefing),
                             ),
                           ),
                         );
@@ -206,11 +215,13 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                       // Track viewport entry for news cards
                       if (index > _maxScrolledIndex) {
                         _maxScrolledIndex = index;
-                        EventTracker.instance.track('news_card_viewed', properties: {
+                        EventTracker.instance
+                            .track('news_card_viewed', properties: {
                           'news_id': item.id,
                           'position': index - 2,
                         });
-                        EventTracker.instance.track('feed_scrolled_depth', properties: {
+                        EventTracker.instance
+                            .track('feed_scrolled_depth', properties: {
                           'max_index': index - 2,
                           'total_items': feedState.newsItems.length,
                         });
@@ -226,7 +237,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                             item: item,
                             onTap: () => _showNewsDetail(context, item),
                             onSourceTap: () {
-                              EventTracker.instance.track('news_source_tap', properties: {
+                              EventTracker.instance
+                                  .track('news_source_tap', properties: {
                                 'news_id': item.id,
                                 'source': item.source,
                               });
@@ -445,12 +457,14 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                         if (item.summary3line.isNotEmpty)
                           Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.all(PortfiqSpacing.space16),
+                            padding:
+                                const EdgeInsets.all(PortfiqSpacing.space16),
                             decoration: BoxDecoration(
                               color: PortfiqTheme.primaryBg,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: _sentimentColor(item.sentiment).withValues(alpha: 0.3),
+                                color: _sentimentColor(item.sentiment)
+                                    .withValues(alpha: 0.3),
                                 width: 1,
                               ),
                             ),
@@ -476,28 +490,21 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                                 ),
                                 const SizedBox(height: PortfiqSpacing.space12),
                                 ...item.summary3line.split('\n').map(
-                                  (line) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 6),
-                                    child: Text(
-                                      line,
-                                      style: PortfiqTypography.body.copyWith(
-                                        color: PortfiqTheme.textPrimary,
-                                        fontSize: 14,
-                                        height: 1.5,
+                                      (line) => Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 6),
+                                        child: Text(
+                                          line,
+                                          style:
+                                              PortfiqTypography.body.copyWith(
+                                            color: PortfiqTheme.textPrimary,
+                                            fontSize: 14,
+                                            height: 1.5,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
                               ],
-                            ),
-                          )
-                        else
-                          Text(
-                            item.impactReason,
-                            style: PortfiqTypography.body.copyWith(
-                              color: PortfiqTheme.textSecondary,
-                              fontSize: 14,
-                              height: 1.6,
                             ),
                           ),
 
@@ -510,9 +517,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                             runSpacing: 8,
                             children: item.impacts.map((impact) {
                               return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: _impactColor(impact.level).withValues(alpha: 0.15),
+                                  color: _impactColor(impact.level)
+                                      .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
@@ -534,10 +543,12 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                           width: double.infinity,
                           decoration: const BoxDecoration(
                             border: Border(
-                              top: BorderSide(color: PortfiqTheme.divider, width: 1),
+                              top: BorderSide(
+                                  color: PortfiqTheme.divider, width: 1),
                             ),
                           ),
-                          padding: const EdgeInsets.only(top: PortfiqSpacing.space12),
+                          padding: const EdgeInsets.only(
+                              top: PortfiqSpacing.space12),
                           child: Row(
                             children: [
                               Text(
@@ -551,7 +562,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                                 color: Colors.transparent,
                                 child: InkWell(
                                   onTap: () {
-                                    EventTracker.instance.track('news_source_tap', properties: {
+                                    EventTracker.instance
+                                        .track('news_source_tap', properties: {
                                       'news_id': item.id,
                                       'source': item.source,
                                     });
@@ -559,9 +571,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                                   },
                                   borderRadius: BorderRadius.circular(8),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 10),
                                     decoration: BoxDecoration(
-                                      color: PortfiqTheme.accent.withValues(alpha: 0.1),
+                                      color: PortfiqTheme.accent
+                                          .withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -585,10 +599,12 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                             width: double.infinity,
                             decoration: const BoxDecoration(
                               border: Border(
-                                top: BorderSide(color: PortfiqTheme.divider, width: 1),
+                                top: BorderSide(
+                                    color: PortfiqTheme.divider, width: 1),
                               ),
                             ),
-                            padding: const EdgeInsets.only(top: PortfiqSpacing.space16),
+                            padding: const EdgeInsets.only(
+                                top: PortfiqSpacing.space16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -602,7 +618,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                                     const SizedBox(width: 6),
                                     Text(
                                       '관련 뉴스',
-                                      style: PortfiqTypography.subtitle.copyWith(
+                                      style:
+                                          PortfiqTypography.subtitle.copyWith(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -611,89 +628,118 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                                 ),
                                 const SizedBox(height: PortfiqSpacing.space12),
                                 ...relatedNews.map((related) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 10),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: () {
-                                        Navigator.of(sheetContext).pop();
-                                        // Open the related news detail after pop
-                                        Future.delayed(
-                                          const Duration(milliseconds: 300),
-                                          () {
-                                            if (!mounted) return;
-                                            _showNewsDetail(this.context, related);
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () {
+                                            Navigator.of(sheetContext).pop();
+                                            // Open the related news detail after pop
+                                            Future.delayed(
+                                              const Duration(milliseconds: 300),
+                                              () {
+                                                if (!mounted) return;
+                                                _showNewsDetail(
+                                                    this.context, related);
+                                              },
+                                            );
                                           },
-                                        );
-                                      },
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: PortfiqTheme.primaryBg,
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              related.headline,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: PortfiqTypography.body.copyWith(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w500,
-                                                height: 1.4,
-                                              ),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          child: Container(
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              color: PortfiqTheme.primaryBg,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
-                                            const SizedBox(height: 6),
-                                            Row(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  related.source,
-                                                  style: PortfiqTypography.caption.copyWith(
-                                                    color: PortfiqTheme.textTertiary,
-                                                    fontSize: 11,
+                                                  related.headline,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: PortfiqTypography.body
+                                                      .copyWith(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                    height: 1.4,
                                                   ),
                                                 ),
-                                                const SizedBox(width: 8),
-                                                // Show shared tickers
-                                                ...related.impacts
-                                                    .where((imp) => item.impacts.any(
-                                                        (i) => i.etfTicker == imp.etfTicker))
-                                                    .take(3)
-                                                    .map((imp) => Padding(
-                                                          padding: const EdgeInsets.only(right: 4),
-                                                          child: Container(
-                                                            padding: const EdgeInsets.symmetric(
-                                                              horizontal: 6,
-                                                              vertical: 2,
-                                                            ),
-                                                            decoration: BoxDecoration(
-                                                              color: PortfiqTheme.accent
-                                                                  .withValues(alpha: 0.1),
-                                                              borderRadius:
-                                                                  BorderRadius.circular(4),
-                                                            ),
-                                                            child: Text(
-                                                              imp.etfTicker,
-                                                              style: const TextStyle(
-                                                                fontSize: 10,
-                                                                fontWeight: FontWeight.w600,
-                                                                color: PortfiqTheme.accent,
+                                                const SizedBox(height: 6),
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      related.source,
+                                                      style: PortfiqTypography
+                                                          .caption
+                                                          .copyWith(
+                                                        color: PortfiqTheme
+                                                            .textTertiary,
+                                                        fontSize: 11,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    // Show shared tickers
+                                                    ...related.impacts
+                                                        .where((imp) => item
+                                                            .impacts
+                                                            .any((i) =>
+                                                                i.etfTicker ==
+                                                                imp.etfTicker))
+                                                        .take(3)
+                                                        .map((imp) => Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      right: 4),
+                                                              child: Container(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                  horizontal: 6,
+                                                                  vertical: 2,
+                                                                ),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: PortfiqTheme
+                                                                      .accent
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.1),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              4),
+                                                                ),
+                                                                child: Text(
+                                                                  imp.etfTicker,
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    fontSize:
+                                                                        10,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color: PortfiqTheme
+                                                                        .accent,
+                                                                  ),
+                                                                ),
                                                               ),
-                                                            ),
-                                                          ),
-                                                        )),
+                                                            )),
+                                                  ],
+                                                ),
                                               ],
                                             ),
-                                          ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                )),
+                                    )),
                               ],
                             ),
                           ),
@@ -741,9 +787,21 @@ class _SentimentBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color, icon) = switch (sentiment) {
-      NewsSentiment.positive => ('호재', PortfiqTheme.positive, Icons.trending_up_rounded),
-      NewsSentiment.negative => ('위험', PortfiqTheme.negative, Icons.trending_down_rounded),
-      NewsSentiment.neutral => ('중립', const Color(0xFF9CA3AF), Icons.trending_flat_rounded),
+      NewsSentiment.positive => (
+          '호재',
+          PortfiqTheme.positive,
+          Icons.trending_up_rounded
+        ),
+      NewsSentiment.negative => (
+          '위험',
+          PortfiqTheme.negative,
+          Icons.trending_down_rounded
+        ),
+      NewsSentiment.neutral => (
+          '중립',
+          const Color(0xFF9CA3AF),
+          Icons.trending_flat_rounded
+        ),
     };
 
     return Container(

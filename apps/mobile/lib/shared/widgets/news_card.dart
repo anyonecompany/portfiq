@@ -76,19 +76,26 @@ class NewsCard extends StatelessWidget {
                 if (item.isMock) ...[
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+                      border: Border.all(
+                          color:
+                              const Color(0xFFF59E0B).withValues(alpha: 0.3)),
                     ),
                     child: const Row(
                       children: [
-                        Icon(Icons.auto_awesome, size: 12, color: Color(0xFFF59E0B)),
+                        Icon(Icons.auto_awesome,
+                            size: 12, color: Color(0xFFF59E0B)),
                         SizedBox(width: 4),
                         Text(
                           '샘플 뉴스 — 실시간 데이터 준비 중',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFFF59E0B)),
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFF59E0B)),
                         ),
                       ],
                     ),
@@ -113,9 +120,11 @@ class NewsCard extends StatelessWidget {
                         runSpacing: 4,
                         children: item.impacts.take(3).map((impact) {
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: PortfiqTheme.divider.withValues(alpha: 0.5),
+                              color:
+                                  PortfiqTheme.divider.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -151,20 +160,19 @@ class NewsCard extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: PortfiqSpacing.space8),
-
-                // Row 3: Summary (prefer 3-line summary over impact reason)
-                Text(
-                  item.summary3line.isNotEmpty
-                      ? item.summary3line.replaceAll('\n', ' ')
-                      : item.impactReason,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: PortfiqTypography.body.copyWith(
-                    color: PortfiqTheme.textSecondary,
-                    fontSize: 14,
+                // Row 3: Summary (only show if translated summary exists)
+                if (item.summary3line.isNotEmpty) ...[
+                  const SizedBox(height: PortfiqSpacing.space8),
+                  Text(
+                    item.summary3line.replaceAll('\n', ' '),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: PortfiqTypography.body.copyWith(
+                      color: PortfiqTheme.textSecondary,
+                      fontSize: 14,
+                    ),
                   ),
-                ),
+                ],
 
                 const SizedBox(height: PortfiqSpacing.space12),
 
@@ -245,7 +253,10 @@ class _SentimentIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final (icon, color) = switch (sentiment) {
       NewsSentiment.positive => (LucideIcons.trendingUp, PortfiqTheme.positive),
-      NewsSentiment.negative => (LucideIcons.trendingDown, PortfiqTheme.negative),
+      NewsSentiment.negative => (
+          LucideIcons.trendingDown,
+          PortfiqTheme.negative
+        ),
       NewsSentiment.neutral => (LucideIcons.minus, PortfiqTheme.textTertiary),
     };
 
@@ -261,9 +272,21 @@ class _SentimentPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color, icon) = switch (sentiment) {
-      NewsSentiment.positive => ('호재', PortfiqTheme.positive, Icons.trending_up_rounded),
-      NewsSentiment.negative => ('위험', PortfiqTheme.negative, Icons.trending_down_rounded),
-      NewsSentiment.neutral => ('중립', const Color(0xFF9CA3AF), Icons.trending_flat_rounded),
+      NewsSentiment.positive => (
+          '호재',
+          PortfiqTheme.positive,
+          Icons.trending_up_rounded
+        ),
+      NewsSentiment.negative => (
+          '위험',
+          PortfiqTheme.negative,
+          Icons.trending_down_rounded
+        ),
+      NewsSentiment.neutral => (
+          '중립',
+          const Color(0xFF9CA3AF),
+          Icons.trending_flat_rounded
+        ),
     };
 
     return Container(

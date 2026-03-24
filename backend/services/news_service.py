@@ -449,7 +449,7 @@ async def _translate_batch(headlines: list[str]) -> list[dict[str, str]]:
         {
             "ko": h,
             "impact_reason": "",
-            "summary_3line": f"• {h}",
+            "summary_3line": "",
             "sentiment": _keyword_sentiment(h),
         }
         for h in headlines
@@ -520,7 +520,7 @@ async def _translate_batch(headlines: list[str]) -> list[dict[str, str]]:
                     {
                         "ko": h,
                         "impact_reason": "",
-                        "summary_3line": f"• {h}",
+                        "summary_3line": "",
                         "sentiment": "중립",
                     },
                 )
@@ -849,11 +849,11 @@ async def fetch_and_store_news() -> int:
                         {"etf_ticker": imp.etf_ticker, "level": imp.level}
                         for imp in impacts
                     ]
-                    # 번역 전 키워드 기반 sentiment/summary_3line fallback
+                    # 번역 전 키워드 기반 sentiment fallback
                     if not article.get("sentiment"):
                         article["sentiment"] = _keyword_sentiment(headline)
                     if not article.get("summary_3line"):
-                        article["summary_3line"] = f"• {headline}"
+                        article["summary_3line"] = ""
                 logger.info("영향 분류 완료: %d건", len(unique))
             except Exception as e:
                 logger.warning("영향 분류 실패, impacts 없이 진행: %s", e)
@@ -990,9 +990,15 @@ async def fetch_and_store_news() -> int:
                 for article in unique:
                     if article.get("translated") and article.get("source_url"):
                         try:
-                            update_row: dict[str, str] = {
+                            update_row: dict[str, object] = {
                                 "headline": article["headline"],
                                 "impact_reason": article.get("summary", ""),
+                                "raw_data": {
+                                    "headline_en": article.get("headline_en", ""),
+                                    "impacts": article.get("impacts", []),
+                                    "sentiment": article.get("sentiment", "중립"),
+                                    "summary_3line": article.get("summary_3line", ""),
+                                },
                             }
                             sb_update.table("news").update(update_row).eq(
                                 "source_url", article["source_url"]
@@ -1190,9 +1196,7 @@ class NewsService:
                     if isinstance(raw_data, dict)
                     else ""
                 )
-                # fallback: summary_3line이 비어있으면 headline 기반 1줄 요약
-                if not summary_3line and headline:
-                    summary_3line = f"• {headline}"
+                # summary_3line이 비어있으면 빈값 유지 (번역 미완료 상태)
 
                 articles.append(
                     {
