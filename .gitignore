@@ -46,6 +46,9 @@ htmlcov/
 # Docker
 docker-compose.override.yml
 
+# Supabase secrets
+supabase/pg_cron_setup.sql
+
 # Misc
 *.log
 *.tmp
