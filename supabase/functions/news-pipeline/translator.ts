@@ -3,15 +3,15 @@
  * 자연스러운 한국어로 번역한다.
  *
  * 금융 용어 사전(glossary)을 프롬프트에 주입하여 일관된 번역 품질을 보장.
- * 배치 처리: 미번역 기사를 5건씩 묶어 순차 번역.
+ * 1회 실행당 최대 3건씩 순차 번역, 나머지는 다음 cron 실행에서 처리.
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { glossaryToPromptBlock } from "./glossary.ts";
 
 const GEMINI_MODEL = "gemini-2.0-flash-lite";
-const BATCH_SIZE = 5;
-const MAX_ARTICLES = 20; // 1회 실행당 최대 번역 수
+const MAX_ARTICLES = 3; // 1회 실행당 최대 번역 수 (Edge Function 타임아웃 방지)
+const INTER_ARTICLE_DELAY_MS = 2000; // 기사 간 딜레이
 
 /**
  * Gemini API를 호출하여 번역 결과를 반환한다.
@@ -43,24 +43,9 @@ async function callGemini(prompt: string): Promise<string | null> {
     if (!response.ok) {
       const errText = await response.text();
       if (response.status === 429) {
-        console.warn(`[translator] Gemini rate limited, waiting 35s...`);
-        await new Promise((r) => setTimeout(r, 35_000));
-        // 1회 재시도
-        const retry = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.1, maxOutputTokens: 4096, responseMimeType: "application/json" },
-          }),
-          signal: AbortSignal.timeout(30_000),
-        });
-        if (!retry.ok) {
-          console.error(`[translator] Gemini retry failed: ${retry.status}`);
-          return null;
-        }
-        const retryData = await retry.json();
-        return retryData.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
+        // 재시도 없이 즉시 skip — 다음 30분 cron에서 자연히 재처리됨
+        console.warn(`[translator] Gemini rate limited (429), skip — will retry next cron`);
+        return null;
       }
       console.error(`[translator] Gemini ${response.status}: ${errText.slice(0, 200)}`);
       return null;
@@ -115,88 +100,116 @@ ${glossary}
  * @returns 번역 완료된 기사 수
  */
 export async function translateArticles(supabase: SupabaseClient): Promise<number> {
-  // 미번역 영문 기사 조회
-  const { data: articles, error } = await supabase
+  // 미번역 영문 기사 조회 (is_translated=false 기준)
+  const { data: candidates, error } = await supabase
     .from("news_articles")
     .select("id, title, content, language")
     .eq("is_translated", false)
     .eq("language", "en")
     .order("published_at", { ascending: false })
-    .limit(MAX_ARTICLES);
+    .limit(MAX_ARTICLES * 2); // 이중 필터링 후 MAX_ARTICLES건 확보 위해 여유분 조회
 
   if (error) {
     console.error("[translator] query error:", error.message);
     return 0;
   }
 
-  if (!articles || articles.length === 0) {
+  if (!candidates || candidates.length === 0) {
     console.log("[translator] no untranslated articles");
     return 0;
   }
 
+  // 이미 article_translations에 존재하는 기사 제외 (이중 체크)
+  const candidateIds = candidates.map((a) => a.id);
+  const { data: existingTranslations } = await supabase
+    .from("article_translations")
+    .select("article_id")
+    .in("article_id", candidateIds);
+
+  const alreadyTranslated = new Set(
+    (existingTranslations ?? []).map((t) => t.article_id),
+  );
+
+  const articles = candidates
+    .filter((a) => !alreadyTranslated.has(a.id))
+    .slice(0, MAX_ARTICLES);
+
+  if (articles.length === 0) {
+    console.log("[translator] all candidates already translated");
+    // is_translated 플래그가 누락된 기사 정리
+    if (alreadyTranslated.size > 0) {
+      await supabase
+        .from("news_articles")
+        .update({ is_translated: true })
+        .in("id", Array.from(alreadyTranslated));
+      console.log(`[translator] fixed ${alreadyTranslated.size} stale is_translated flags`);
+    }
+    return 0;
+  }
+
+  console.log(`[translator] processing ${articles.length} articles (${alreadyTranslated.size} already translated, skipped)`);
+
   let translated = 0;
 
-  // 배치 처리
-  for (let i = 0; i < articles.length; i += BATCH_SIZE) {
-    const batch = articles.slice(i, i + BATCH_SIZE);
+  // 순차 처리 (1건씩, 기사 간 딜레이)
+  for (let i = 0; i < articles.length; i++) {
+    const article = articles[i];
 
-    for (const article of batch) {
-      try {
-        const prompt = buildTranslationPrompt(article.title, article.content ?? "");
-        const rawResult = await callGemini(prompt);
+    try {
+      const prompt = buildTranslationPrompt(article.title, article.content ?? "");
+      const rawResult = await callGemini(prompt);
 
-        if (!rawResult) {
-          console.warn(`[translator] skip ${article.id}: no Gemini response`);
-          continue;
-        }
-
-        let parsed;
-        try {
-          parsed = JSON.parse(rawResult);
-        } catch {
-          // JSON 코드블록 안에 있을 수 있음
-          const jsonMatch = rawResult.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            parsed = JSON.parse(jsonMatch[0]);
-          } else {
-            console.warn(`[translator] skip ${article.id}: invalid JSON`);
-            continue;
-          }
-        }
-
-        // article_translations에 INSERT
-        const { error: insertError } = await supabase
-          .from("article_translations")
-          .upsert({
-            article_id: article.id,
-            translated_title: parsed.translated_title || article.title,
-            translated_content: parsed.translated_content || "",
-            translated_summary: parsed.translated_summary || "",
-            key_terms: parsed.key_terms || [],
-            translation_model: GEMINI_MODEL,
-            quality_score: parsed.quality_self_score ?? null,
-          }, { onConflict: "article_id" });
-
-        if (insertError) {
-          console.error(`[translator] insert error for ${article.id}:`, insertError.message);
-          continue;
-        }
-
-        // news_articles.is_translated = true
-        await supabase
-          .from("news_articles")
-          .update({ is_translated: true })
-          .eq("id", article.id);
-
-        translated++;
-      } catch (e) {
-        console.error(`[translator] article ${article.id} failed:`, (e as Error).message);
+      if (!rawResult) {
+        console.warn(`[translator] skip ${article.id}: no Gemini response`);
+        continue;
       }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(rawResult);
+      } catch {
+        // JSON 코드블록 안에 있을 수 있음
+        const jsonMatch = rawResult.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          parsed = JSON.parse(jsonMatch[0]);
+        } else {
+          console.warn(`[translator] skip ${article.id}: invalid JSON`);
+          continue;
+        }
+      }
+
+      // article_translations에 INSERT
+      const { error: insertError } = await supabase
+        .from("article_translations")
+        .upsert({
+          article_id: article.id,
+          translated_title: parsed.translated_title || article.title,
+          translated_content: parsed.translated_content || "",
+          translated_summary: parsed.translated_summary || "",
+          key_terms: parsed.key_terms || [],
+          translation_model: GEMINI_MODEL,
+          quality_score: parsed.quality_self_score ?? null,
+        }, { onConflict: "article_id" });
+
+      if (insertError) {
+        console.error(`[translator] insert error for ${article.id}:`, insertError.message);
+        continue;
+      }
+
+      // news_articles.is_translated = true
+      await supabase
+        .from("news_articles")
+        .update({ is_translated: true })
+        .eq("id", article.id);
+
+      translated++;
+    } catch (e) {
+      console.error(`[translator] article ${article.id} failed:`, (e as Error).message);
     }
 
-    // 배치 간 1.5초 대기 (rate limit 방지)
-    if (i + BATCH_SIZE < articles.length) {
-      await new Promise((r) => setTimeout(r, 1500));
+    // 기사 간 딜레이 (마지막 기사 제외)
+    if (i < articles.length - 1) {
+      await new Promise((r) => setTimeout(r, INTER_ARTICLE_DELAY_MS));
     }
   }
 
