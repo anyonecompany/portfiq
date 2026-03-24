@@ -7,14 +7,17 @@ from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 # ETF
 # ──────────────────────────────────────────────
 
+
 class ETFRegisterRequest(BaseModel):
     """Request to register ETFs to a device's watchlist."""
+
     device_id: str
     tickers: list[str] = Field(..., min_length=1, max_length=20)
 
 
 class ETFSearchResult(BaseModel):
     """Compact ETF search result."""
+
     ticker: str
     name: str
     name_kr: str | None = None
@@ -23,6 +26,7 @@ class ETFSearchResult(BaseModel):
 
 class ETFInfo(BaseModel):
     """Full ETF detail with holdings and metadata."""
+
     ticker: str
     name: str
     name_kr: str | None = None
@@ -36,8 +40,10 @@ class ETFInfo(BaseModel):
 # Device
 # ──────────────────────────────────────────────
 
+
 class DeviceRegisterRequest(BaseModel):
     """Request to register a device with push token."""
+
     device_id: str
     push_token: str = ""
     platform: str = ""
@@ -46,6 +52,7 @@ class DeviceRegisterRequest(BaseModel):
 
 class NotificationPreferences(BaseModel):
     """Notification preference toggles for a device."""
+
     morning_briefing: bool = True
     night_checkpoint: bool = True
     urgent_news: bool = False
@@ -55,14 +62,17 @@ class NotificationPreferences(BaseModel):
 # Feed
 # ──────────────────────────────────────────────
 
+
 class ETFImpact(BaseModel):
     """Impact assessment on a specific ETF."""
+
     etf_ticker: str
     level: str = Field(..., description="High / Medium / Low")
 
 
 class FeedItem(BaseModel):
     """A single feed card item."""
+
     id: str
     headline: str
     impact_reason: str
@@ -79,8 +89,10 @@ class FeedItem(BaseModel):
 # Briefing
 # ──────────────────────────────────────────────
 
+
 class ETFChange(BaseModel):
     """Single ETF price change in a briefing."""
+
     ticker: str
     change_pct: float
     direction: str = Field(..., description="up / down / flat")
@@ -89,6 +101,7 @@ class ETFChange(BaseModel):
 
 class BriefingResponse(BaseModel):
     """Full briefing response (morning or night)."""
+
     type: str = Field(..., description="morning / night")
     title: str
     summary: str
@@ -102,17 +115,22 @@ class BriefingResponse(BaseModel):
 # Analytics
 # ──────────────────────────────────────────────
 
+
 class EventItem(BaseModel):
     """A single analytics event from the client."""
+
     model_config = ConfigDict(populate_by_name=True)
 
     event_name: str = Field(validation_alias=AliasChoices("event_name", "name"))
     properties: dict = Field(default_factory=dict)
-    timestamp: str = Field(validation_alias=AliasChoices("timestamp", "event_timestamp"))
+    timestamp: str = Field(
+        validation_alias=AliasChoices("timestamp", "event_timestamp")
+    )
 
 
 class EventBatchRequest(BaseModel):
     """Batch of analytics events from a device."""
+
     device_id: str | None = None
     events: list[EventItem]
 
@@ -121,8 +139,10 @@ class EventBatchRequest(BaseModel):
 # Health
 # ──────────────────────────────────────────────
 
+
 class HealthResponse(BaseModel):
     """Health check response."""
+
     status: str
     version: str
     timestamp: str
@@ -132,8 +152,10 @@ class HealthResponse(BaseModel):
 # Holdings
 # ──────────────────────────────────────────────
 
+
 class HoldingItem(BaseModel):
     """Single holding in an ETF."""
+
     name: str = ""
     ticker: str = ""
     weight: float = 0.0
@@ -141,6 +163,7 @@ class HoldingItem(BaseModel):
 
 class HoldingsResponse(BaseModel):
     """ETF holdings response."""
+
     ticker: str
     holdings: list[HoldingItem] = []
     total_holdings: int = 0
@@ -149,6 +172,7 @@ class HoldingsResponse(BaseModel):
 
 class CompanyEtfResult(BaseModel):
     """ETF that contains a specific company."""
+
     etf_ticker: str
     etf_name: str = ""
     weight: float = 0.0

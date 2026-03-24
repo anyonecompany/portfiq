@@ -22,13 +22,16 @@ def client():
 
     # Reset Supabase singleton so it picks up empty credentials
     import services.supabase_client as sbc
+
     sbc._client = None
     sbc._service_client = None
 
     # Reset config to pick up test env vars
     import config
+
     config.settings = config.Settings()
 
     from main import app
+
     with TestClient(app) as c:
         yield c

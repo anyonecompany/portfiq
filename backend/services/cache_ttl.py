@@ -12,31 +12,31 @@ class CacheTTL:
     """데이터 유형별 TTL 상수 (초 단위)."""
 
     # ETF 메타데이터 (이름, 카테고리, 보수 — 거의 안 변함)
-    ETF_META = 7 * 86400           # 7일
+    ETF_META = 7 * 86400  # 7일
 
     # ETF 구성종목 (주 1회 갱신이면 충분)
-    ETF_HOLDINGS = 7 * 86400       # 7일
+    ETF_HOLDINGS = 7 * 86400  # 7일
 
     # ETF 비교 분석 (Gemini 생성 — 7일 캐시로 재호출 방지)
-    ETF_COMPARISON = 7 * 86400     # 7일
+    ETF_COMPARISON = 7 * 86400  # 7일
 
     # 거시 민감도 (거의 안 변함)
-    ETF_SENSITIVITY = 30 * 86400   # 30일
+    ETF_SENSITIVITY = 30 * 86400  # 30일
 
     # 가격 — 장중 vs 장외 분리
-    ETF_PRICE_MARKET = 900         # 15분 (장중)
-    ETF_PRICE_CLOSED = 6 * 3600    # 6시간 (장외/주말)
+    ETF_PRICE_MARKET = 900  # 15분 (장중)
+    ETF_PRICE_CLOSED = 6 * 3600  # 6시간 (장외/주말)
 
     # 뉴스
-    NEWS_FEED = 600                # 10분
+    NEWS_FEED = 600  # 10분
     NEWS_TRANSLATION = 30 * 86400  # 30일 (번역 결과는 안 변함)
 
     # 브리핑
-    BRIEFING = 12 * 3600           # 12시간
+    BRIEFING = 12 * 3600  # 12시간
 
     # 인기 ETF / 검색
-    POPULAR_ETFS = 3600            # 1시간
-    SEARCH_RESULT = 3600           # 1시간
+    POPULAR_ETFS = 3600  # 1시간
+    SEARCH_RESULT = 3600  # 1시간
 
 
 def get_market_aware_price_ttl() -> int:

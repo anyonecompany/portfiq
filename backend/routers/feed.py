@@ -45,7 +45,7 @@ async def get_feed(
         items = await news_service.get_all_news()
     else:
         items = await news_service.get_news_for_etfs(tickers)
-    paged_items = items[offset:offset + limit]
+    paged_items = items[offset : offset + limit]
     return {
         "items": [item.model_dump() for item in paged_items],
         "total": len(items),
@@ -95,7 +95,7 @@ async def refresh_feed() -> dict:
     Then triggers fresh news collection + translation + briefing generation.
     """
     from services.cache import clear_cache
-    from services.briefing_service import briefing_service, _last_morning_briefing, _last_night_briefing
+    from services.briefing_service import briefing_service
     import services.briefing_service as bs
 
     # 1. Clear all caches
@@ -103,8 +103,8 @@ async def refresh_feed() -> dict:
     logger.info("TTL 캐시 클리어: %d entries", cleared)
 
     # 2. Clear news in-memory cache
-    from services.news_service import _news_cache
     import services.news_service as ns
+
     old_count = len(ns._news_cache)
     ns._news_cache = []
     logger.info("뉴스 캐시 클리어: %d articles", old_count)
@@ -116,6 +116,7 @@ async def refresh_feed() -> dict:
 
     # 4. Trigger fresh news collection + translation
     from services.news_service import fetch_and_store_news
+
     news_count = await fetch_and_store_news()
     logger.info("뉴스 재수집 완료: %d articles", news_count)
 

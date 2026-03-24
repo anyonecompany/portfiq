@@ -28,8 +28,10 @@ logger = logging.getLogger(__name__)
 # Models
 # ──────────────────────────────────────────────
 
+
 class ImpactLevel(str, Enum):
     """이벤트의 시장 영향도."""
+
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
@@ -48,6 +50,7 @@ class CalendarEvent:
         affected_tickers: 영향을 받는 ETF 티커 목록.
         description: 이벤트 상세 설명 (한국어).
     """
+
     date: date
     time: str
     name: str
@@ -73,9 +76,11 @@ class CalendarEvent:
 # 반복 이벤트 정의 (Recurring Event Definitions)
 # ──────────────────────────────────────────────
 
+
 @dataclass(frozen=True)
 class _RecurringEventDef:
     """반복 경제 이벤트 정의."""
+
     name: str
     name_ko: str
     impact_level: ImpactLevel
@@ -255,21 +260,36 @@ _EXISTING_HOME_SALES = _RecurringEventDef(
 # ──────────────────────────────────────────────
 
 _FOMC_2025_DATES: list[date] = [
-    date(2025, 1, 29), date(2025, 3, 19), date(2025, 5, 7),
-    date(2025, 6, 18), date(2025, 7, 30), date(2025, 9, 17),
-    date(2025, 10, 29), date(2025, 12, 17),
+    date(2025, 1, 29),
+    date(2025, 3, 19),
+    date(2025, 5, 7),
+    date(2025, 6, 18),
+    date(2025, 7, 30),
+    date(2025, 9, 17),
+    date(2025, 10, 29),
+    date(2025, 12, 17),
 ]
 
 _FOMC_2026_DATES: list[date] = [
-    date(2026, 1, 28), date(2026, 3, 18), date(2026, 4, 29),
-    date(2026, 6, 17), date(2026, 7, 29), date(2026, 9, 16),
-    date(2026, 10, 28), date(2026, 12, 16),
+    date(2026, 1, 28),
+    date(2026, 3, 18),
+    date(2026, 4, 29),
+    date(2026, 6, 17),
+    date(2026, 7, 29),
+    date(2026, 9, 16),
+    date(2026, 10, 28),
+    date(2026, 12, 16),
 ]
 
 _FOMC_2027_DATES: list[date] = [
-    date(2027, 1, 27), date(2027, 3, 17), date(2027, 4, 28),
-    date(2027, 6, 16), date(2027, 7, 28), date(2027, 9, 15),
-    date(2027, 10, 27), date(2027, 12, 15),
+    date(2027, 1, 27),
+    date(2027, 3, 17),
+    date(2027, 4, 28),
+    date(2027, 6, 16),
+    date(2027, 7, 28),
+    date(2027, 9, 15),
+    date(2027, 10, 27),
+    date(2027, 12, 15),
 ]
 
 _ALL_FOMC_DATES: list[date] = _FOMC_2025_DATES + _FOMC_2026_DATES + _FOMC_2027_DATES
@@ -305,6 +325,7 @@ _FED_SPEECH_DEF = _RecurringEventDef(
 # ──────────────────────────────────────────────
 # 스케줄 생성 헬퍼 함수
 # ──────────────────────────────────────────────
+
 
 def _nth_weekday_of_month(year: int, month: int, weekday: int, n: int) -> date:
     """월의 n번째 특정 요일을 구한다.
@@ -379,6 +400,7 @@ def _approx_date_around(year: int, month: int, target_day: int) -> date:
 # 연간 이벤트 스케줄 생성
 # ──────────────────────────────────────────────
 
+
 def _generate_monthly_events(year: int, month: int) -> list[CalendarEvent]:
     """특정 월의 경제 이벤트 스케줄을 생성한다.
 
@@ -401,15 +423,17 @@ def _generate_monthly_events(year: int, month: int) -> list[CalendarEvent]:
     events: list[CalendarEvent] = []
 
     def _add(event_def: _RecurringEventDef, event_date: date) -> None:
-        events.append(CalendarEvent(
-            date=event_date,
-            time=event_def.time_kst,
-            name=event_def.name,
-            name_ko=event_def.name_ko,
-            impact_level=event_def.impact_level,
-            affected_tickers=list(event_def.affected_tickers),
-            description=event_def.description,
-        ))
+        events.append(
+            CalendarEvent(
+                date=event_date,
+                time=event_def.time_kst,
+                name=event_def.name,
+                name_ko=event_def.name_ko,
+                impact_level=event_def.impact_level,
+                affected_tickers=list(event_def.affected_tickers),
+                description=event_def.description,
+            )
+        )
 
     # CPI — 매월 10~13일경 (보통 둘째 주 화~수)
     cpi_date = _approx_date_around(year, month, 12)
@@ -500,30 +524,34 @@ def _generate_fomc_events(from_date: date, to_date: date) -> list[CalendarEvent]
 
     for fomc_date in _ALL_FOMC_DATES:
         if from_date <= fomc_date <= to_date:
-            events.append(CalendarEvent(
-                date=fomc_date,
-                time=_FOMC_DEF.time_kst,
-                name=_FOMC_DEF.name,
-                name_ko=_FOMC_DEF.name_ko,
-                impact_level=_FOMC_DEF.impact_level,
-                affected_tickers=list(_FOMC_DEF.affected_tickers),
-                description=_FOMC_DEF.description,
-            ))
+            events.append(
+                CalendarEvent(
+                    date=fomc_date,
+                    time=_FOMC_DEF.time_kst,
+                    name=_FOMC_DEF.name,
+                    name_ko=_FOMC_DEF.name_ko,
+                    impact_level=_FOMC_DEF.impact_level,
+                    affected_tickers=list(_FOMC_DEF.affected_tickers),
+                    description=_FOMC_DEF.description,
+                )
+            )
 
         # 의사록은 FOMC 약 3주 후 발표
         minutes_date = fomc_date + timedelta(weeks=3)
         if minutes_date.weekday() >= 5:
             minutes_date += timedelta(days=(7 - minutes_date.weekday()))
         if from_date <= minutes_date <= to_date:
-            events.append(CalendarEvent(
-                date=minutes_date,
-                time=_FOMC_MINUTES_DEF.time_kst,
-                name=_FOMC_MINUTES_DEF.name,
-                name_ko=_FOMC_MINUTES_DEF.name_ko,
-                impact_level=_FOMC_MINUTES_DEF.impact_level,
-                affected_tickers=list(_FOMC_MINUTES_DEF.affected_tickers),
-                description=_FOMC_MINUTES_DEF.description,
-            ))
+            events.append(
+                CalendarEvent(
+                    date=minutes_date,
+                    time=_FOMC_MINUTES_DEF.time_kst,
+                    name=_FOMC_MINUTES_DEF.name,
+                    name_ko=_FOMC_MINUTES_DEF.name_ko,
+                    impact_level=_FOMC_MINUTES_DEF.impact_level,
+                    affected_tickers=list(_FOMC_MINUTES_DEF.affected_tickers),
+                    description=_FOMC_MINUTES_DEF.description,
+                )
+            )
 
     return events
 
@@ -765,15 +793,17 @@ class CalendarService:
             # 영향 ETF 매핑
             affected = _map_event_to_etfs(event_name)
 
-            events.append(CalendarEvent(
-                date=event_date,
-                time=time_kst,
-                name=event_name,
-                name_ko=name_ko,
-                impact_level=impact,
-                affected_tickers=affected,
-                description="",
-            ))
+            events.append(
+                CalendarEvent(
+                    date=event_date,
+                    time=time_kst,
+                    name=event_name,
+                    name_ko=name_ko,
+                    impact_level=impact,
+                    affected_tickers=affected,
+                    description="",
+                )
+            )
 
         # 날짜순 정렬 + 중복 제거
         events.sort(key=lambda e: (e.date, e.time, e.name))
@@ -785,10 +815,14 @@ class CalendarService:
                 seen.add(key)
                 unique.append(event)
 
-        logger.info("Finnhub 경제 캘린더: US %d건 (원본 %d건)", len(unique), len(raw_events))
+        logger.info(
+            "Finnhub 경제 캘린더: US %d건 (원본 %d건)", len(unique), len(raw_events)
+        )
         return unique
 
-    def _build_events_fallback(self, from_date: date, to_date: date) -> list[CalendarEvent]:
+    def _build_events_fallback(
+        self, from_date: date, to_date: date
+    ) -> list[CalendarEvent]:
         """규칙 기반 fallback — Finnhub 실패 시 사용.
 
         Args:

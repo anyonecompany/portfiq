@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 _NAME_KR_MAP: dict[str, str] = {}
 _HOLDINGS_MAP: dict[str, list] = {}
 
+
 def _load_seed_mappings() -> None:
     """Load name_kr and structured holdings from etf_master.json."""
     global _NAME_KR_MAP, _HOLDINGS_MAP
@@ -40,6 +41,7 @@ def _load_seed_mappings() -> None:
                 _HOLDINGS_MAP[ticker] = etf.get("top_holdings", [])
     except Exception as e:
         logger.warning("Failed to load seed mappings: %s", e)
+
 
 _load_seed_mappings()
 
@@ -138,7 +140,9 @@ async def _lookup_yfinance(ticker: str) -> ETFInfo | None:
         _yf_cache[ticker.upper()] = (now, result)
         return result
     except asyncio.TimeoutError:
-        logger.warning("yfinance lookup timed out for %s (%ds)", ticker, _YF_LOOKUP_TIMEOUT)
+        logger.warning(
+            "yfinance lookup timed out for %s (%ds)", ticker, _YF_LOOKUP_TIMEOUT
+        )
         _yf_cache[ticker.upper()] = (now, None)
         return None
     except Exception as e:
@@ -147,7 +151,18 @@ async def _lookup_yfinance(ticker: str) -> ETFInfo | None:
         return None
 
 
-_POPULAR_TICKERS = ["QQQ", "VOO", "SCHD", "TQQQ", "SOXL", "JEPI", "SPY", "IVV", "VTI", "ARKK"]
+_POPULAR_TICKERS = [
+    "QQQ",
+    "VOO",
+    "SCHD",
+    "TQQQ",
+    "SOXL",
+    "JEPI",
+    "SPY",
+    "IVV",
+    "VTI",
+    "ARKK",
+]
 
 # In-memory device -> ETF registration (fallback)
 _device_etfs: dict[str, list[str]] = {}
@@ -157,6 +172,7 @@ def _get_sb():
     """Lazy-load Supabase client to avoid import errors when not configured."""
     try:
         from services.supabase_client import get_supabase
+
         return get_supabase()
     except Exception as e:
         logger.warning("Supabase client unavailable: %s", e)
@@ -197,7 +213,8 @@ class EtfService:
             ):
                 results.append(
                     ETFSearchResult(
-                        ticker=info.ticker, name=info.name,
+                        ticker=info.ticker,
+                        name=info.name,
                         name_kr=name_kr or None,
                         category=info.category,
                     )
@@ -260,7 +277,9 @@ class EtfService:
                     return result
                 logger.info("ETF '%s' not in Supabase, trying yfinance", ticker)
             except Exception as e:
-                logger.warning("Supabase get_detail failed, falling back to yfinance: %s", e)
+                logger.warning(
+                    "Supabase get_detail failed, falling back to yfinance: %s", e
+                )
 
         # 3. Final fallback: yfinance dynamic lookup (4s timeout)
         result = await _lookup_yfinance(ticker)
@@ -288,12 +307,10 @@ class EtfService:
         if sb is not None:
             try:
                 # Get tickers ordered by registration count
-                resp = (
-                    sb.rpc(
-                        "get_popular_etfs",
-                        {"lim": 10},
-                    ).execute()
-                )
+                resp = sb.rpc(
+                    "get_popular_etfs",
+                    {"lim": 10},
+                ).execute()
                 if resp.data:
                     results = [
                         ETFSearchResult(
@@ -324,18 +341,23 @@ class EtfService:
                 set_cached(cache_key, results)
                 return results
             except Exception as e:
-                logger.warning("Supabase get_popular failed, falling back to mock: %s", e)
+                logger.warning(
+                    "Supabase get_popular failed, falling back to mock: %s", e
+                )
 
         # Fallback
         results: list[ETFSearchResult] = []
         for t in _POPULAR_TICKERS:
             info = _ETF_MASTER.get(t)
             if info:
-                results.append(ETFSearchResult(
-                    ticker=info.ticker, name=info.name,
-                    name_kr=_NAME_KR_MAP.get(t),
-                    category=info.category,
-                ))
+                results.append(
+                    ETFSearchResult(
+                        ticker=info.ticker,
+                        name=info.name,
+                        name_kr=_NAME_KR_MAP.get(t),
+                        category=info.category,
+                    )
+                )
         set_cached(cache_key, results)
         return results
 
@@ -365,10 +387,14 @@ class EtfService:
                     rows, on_conflict="device_id,ticker"
                 ).execute()
 
-                logger.info("Device %s registered ETFs via Supabase: %s", device_id, normalised)
+                logger.info(
+                    "Device %s registered ETFs via Supabase: %s", device_id, normalised
+                )
                 return normalised
             except Exception as e:
-                logger.warning("Supabase register_etfs failed, falling back to mock: %s", e)
+                logger.warning(
+                    "Supabase register_etfs failed, falling back to mock: %s", e
+                )
 
         # Fallback
         valid = [t for t in normalised if t in _ETF_MASTER]
@@ -385,6 +411,11 @@ class EtfService:
         Returns:
             List of registered ticker symbols.
         """
+        # If device has in-memory data (from a previous mock fallback register),
+        # return it directly — Supabase wouldn't have it anyway.
+        if device_id in _device_etfs:
+            return _device_etfs[device_id]
+
         sb = _get_sb()
         if sb is not None:
             try:
@@ -396,10 +427,11 @@ class EtfService:
                 )
                 return [row["ticker"] for row in resp.data]
             except Exception as e:
-                logger.warning("Supabase get_registered failed, falling back to mock: %s", e)
+                logger.warning(
+                    "Supabase get_registered failed, falling back to mock: %s", e
+                )
 
-        # Fallback
-        return _device_etfs.get(device_id, [])
+        return []
 
     async def unregister_etf(self, device_id: str, ticker: str) -> bool:
         """Remove an ETF from a device's watchlist.
@@ -428,7 +460,9 @@ class EtfService:
                     logger.info("Device %s unregistered %s via Supabase", device_id, t)
                 return deleted
             except Exception as e:
-                logger.warning("Supabase unregister_etf failed, falling back to mock: %s", e)
+                logger.warning(
+                    "Supabase unregister_etf failed, falling back to mock: %s", e
+                )
 
         # Fallback
         tickers = _device_etfs.get(device_id, [])

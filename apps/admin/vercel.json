@@ -2,7 +2,18 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "buildCommand": "npm run build",
+  "installCommand": "npm install",
   "outputDirectory": ".next",
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "github": {
+    "silent": false,
+    "autoJobCancelation": true
+  },
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- .",
   "rewrites": [
     {
       "source": "/api/proxy/:path*",

@@ -10,7 +10,11 @@ from services.etf_analysis_service import etf_analysis_service
 
 class BatchPriceRequest(BaseModel):
     """Request body for batch price lookup."""
-    tickers: list[str] = Field(..., min_length=1, max_length=30, description="ETF 티커 리스트")
+
+    tickers: list[str] = Field(
+        ..., min_length=1, max_length=30, description="ETF 티커 리스트"
+    )
+
 
 router = APIRouter()
 
@@ -19,12 +23,36 @@ router = APIRouter()
 async def register_etfs(request: ETFRegisterRequest) -> dict:
     """Register ETFs to a device's watchlist."""
     registered = await etf_service.register_etfs(request.device_id, request.tickers)
-    return {"device_id": request.device_id, "registered": registered, "total": len(registered)}
+    return {
+        "device_id": request.device_id,
+        "registered": registered,
+        "total": len(registered),
+    }
+
+
+class ETFUnregisterRequest(BaseModel):
+    """Request body for unregistering a single ETF."""
+
+    device_id: str = Field(..., description="디바이스 식별자")
+    ticker: str = Field(..., description="삭제할 ETF 티커")
+
+
+@router.delete("/unregister")
+async def unregister_etf(request: ETFUnregisterRequest) -> dict:
+    """Remove an ETF from a device's watchlist."""
+    success = await etf_service.unregister_etf(request.device_id, request.ticker)
+    return {
+        "success": success,
+        "device_id": request.device_id,
+        "ticker": request.ticker.upper(),
+    }
 
 
 @router.get("/search")
 async def search_etfs(
-    q: str = Query(..., min_length=1, description="Search query (ticker, name, or category)"),
+    q: str = Query(
+        ..., min_length=1, description="Search query (ticker, name, or category)"
+    ),
     limit: int = Query(20, ge=1, le=50, description="Number of results"),
 ) -> dict:
     """Search ETFs by name, ticker, or category."""
@@ -103,6 +131,7 @@ async def get_batch_prices(request: BatchPriceRequest) -> dict:
 def _utc_now_iso() -> str:
     """현재 UTC 시각을 ISO 8601 문자열로 반환한다."""
     from datetime import datetime, timezone
+
     return datetime.now(timezone.utc).isoformat()
 
 
@@ -110,6 +139,7 @@ def _utc_now_iso() -> str:
 async def get_price(ticker: str) -> dict:
     """ETF 현재가 및 등락률."""
     from services.price_service import get_etf_price
+
     price_data = await get_etf_price(ticker.upper())
     return price_data
 
@@ -118,6 +148,7 @@ async def get_price(ticker: str) -> dict:
 async def get_holdings(ticker: str) -> dict:
     """Get ETF holdings/constituents."""
     from services.holdings_service import holdings_service
+
     result = await holdings_service.get_holdings(ticker)
     return result
 
@@ -158,6 +189,7 @@ async def get_holdings_changes(
 async def register_device(request: DeviceRegisterRequest) -> dict:
     """디바이스 + 푸시 토큰 등록."""
     from services.push_service import register_token
+
     success = register_token(
         request.device_id,
         request.push_token,

@@ -24,8 +24,7 @@ apps/mobile/.flutter-plugins
 apps/mobile/.flutter-plugins-dependencies
 apps/mobile/pubspec.lock
 apps/mobile/.metadata
-apps/mobile/ios/
-apps/mobile/android/
+# android/ios는 독립 레포에서 추적 필요
 apps/mobile/macos/
 apps/mobile/linux/
 apps/mobile/windows/

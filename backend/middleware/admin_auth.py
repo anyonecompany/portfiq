@@ -33,6 +33,7 @@ def _verify_supabase_token(token: str) -> dict[str, Any]:
     """
     try:
         from services.supabase_client import get_supabase_service
+
         sb = get_supabase_service()
         user_response = sb.auth.get_user(token)
         user = user_response.user
@@ -90,7 +91,9 @@ def _verify_legacy_jwt(token: str) -> dict[str, Any]:
 
     import jwt as pyjwt
 
-    secret = getattr(settings, "ADMIN_JWT_SECRET", "") or os.getenv("ADMIN_JWT_SECRET", "")
+    secret = getattr(settings, "ADMIN_JWT_SECRET", "") or os.getenv(
+        "ADMIN_JWT_SECRET", ""
+    )
     if not secret:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

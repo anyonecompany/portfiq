@@ -33,6 +33,7 @@ def _notify_failure(error_msg: str) -> None:
     try:
         sys.path.insert(0, os.path.expanduser("~/ai-dev-team"))
         from integrations.slack.slack_notifier import send_slack
+
         send_slack(f"⚠️ 퍼널 집계 배치 실패: {error_msg}")
     except Exception:
         pass
@@ -53,7 +54,9 @@ def _safe_division(numerator: int, denominator: int) -> float:
     return round(numerator / denominator, 4)
 
 
-async def aggregate_funnel_cohort(target_date: date | None = None) -> list[dict[str, Any]]:
+async def aggregate_funnel_cohort(
+    target_date: date | None = None,
+) -> list[dict[str, Any]]:
     """퍼널 코호트 집계.
 
     target_date 기준으로 각 퍼널 단계별 유저 수, 이전 단계 대비 전환율,
@@ -73,6 +76,7 @@ async def aggregate_funnel_cohort(target_date: date | None = None) -> list[dict[
 
     try:
         from services.supabase_client import get_supabase
+
         sb = get_supabase()
 
         # 각 단계별 device_id 집합 수집

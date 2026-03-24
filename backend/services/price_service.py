@@ -35,6 +35,7 @@ def _get_cached_price(ticker: str) -> dict | None:
 def _cache_price(ticker: str, data: dict) -> None:
     """가격을 캐시에 저장. 장중/장외 적응형 TTL 적용."""
     from services.cache_ttl import get_market_aware_price_ttl
+
     ttl = get_market_aware_price_ttl()
     _price_cache[ticker] = (time.monotonic() + ttl, data)
     _stale_cache[ticker] = data  # stale 캐시도 갱신
@@ -58,7 +59,9 @@ def _fetch_price_sync(ticker: str) -> dict:
     info = stock.fast_info
 
     current_price = float(info.get("lastPrice", 0) or info.get("last_price", 0))
-    previous_close = float(info.get("previousClose", 0) or info.get("previous_close", 0))
+    previous_close = float(
+        info.get("previousClose", 0) or info.get("previous_close", 0)
+    )
 
     if current_price and previous_close:
         change_amt = round(current_price - previous_close, 2)
@@ -118,15 +121,28 @@ async def get_etf_price(ticker: str) -> dict:
         )
 
         _cache_price(ticker, result)
-        logger.info("가격 조회: %s = $%.2f (%.2f%%)", ticker, result["price"], result["change_pct"])
+        logger.info(
+            "가격 조회: %s = $%.2f (%.2f%%)",
+            ticker,
+            result["price"],
+            result["change_pct"],
+        )
         return await _add_krw_fields(result)
 
     except asyncio.TimeoutError:
-        logger.warning("가격 조회 타임아웃 (%s, %ds) — stale/mock 데이터 반환", ticker, _YFINANCE_TIMEOUT)
-        return await _add_krw_fields(_stale_cache.get(ticker) or _get_mock_price(ticker))
+        logger.warning(
+            "가격 조회 타임아웃 (%s, %ds) — stale/mock 데이터 반환",
+            ticker,
+            _YFINANCE_TIMEOUT,
+        )
+        return await _add_krw_fields(
+            _stale_cache.get(ticker) or _get_mock_price(ticker)
+        )
     except Exception as e:
         logger.warning("가격 조회 실패 (%s): %s — stale/mock 데이터 반환", ticker, e)
-        return await _add_krw_fields(_stale_cache.get(ticker) or _get_mock_price(ticker))
+        return await _add_krw_fields(
+            _stale_cache.get(ticker) or _get_mock_price(ticker)
+        )
 
 
 def _get_mock_price(ticker: str) -> dict:
@@ -144,7 +160,9 @@ def _get_mock_price(ticker: str) -> dict:
         "GLD": {"price": 215.60, "change_pct": 0.3, "change_amt": 0.64},
         "NVDA": {"price": 892.50, "change_pct": 2.8, "change_amt": 24.30},
     }
-    data = mock_prices.get(ticker.upper(), {"price": 100.00, "change_pct": 0.0, "change_amt": 0.0})
+    data = mock_prices.get(
+        ticker.upper(), {"price": 100.00, "change_pct": 0.0, "change_amt": 0.0}
+    )
     return {"ticker": ticker.upper(), **data, "currency": "USD", "is_mock": True}
 
 

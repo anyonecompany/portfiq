@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,9 +24,12 @@ class Step1EtfSelect extends ConsumerStatefulWidget {
 class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  List<String> _searchResults = [];
+  bool _isSearching = false;
+  Timer? _debounce;
 
-  // Extended list for search results
-  static const List<String> _allEtfs = [
+  // Fallback list for offline search
+  static const List<String> _fallbackEtfs = [
     'QQQ', 'VOO', 'SCHD', 'TQQQ', 'SOXL', 'JEPI',
     'SPY', 'IVV', 'VTI', 'ARKK', 'XLK', 'XLF',
     'SOXX', 'KWEB', 'VGT', 'IEFA', 'EEM', 'GLD',
@@ -33,15 +38,45 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
 
   List<String> get _filteredEtfs {
     if (_searchQuery.isEmpty) return [];
-    final query = _searchQuery.toUpperCase();
-    return _allEtfs
-        .where((etf) => etf.contains(query))
+    // Use API search results if available, fallback to local
+    return _searchResults
         .where((etf) => !OnboardingNotifier.popularEtfs.contains(etf))
         .toList();
   }
 
+  Future<void> _searchApi(String query) async {
+    if (query.trim().isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    setState(() => _isSearching = true);
+    try {
+      final response = await ApiClient.instance.get(
+        '/api/v1/etf/search',
+        queryParameters: {'q': query, 'limit': 15},
+      );
+      final data = response.data as Map<String, dynamic>;
+      final results = (data['results'] as List<dynamic>)
+          .map((r) => (r as Map<String, dynamic>)['ticker'] as String? ?? '')
+          .where((t) => t.isNotEmpty)
+          .toList();
+      if (mounted) setState(() { _searchResults = results; _isSearching = false; });
+    } catch (e) {
+      if (kDebugMode) print('[Step1] API 검색 실패, 로컬 fallback: $e');
+      // Fallback to local filtering
+      final q = query.toUpperCase();
+      final results = _fallbackEtfs.where((etf) => etf.contains(q)).toList();
+      if (mounted) setState(() { _searchResults = results; _isSearching = false; });
+    }
+  }
+
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -75,10 +110,16 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
             controller: _searchController,
             onChanged: (value) {
               setState(() => _searchQuery = value);
+              _debounce?.cancel();
               if (value.isNotEmpty) {
                 EventTracker.instance.track('etf_search_used', properties: {
                   'query': value,
                 });
+                _debounce = Timer(const Duration(milliseconds: 300), () {
+                  _searchApi(value);
+                });
+              } else {
+                setState(() { _searchResults = []; _isSearching = false; });
               }
             },
             style: const TextStyle(color: PortfiqTheme.textPrimary),
@@ -98,6 +139,18 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Search loading
+                  if (_isSearching && _searchQuery.isNotEmpty) ...[
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: SizedBox(
+                          width: 20, height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: PortfiqTheme.accent),
+                        ),
+                      ),
+                    ),
+                  ],
                   // Search results
                   if (_filteredEtfs.isNotEmpty) ...[
                     Text(

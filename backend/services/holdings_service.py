@@ -54,11 +54,15 @@ def _fetch_yfinance_holdings(ticker: str) -> list[dict] | None:
             if holdings_df is not None and not holdings_df.empty:
                 result = []
                 for symbol, row in holdings_df.iterrows():
-                    result.append({
-                        "name": str(row.get("Name", symbol)),
-                        "ticker": str(symbol).replace(".US", ""),
-                        "weight": round(float(row.get("Holding Percent", 0)) * 100, 2),
-                    })
+                    result.append(
+                        {
+                            "name": str(row.get("Name", symbol)),
+                            "ticker": str(symbol).replace(".US", ""),
+                            "weight": round(
+                                float(row.get("Holding Percent", 0)) * 100, 2
+                            ),
+                        }
+                    )
                 return result[:20]  # Top 20
         except Exception:
             pass
@@ -116,25 +120,38 @@ class HoldingsService:
     async def search_by_company(self, company_ticker: str) -> list[dict]:
         """Find ETFs that contain a specific company/stock.
 
+        Supports both ticker exact match (e.g., "AAPL") and company name
+        partial match (e.g., "Apple", "nvidia") with case-insensitive search.
+
         Args:
-            company_ticker: Stock ticker to search for (e.g., "AAPL").
+            company_ticker: Stock ticker or company name to search for.
 
         Returns:
             List of dicts with etf_ticker and weight.
         """
-        company = company_ticker.upper()
+        query = company_ticker.strip()
+        query_upper = query.upper()
+        query_lower = query.lower()
         results = []
 
         for etf_ticker, holdings in _SEED_HOLDINGS.items():
             for h in holdings:
-                h_ticker = h.get("ticker", "").upper() if isinstance(h, dict) else ""
-                if h_ticker == company:
-                    weight = h.get("weight", 0) if isinstance(h, dict) else 0
-                    results.append({
-                        "etf_ticker": etf_ticker,
-                        "etf_name": "",  # Will be filled by router
-                        "weight": weight,
-                    })
+                if not isinstance(h, dict):
+                    continue
+                h_ticker = h.get("ticker", "").upper()
+                h_name = h.get("name", "").lower()
+                # Ticker exact match OR company name partial match
+                if h_ticker == query_upper or query_lower in h_name:
+                    weight = h.get("weight", 0)
+                    results.append(
+                        {
+                            "etf_ticker": etf_ticker,
+                            "etf_name": "",  # Will be filled by router
+                            "weight": weight,
+                            "holding_name": h.get("name", ""),
+                            "holding_ticker": h.get("ticker", ""),
+                        }
+                    )
                     break
 
         # Sort by weight descending

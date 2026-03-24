@@ -9,6 +9,7 @@ class FeedState {
   final List<NewsItem> newsItems;
   final BriefingData? briefing;
   final bool isLoading;
+  final bool isRefreshing;
   final bool isLoadingMore;
   final bool hasMore;
   final String? errorMessage;
@@ -17,6 +18,7 @@ class FeedState {
     this.newsItems = const [],
     this.briefing,
     this.isLoading = false,
+    this.isRefreshing = false,
     this.isLoadingMore = false,
     this.hasMore = true,
     this.errorMessage,
@@ -26,6 +28,7 @@ class FeedState {
     List<NewsItem>? newsItems,
     BriefingData? briefing,
     bool? isLoading,
+    bool? isRefreshing,
     bool? isLoadingMore,
     bool? hasMore,
     String? errorMessage,
@@ -34,6 +37,7 @@ class FeedState {
       newsItems: newsItems ?? this.newsItems,
       briefing: briefing ?? this.briefing,
       isLoading: isLoading ?? this.isLoading,
+      isRefreshing: isRefreshing ?? this.isRefreshing,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       hasMore: hasMore ?? this.hasMore,
       errorMessage: errorMessage,
@@ -73,9 +77,9 @@ class FeedNotifier extends StateNotifier<FeedState> {
     }
   }
 
-  /// Pull-to-refresh handler.
+  /// Pull-to-refresh handler — keeps existing content visible during refresh.
   Future<void> refreshFeed() async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isRefreshing: true, errorMessage: null);
     try {
       _currentOffset = 0;
       final result = await _fetchNews(offset: 0, limit: _pageSize);
@@ -83,14 +87,14 @@ class FeedNotifier extends StateNotifier<FeedState> {
       state = state.copyWith(
         newsItems: _sortedByImpact(result.items),
         briefing: briefing,
-        isLoading: false,
+        isRefreshing: false,
         hasMore: result.hasMore,
       );
       _currentOffset = result.items.length;
     } catch (e) {
       if (kDebugMode) print('[FeedProvider] 새로고침 실패: $e');
       state = state.copyWith(
-        isLoading: false,
+        isRefreshing: false,
         errorMessage: '새로고침에 실패했습니다',
       );
     }
@@ -152,6 +156,7 @@ class FeedNotifier extends StateNotifier<FeedState> {
         sourceUrl: map['source_url'] as String? ?? '',
         publishedAt: DateTime.tryParse(map['published_at'] ?? '') ?? DateTime.now(),
         impacts: impacts,
+        isMock: map['is_mock'] as bool? ?? false,
       );
     }).toList();
 
@@ -175,6 +180,8 @@ class FeedNotifier extends StateNotifier<FeedState> {
       return EtfChange(
         ticker: cm['ticker'] as String? ?? '',
         changePercent: (cm['change_pct'] as num?)?.toDouble() ?? 0.0,
+        direction: cm['direction'] as String? ?? 'flat',
+        cause: cm['cause'] as String? ?? '',
       );
     }).toList();
 
@@ -255,39 +262,42 @@ class _FetchResult {
 
 final _mockNews = <NewsItem>[
   NewsItem(
-    id: '1',
+    id: 'mock_1',
     headline: 'FOMC 의사록 공개: 연준, 금리 인하 시기 신중론 유지',
     impactReason: '연준 위원 다수가 인플레이션 목표 달성 확인까지 금리 인하를 서두르지 않겠다는 입장을 재확인.',
     source: 'Reuters',
-    sourceUrl: 'https://reuters.com/fed-minutes',
+    sourceUrl: '',
     publishedAt: DateTime.now().subtract(const Duration(hours: 2)),
     impacts: [
       const EtfImpact(etfTicker: 'QQQ', level: ImpactLevel.high),
       const EtfImpact(etfTicker: 'VOO', level: ImpactLevel.medium),
     ],
+    isMock: true,
   ),
   NewsItem(
-    id: '2',
+    id: 'mock_2',
     headline: 'NVIDIA 실적 발표: 데이터센터 매출 전년 대비 409% 증가',
     impactReason: 'AI 인프라 투자 확대로 데이터센터 부문 폭발적 성장.',
     source: 'Bloomberg',
-    sourceUrl: 'https://bloomberg.com/nvidia-earnings',
+    sourceUrl: '',
     publishedAt: DateTime.now().subtract(const Duration(hours: 5)),
     impacts: [
       const EtfImpact(etfTicker: 'QQQ', level: ImpactLevel.high),
     ],
+    isMock: true,
   ),
   NewsItem(
-    id: '3',
+    id: 'mock_3',
     headline: '미국 소비자물가지수(CPI) 예상치 상회: 전년비 3.1%',
     impactReason: '시장 예상 2.9%를 상회하며 인플레이션 우려 재점화.',
     source: 'CNBC',
-    sourceUrl: 'https://cnbc.com/cpi-data',
+    sourceUrl: '',
     publishedAt: DateTime.now().subtract(const Duration(hours: 8)),
     impacts: [
       const EtfImpact(etfTicker: 'VOO', level: ImpactLevel.medium),
       const EtfImpact(etfTicker: 'SCHD', level: ImpactLevel.medium),
     ],
+    isMock: true,
   ),
 ];
 

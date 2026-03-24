@@ -90,6 +90,7 @@ class _MyEtfScreenState extends ConsumerState<MyEtfScreen>
 
     // Ensure the offscreen share card has been laid out and painted
     await Future.delayed(const Duration(milliseconds: 300));
+    await WidgetsBinding.instance.endOfFrame;
 
     final success = await ShareService.captureAndShareWithText(
       _weeklyShareCardKey,

@@ -10,12 +10,28 @@ import 'etf_chip.dart';
 import 'glass_card.dart';
 import 'pressable_card.dart';
 
+// Design spec colors
+const _kBullish = Color(0xFF4CAF50);
+const _kBearish = Color(0xFFF44336);
+const _kNeutral = Color(0xFF9E9E9E);
+
+enum _CardSentiment { bullish, bearish, neutral }
+
+_CardSentiment _derive(List<EtfChange> changes) {
+  if (changes.isEmpty) return _CardSentiment.neutral;
+  final up = changes.where((c) => c.changePercent > 0).length;
+  final down = changes.where((c) => c.changePercent < 0).length;
+  if (up > down) return _CardSentiment.bullish;
+  if (down > up) return _CardSentiment.bearish;
+  return _CardSentiment.neutral;
+}
 
 /// Compact briefing banner card shown at the top of the feed.
 ///
-/// Morning variant shows ETF gain/loss chips + summary.
-/// Night variant shows checkpoint items.
-/// Uses GlassCard with gradient border per MASTER.md spec.
+/// Toss Securities AI article style:
+/// - Sentiment badge + headline preview for instant comprehension
+/// - Color-coded ETF changes
+/// - "자세히 보기 →" CTA
 class BriefingCard extends StatefulWidget {
   final BriefingData data;
   final VoidCallback? onTap;
@@ -67,6 +83,7 @@ class _BriefingCardState extends State<BriefingCard> {
         isMorning ? PortfiqGradients.morning : PortfiqGradients.night;
     final accentColor =
         isMorning ? PortfiqTheme.accent : PortfiqTheme.warning;
+    final sentiment = _derive(data.etfChanges);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -81,7 +98,7 @@ class _BriefingCardState extends State<BriefingCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header + AI label + share button
+                // Header row: title + AI label + share
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,30 +155,21 @@ class _BriefingCardState extends State<BriefingCard> {
                     ),
                   ],
                 ),
-                const SizedBox(height: PortfiqSpacing.space12),
+                const SizedBox(height: 12),
 
-                // Mock 데이터 배너
+                // Mock banner
                 if (data.isMock) ...[
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: PortfiqSpacing.space12,
-                      vertical: PortfiqSpacing.space8,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: PortfiqTheme.warning.withAlpha(26),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: PortfiqTheme.warning.withAlpha(77),
-                      ),
+                      border: Border.all(color: PortfiqTheme.warning.withAlpha(77)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.auto_awesome,
-                          size: 14,
-                          color: PortfiqTheme.warning,
-                        ),
+                        const Icon(Icons.auto_awesome, size: 14, color: PortfiqTheme.warning),
                         const SizedBox(width: 6),
                         Text(
                           'AI 분석 준비 중 — 샘플 데이터입니다',
@@ -174,11 +182,30 @@ class _BriefingCardState extends State<BriefingCard> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: PortfiqSpacing.space12),
+                  const SizedBox(height: 12),
                 ],
 
+                // Sentiment badge
+                _CardSentimentBadge(sentiment: sentiment),
+                const SizedBox(height: 10),
+
+                // L1 Headline preview (summary, 2 lines)
+                Text(
+                  data.summary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFF9FAFB),
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
                 if (isMorning) ...[
-                  // ETF change chips
+                  // ETF change chips with color coding
                   Wrap(
                     spacing: PortfiqSpacing.space8,
                     runSpacing: PortfiqSpacing.space8,
@@ -188,18 +215,6 @@ class _BriefingCardState extends State<BriefingCard> {
                         changePercent: change.changePercent,
                       );
                     }).toList(),
-                  ),
-                  const SizedBox(height: PortfiqSpacing.space12),
-                  // Summary
-                  Text(
-                    data.summary,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: PortfiqTypography.body.copyWith(
-                      color: PortfiqTheme.textSecondary,
-                      fontSize: 14,
-                      height: 1.7,
-                    ),
                   ),
                 ] else ...[
                   // Night checkpoints
@@ -211,10 +226,7 @@ class _BriefingCardState extends State<BriefingCard> {
                         children: [
                           Text(
                             '•  ',
-                            style: TextStyle(
-                              color: accentColor,
-                              fontSize: 13,
-                            ),
+                            style: TextStyle(color: accentColor, fontSize: 13),
                           ),
                           Expanded(
                             child: Text(
@@ -233,7 +245,7 @@ class _BriefingCardState extends State<BriefingCard> {
                 ],
 
                 const SizedBox(height: PortfiqSpacing.space8),
-                // "자세히 보기" link
+                // CTA
                 Align(
                   alignment: Alignment.centerRight,
                   child: Text(
@@ -256,6 +268,45 @@ class _BriefingCardState extends State<BriefingCard> {
             child: ShareCard(data: data, repaintKey: _shareCardKey),
           ),
       ],
+    );
+  }
+}
+
+/// Compact sentiment badge for the briefing card preview.
+class _CardSentimentBadge extends StatelessWidget {
+  final _CardSentiment sentiment;
+  const _CardSentimentBadge({required this.sentiment});
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, color, icon) = switch (sentiment) {
+      _CardSentiment.bullish => ('Bullish', _kBullish, Icons.trending_up_rounded),
+      _CardSentiment.bearish => ('Bearish', _kBearish, Icons.trending_down_rounded),
+      _CardSentiment.neutral => ('Neutral', _kNeutral, Icons.trending_flat_rounded),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withAlpha(30),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

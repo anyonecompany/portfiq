@@ -83,10 +83,14 @@ def _build_feed_item(
     if translation:
         summary_3line = translation.get("translated_summary", "")
 
-    # sentiment
+    # sentiment: classification 우선, 없으면 시그널의 impact_direction fallback
     sentiment = "중립"
     if classification:
         sentiment = _sentiment_to_korean(classification.get("sentiment"))
+    if sentiment == "중립" and signals:
+        direction = signals[0].get("impact_direction", "")
+        if direction:
+            sentiment = _sentiment_to_korean(direction)
 
     # impacts: 각 시그널 → ETFImpact
     impacts = [
@@ -132,6 +136,7 @@ async def get_signal_feed(
     """
     try:
         from services.supabase_client import get_supabase_service
+
         sb = get_supabase_service()
     except Exception as e:
         logger.warning("Supabase 클라이언트 초기화 실패: %s", e)
@@ -157,8 +162,10 @@ async def get_signal_feed(
         # 2. 시그널 상세 조회
         signals_resp = (
             sb.table("news_etf_signals")
-            .select("id, article_id, classification_id, etf_code, etf_name, "
-                    "impact_direction, impact_magnitude, signal_text")
+            .select(
+                "id, article_id, classification_id, etf_code, etf_name, "
+                "impact_direction, impact_magnitude, signal_text"
+            )
             .in_("id", signal_ids)
             .execute()
         )
@@ -187,26 +194,22 @@ async def get_signal_feed(
             .in_("id", article_ids)
             .execute()
         )
-        articles_map = {
-            a["id"]: a for a in (articles_resp.data or [])
-        }
+        articles_map = {a["id"]: a for a in (articles_resp.data or [])}
 
         # 4. 번역 조회
         translations_resp = (
             sb.table("article_translations")
-            .select("article_id, translated_title, translated_content, translated_summary")
+            .select(
+                "article_id, translated_title, translated_content, translated_summary"
+            )
             .in_("article_id", article_ids)
             .execute()
         )
-        translations_map = {
-            t["article_id"]: t for t in (translations_resp.data or [])
-        }
+        translations_map = {t["article_id"]: t for t in (translations_resp.data or [])}
 
         # 5. 분류 조회
         classification_ids = [
-            sig["classification_id"]
-            for sig in signals
-            if sig.get("classification_id")
+            sig["classification_id"] for sig in signals if sig.get("classification_id")
         ]
         classifications_map: dict[str, dict] = {}
         if classification_ids:
@@ -216,9 +219,7 @@ async def get_signal_feed(
                 .in_("id", list(set(classification_ids)))
                 .execute()
             )
-            classifications_map = {
-                c["id"]: c for c in (cls_resp.data or [])
-            }
+            classifications_map = {c["id"]: c for c in (cls_resp.data or [])}
 
         # 6. FeedItem 조합 (signal_ids 순서 유지 = 시그널 피드 최신순)
         seen_articles: set[str] = set()
@@ -279,6 +280,7 @@ async def get_latest_signal_feed(
     """
     try:
         from services.supabase_client import get_supabase_service
+
         sb = get_supabase_service()
     except Exception:
         return [], 0
@@ -306,7 +308,9 @@ async def get_latest_signal_feed(
         # 번역 조회
         tr_resp = (
             sb.table("article_translations")
-            .select("article_id, translated_title, translated_content, translated_summary")
+            .select(
+                "article_id, translated_title, translated_content, translated_summary"
+            )
             .in_("article_id", article_ids)
             .execute()
         )
@@ -329,7 +333,7 @@ async def get_latest_signal_feed(
             .execute()
         )
         sig_by_article: dict[str, list[dict]] = {}
-        for sig in (sig_resp.data or []):
+        for sig in sig_resp.data or []:
             aid = sig["article_id"]
             sig_by_article.setdefault(aid, []).append(sig)
 

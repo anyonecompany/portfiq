@@ -123,13 +123,17 @@ def _build_briefing_from_ai(data: dict, briefing_type: str) -> BriefingResponse:
                 event = cp.get("event", "")
                 time_ = cp.get("time", "")
                 impact = cp.get("impact", "")
-                checkpoints.append(f"{time_} — {event}: {impact}" if time_ else f"{event}: {impact}")
+                checkpoints.append(
+                    f"{time_} — {event}: {impact}" if time_ else f"{event}: {impact}"
+                )
             else:
                 checkpoints.append(str(cp))
 
     return BriefingResponse(
         type=briefing_type,
-        title=data.get("title", f"{'모닝' if briefing_type == 'morning' else '나이트'} 브리핑"),
+        title=data.get(
+            "title", f"{'모닝' if briefing_type == 'morning' else '나이트'} 브리핑"
+        ),
         summary=data.get("summary", ""),
         etf_changes=etf_changes,
         checkpoints=checkpoints,
@@ -140,6 +144,7 @@ def _build_briefing_from_ai(data: dict, briefing_type: str) -> BriefingResponse:
 # ──────────────────────────────────────────────
 # Mock briefing data (fallback)
 # ──────────────────────────────────────────────
+
 
 def _today_title(suffix: str) -> str:
     """오늘 날짜로 동적 브리핑 제목 생성."""
@@ -153,12 +158,42 @@ _MOCK_MORNING = BriefingResponse(
     title="모닝 브리핑",  # get 시 동적으로 덮어씀
     summary="FOMC 금리 동결 이후 기술주 반등세가 이어지고 있습니다. NVIDIA 실적 호조로 반도체 섹터 강세, 배당주는 보합세를 유지하고 있습니다.",
     etf_changes=[
-        ETFChange(ticker="QQQ", change_pct=1.2, direction="up", cause="FOMC 금리 동결 + 기술주 반등"),
-        ETFChange(ticker="VOO", change_pct=0.8, direction="up", cause="S&P 500 전반적 상승 흐름"),
-        ETFChange(ticker="SCHD", change_pct=-0.3, direction="down", cause="성장주 대비 배당주 자금 이탈"),
-        ETFChange(ticker="SOXL", change_pct=3.5, direction="up", cause="NVIDIA 실적 기대감 반영"),
-        ETFChange(ticker="ARKK", change_pct=1.8, direction="up", cause="금리 하락 기대 + Tesla 매수세"),
-        ETFChange(ticker="TLT", change_pct=0.5, direction="up", cause="국채 금리 하락으로 채권 가격 상승"),
+        ETFChange(
+            ticker="QQQ",
+            change_pct=1.2,
+            direction="up",
+            cause="FOMC 금리 동결 + 기술주 반등",
+        ),
+        ETFChange(
+            ticker="VOO",
+            change_pct=0.8,
+            direction="up",
+            cause="S&P 500 전반적 상승 흐름",
+        ),
+        ETFChange(
+            ticker="SCHD",
+            change_pct=-0.3,
+            direction="down",
+            cause="성장주 대비 배당주 자금 이탈",
+        ),
+        ETFChange(
+            ticker="SOXL",
+            change_pct=3.5,
+            direction="up",
+            cause="NVIDIA 실적 기대감 반영",
+        ),
+        ETFChange(
+            ticker="ARKK",
+            change_pct=1.8,
+            direction="up",
+            cause="금리 하락 기대 + Tesla 매수세",
+        ),
+        ETFChange(
+            ticker="TLT",
+            change_pct=0.5,
+            direction="up",
+            cause="국채 금리 하락으로 채권 가격 상승",
+        ),
     ],
     checkpoints=[
         "NVIDIA 실적 발표 후 시간외 거래 반응 확인",
@@ -174,8 +209,12 @@ _MOCK_NIGHT = BriefingResponse(
     title="나이트 체크포인트",  # get 시 동적으로 덮어씀
     summary="오늘 하루 시장 마감 후 주요 이벤트를 확인하세요. AI 브리핑이 곧 생성됩니다.",
     etf_changes=[
-        ETFChange(ticker="QQQ", change_pct=0.0, direction="flat", cause="시장 데이터 로딩 중"),
-        ETFChange(ticker="VOO", change_pct=0.0, direction="flat", cause="시장 데이터 로딩 중"),
+        ETFChange(
+            ticker="QQQ", change_pct=0.0, direction="flat", cause="시장 데이터 로딩 중"
+        ),
+        ETFChange(
+            ticker="VOO", change_pct=0.0, direction="flat", cause="시장 데이터 로딩 중"
+        ),
     ],
     checkpoints=[
         "22:30 KST — 미국 시장 정규 거래 시작: ETF 가격 변동 확인",
@@ -197,6 +236,7 @@ async def _get_dynamic_etf_list() -> list[str]:
     # 1. Supabase에서 조회
     try:
         from services.supabase_client import get_supabase
+
         sb = get_supabase()
         resp = sb.table("etf_master").select("ticker").execute()
         if resp.data:
@@ -209,6 +249,7 @@ async def _get_dynamic_etf_list() -> list[str]:
     # 2. etf_master.json에서 로드
     try:
         from pathlib import Path
+
         json_path = Path(__file__).resolve().parent.parent / "seeds" / "etf_master.json"
         if json_path.exists():
             with open(json_path, encoding="utf-8") as f:
@@ -324,9 +365,7 @@ def _build_price_summary(prices: list[dict]) -> str:
         return "가격 데이터 없음"
     rows = []
     for price in prices:
-        rows.append(
-            f"{price.get('ticker', '')}: {price.get('change_pct', 0):+.2f}%"
-        )
+        rows.append(f"{price.get('ticker', '')}: {price.get('change_pct', 0):+.2f}%")
     return ", ".join(rows)
 
 
@@ -359,9 +398,7 @@ async def _build_dynamic_morning_fallback(device_id: str) -> BriefingResponse:
             None,
         )
         cause_source = (
-            related.headline
-            if related is not None
-            else f"{ticker} 최근 가격 흐름 반영"
+            related.headline if related is not None else f"{ticker} 최근 가격 흐름 반영"
         )
         changes.append(
             ETFChange(
@@ -381,9 +418,7 @@ async def _build_dynamic_morning_fallback(device_id: str) -> BriefingResponse:
     else:
         summary = "간밤 사용자 ETF 기준 핵심 뉴스와 가격 변화를 정리했습니다."
 
-    checkpoints = [
-        item.headline for item in news_items[:3]
-    ]
+    checkpoints = [item.headline for item in news_items[:3]]
     if not checkpoints:
         checkpoints = [
             "간밤 사용자 ETF 관련 핵심 뉴스 수집 중",
@@ -431,11 +466,16 @@ class BriefingService:
         signature = _briefing_signature(tickers)
         stale = _last_morning_briefings.get(signature)
         if stale is not None:
-            logger.info("TTL 캐시 만료, personalized stale morning briefing 반환 (%s)", signature)
+            logger.info(
+                "TTL 캐시 만료, personalized stale morning briefing 반환 (%s)",
+                signature,
+            )
             set_cached(cache_key, stale)
             return stale
 
-        logger.info("개인화 모닝 브리핑 미생성 — dynamic fallback 즉시 반환 (%s)", signature)
+        logger.info(
+            "개인화 모닝 브리핑 미생성 — dynamic fallback 즉시 반환 (%s)", signature
+        )
         fallback = await _build_dynamic_morning_fallback(device_id)
         set_cached(cache_key, fallback)
         _last_morning_briefings[signature] = fallback
@@ -467,7 +507,9 @@ class BriefingService:
         signature = _briefing_signature(tickers)
         stale = _last_night_briefings.get(signature)
         if stale is not None:
-            logger.info("TTL 캐시 만료, personalized stale night briefing 반환 (%s)", signature)
+            logger.info(
+                "TTL 캐시 만료, personalized stale night briefing 반환 (%s)", signature
+            )
             set_cached(cache_key, stale)
             return stale
 
@@ -494,7 +536,9 @@ class BriefingService:
         logger.info("Manual briefing generation triggered for device %s", device_id)
         return await self.generate_morning_briefing_background(device_id)
 
-    async def generate_morning_briefing_background(self, device_id: str) -> BriefingResponse:
+    async def generate_morning_briefing_background(
+        self, device_id: str
+    ) -> BriefingResponse:
         """실제로 Gemini API를 호출하여 모닝 브리핑을 생성한다.
 
         스케줄러 또는 수동 트리거에서 호출한다. API 엔드포인트에서 직접 호출하지 않는다.
@@ -519,7 +563,9 @@ class BriefingService:
             return fallback
 
         price_summary = _build_price_summary(await _build_price_snapshot(tickers))
-        news_summary = _build_news_summary_from_items(await _get_news_items_for_tickers(tickers))
+        news_summary = _build_news_summary_from_items(
+            await _get_news_items_for_tickers(tickers)
+        )
         prompt = MORNING_PROMPT.format(
             today_date=datetime.now(ZoneInfo("Asia/Seoul")).date().isoformat(),
             etf_list=", ".join(tickers),
@@ -536,12 +582,16 @@ class BriefingService:
 
         result = _build_briefing_from_ai(data, "morning")
         if not result.etf_changes:
-            result = fallback.model_copy(update={"summary": result.summary or fallback.summary})
+            result = fallback.model_copy(
+                update={"summary": result.summary or fallback.summary}
+            )
         _last_morning_briefings[signature] = result
         set_cached(cache_key, result)
         return result
 
-    async def generate_night_briefing_background(self, device_id: str) -> BriefingResponse:
+    async def generate_night_briefing_background(
+        self, device_id: str
+    ) -> BriefingResponse:
         """실제로 Gemini API를 호출하여 나이트 브리핑을 생성한다.
 
         스케줄러 또는 수동 트리거에서 호출한다. API 엔드포인트에서 직접 호출하지 않는다.
@@ -561,7 +611,10 @@ class BriefingService:
         if not settings.GEMINI_API_KEY:
             logger.warning("GEMINI_API_KEY 미설정 — mock 데이터 반환")
             fallback = _MOCK_NIGHT.model_copy(
-                update={"generated_at": datetime.now(timezone.utc).isoformat(), "is_mock": True}
+                update={
+                    "generated_at": datetime.now(timezone.utc).isoformat(),
+                    "is_mock": True,
+                }
             )
             set_cached(cache_key, fallback)
             _last_night_briefings[signature] = fallback
@@ -581,7 +634,10 @@ class BriefingService:
         if data is None:
             logger.warning("Gemini API 실패 — mock night briefing 반환")
             fallback = _MOCK_NIGHT.model_copy(
-                update={"generated_at": datetime.now(timezone.utc).isoformat(), "is_mock": True}
+                update={
+                    "generated_at": datetime.now(timezone.utc).isoformat(),
+                    "is_mock": True,
+                }
             )
             set_cached(cache_key, fallback)
             _last_night_briefings[signature] = fallback

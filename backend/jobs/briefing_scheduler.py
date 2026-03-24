@@ -22,6 +22,7 @@ def _run_in_thread(coro_fn):
 
     메인 event loop을 전혀 블로킹하지 않으므로 /health 등 API가 항상 응답 가능.
     """
+
     def _wrapper():
         def _target():
             loop = asyncio.new_event_loop()
@@ -31,9 +32,12 @@ def _run_in_thread(coro_fn):
                 logger.error("Background job failed: %s", e)
             finally:
                 loop.close()
+
         t = threading.Thread(target=_target, daemon=True)
         t.start()
+
     return _wrapper
+
 
 scheduler: AsyncIOScheduler | None = None
 
@@ -43,19 +47,19 @@ def start_scheduler() -> AsyncIOScheduler:
     global scheduler
     scheduler = AsyncIOScheduler()
 
-    # 1. 뉴스 수집: 10분마다 (별도 스레드에서 실행 — 메인 event loop 보호)
+    # 1. 뉴스 수집: 30분마다 (비용 절감 — 10분→30분)
     scheduler.add_job(
         _run_in_thread(_run_news_collection_async),
-        IntervalTrigger(minutes=10),
+        IntervalTrigger(minutes=30),
         id="news_collector",
         name="뉴스 수집",
         replace_existing=True,
     )
 
-    # 1.5. 미번역 뉴스 재번역: 5분마다
+    # 1.5. 미번역 뉴스 재번역: 30분마다 (비용 절감 — 5분→30분, Gemini 호출 최대 절감)
     scheduler.add_job(
         _run_in_thread(_retry_untranslated_news),
-        IntervalTrigger(minutes=5),
+        IntervalTrigger(minutes=30),
         id="translation_retry",
         name="미번역 뉴스 재번역",
         replace_existing=True,
@@ -83,6 +87,7 @@ def start_scheduler() -> AsyncIOScheduler:
 
     # 4. 서버 시작 직후 뉴스 수집 1회 즉시 실행 (5초 후, 별도 스레드)
     from datetime import datetime, timedelta
+
     scheduler.add_job(
         _run_in_thread(_run_news_collection_async),
         "date",
@@ -131,7 +136,9 @@ def start_scheduler() -> AsyncIOScheduler:
     scheduler.add_job(
         _run_weekend_weekly_summary,
         CronTrigger(
-            day_of_week="fri", hour=23, minute=35,  # 토요일 08:35 KST
+            day_of_week="fri",
+            hour=23,
+            minute=35,  # 토요일 08:35 KST
             timezone="Asia/Seoul",
         ),
         id="weekend_weekly_summary",
@@ -143,7 +150,9 @@ def start_scheduler() -> AsyncIOScheduler:
     scheduler.add_job(
         _run_weekend_monday_checklist,
         CronTrigger(
-            day_of_week="sun", hour=13, minute=0,  # 일요일 22:00 KST
+            day_of_week="sun",
+            hour=13,
+            minute=0,  # 일요일 22:00 KST
             timezone="Asia/Seoul",
         ),
         id="weekend_monday_checklist",
@@ -162,7 +171,7 @@ def start_scheduler() -> AsyncIOScheduler:
 
     scheduler.start()
     logger.info(
-        "스케줄러 시작: 뉴스(10분), 재번역(5분), 아침(%02d:%02d KST), 밤(%02d:00 KST), "
+        "스케줄러 시작: 뉴스(30분), 재번역(30분), 아침(%02d:%02d KST), 밤(%02d:00 KST), "
         "집계(01:00 KST), 퍼널(01:30 KST), 주말(토08:35/일22:00 KST), 스냅샷(월01:00 KST)",
         settings.BRIEFING_MORNING_HOUR,
         settings.BRIEFING_MORNING_MINUTE,
@@ -182,6 +191,7 @@ def stop_scheduler() -> None:
 async def _run_news_collection_async() -> None:
     """뉴스 수집 Job 실행 (별도 스레드의 event loop에서 호출됨)."""
     from jobs.news_collector import collect_news
+
     await collect_news()
 
 
@@ -203,10 +213,19 @@ async def _generate_and_push_for_all_devices(briefing_type: str) -> None:
     logger.info("%s 생성 시작", type_label)
     try:
         if briefing_type == "morning":
-            briefing = await briefing_service.generate_morning_briefing_background("__scheduler__")
+            briefing = await briefing_service.generate_morning_briefing_background(
+                "__scheduler__"
+            )
         else:
-            briefing = await briefing_service.generate_night_briefing_background("__scheduler__")
-        logger.info("%s 생성 완료: %s (is_mock=%s)", type_label, briefing.title, briefing.is_mock)
+            briefing = await briefing_service.generate_night_briefing_background(
+                "__scheduler__"
+            )
+        logger.info(
+            "%s 생성 완료: %s (is_mock=%s)",
+            type_label,
+            briefing.title,
+            briefing.is_mock,
+        )
     except Exception as e:
         logger.error("%s 생성 실패: %s", type_label, e)
         return
@@ -215,7 +234,9 @@ async def _generate_and_push_for_all_devices(briefing_type: str) -> None:
     devices = _get_all_device_tokens()
 
     if not devices:
-        logger.info("%s: 등록된 디바이스 없음, 푸시 스킵 (브리핑은 캐시에 저장됨)", type_label)
+        logger.info(
+            "%s: 등록된 디바이스 없음, 푸시 스킵 (브리핑은 캐시에 저장됨)", type_label
+        )
         return
 
     logger.info("%s 푸시 전송 시작: %d개 디바이스 대상", type_label, len(devices))
@@ -248,12 +269,17 @@ async def _generate_and_push_for_all_devices(briefing_type: str) -> None:
             fail_count += 1
             logger.error(
                 "%s 처리 실패: device=%s, error=%s",
-                type_label, device_id, e,
+                type_label,
+                device_id,
+                e,
             )
 
     logger.info(
         "%s 완료: 성공=%d, 실패=%d, 전체=%d",
-        type_label, success_count, fail_count, len(devices),
+        type_label,
+        success_count,
+        fail_count,
+        len(devices),
     )
 
 
@@ -312,6 +338,7 @@ async def _run_daily_aggregation() -> None:
     logger.info("일간 메트릭 집계 시작")
     try:
         from jobs.aggregation import aggregate_daily_metrics
+
         await aggregate_daily_metrics()
     except Exception as e:
         logger.error("일간 메트릭 집계 실패: %s", e)
@@ -322,6 +349,7 @@ async def _run_funnel_aggregation() -> None:
     logger.info("퍼널 코호트 집계 시작")
     try:
         from jobs.funnel_aggregation import aggregate_funnel_cohort
+
         await aggregate_funnel_cohort()
     except Exception as e:
         logger.error("퍼널 코호트 집계 실패: %s", e)
@@ -380,11 +408,13 @@ async def _run_holdings_snapshot() -> None:
             ticker = etf.get("ticker", "").upper()
             holdings = etf.get("top_holdings", [])
             if ticker and holdings:
-                rows.append({
-                    "ticker": ticker,
-                    "holdings": holdings,
-                    "snapshot_date": now,
-                })
+                rows.append(
+                    {
+                        "ticker": ticker,
+                        "holdings": holdings,
+                        "snapshot_date": now,
+                    }
+                )
 
         if rows:
             # Upsert: 같은 날짜+티커 조합은 덮어쓰기
@@ -402,6 +432,7 @@ async def _run_holdings_snapshot() -> None:
 async def _retry_untranslated_news() -> None:
     """미번역 뉴스를 백그라운드에서 재번역한다."""
     from services.news_service import _translate_cached_articles_sync
+
     try:
         await asyncio.to_thread(_translate_cached_articles_sync)
     except Exception as e:

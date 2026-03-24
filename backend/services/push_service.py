@@ -69,10 +69,15 @@ def _init_firebase() -> bool:
             try:
                 cred = credentials.Certificate(firebase_creds_path)
                 _firebase_app = firebase_admin.initialize_app(cred)
-                logger.info("Firebase Admin SDK 초기화 완료 (파일: %s)", firebase_creds_path)
+                logger.info(
+                    "Firebase Admin SDK 초기화 완료 (파일: %s)", firebase_creds_path
+                )
                 return True
             except Exception as e:
-                logger.error("Firebase 서비스 계정 파일 로드 실패 (FIREBASE_CREDENTIALS_PATH): %s", e)
+                logger.error(
+                    "Firebase 서비스 계정 파일 로드 실패 (FIREBASE_CREDENTIALS_PATH): %s",
+                    e,
+                )
 
         # 방법 3: GOOGLE_APPLICATION_CREDENTIALS (파일 경로, 환경변수로 자동 감지)
         google_creds_path = settings.GOOGLE_APPLICATION_CREDENTIALS
@@ -80,10 +85,15 @@ def _init_firebase() -> bool:
             try:
                 cred = credentials.Certificate(google_creds_path)
                 _firebase_app = firebase_admin.initialize_app(cred)
-                logger.info("Firebase Admin SDK 초기화 완료 (파일: %s)", google_creds_path)
+                logger.info(
+                    "Firebase Admin SDK 초기화 완료 (파일: %s)", google_creds_path
+                )
                 return True
             except Exception as e:
-                logger.error("Firebase 서비스 계정 파일 로드 실패 (GOOGLE_APPLICATION_CREDENTIALS): %s", e)
+                logger.error(
+                    "Firebase 서비스 계정 파일 로드 실패 (GOOGLE_APPLICATION_CREDENTIALS): %s",
+                    e,
+                )
 
         # 방법 4: Application Default Credentials (GCP 환경)
         try:
@@ -148,7 +158,8 @@ async def send_push_to_token(
     if not _init_firebase():
         logger.info(
             "테스트 푸시 (Firebase 미설정, 로그만): token=%s..., title='%s'",
-            token[:20], title,
+            token[:20],
+            title,
         )
         return True
 
@@ -180,7 +191,9 @@ async def send_push_to_token(
         )
 
         response = messaging.send(message)
-        logger.info("테스트 FCM 전송 성공: token=%s..., response=%s", token[:20], response)
+        logger.info(
+            "테스트 FCM 전송 성공: token=%s..., response=%s", token[:20], response
+        )
         return True
 
     except Exception as e:
@@ -216,6 +229,7 @@ def register_token(
 
     try:
         from services.supabase_client import get_supabase
+
         sb = get_supabase()
         sb.table("devices").upsert(payload, on_conflict="device_id").execute()
         logger.info("푸시 토큰 등록: %s", device_id)
@@ -242,23 +256,25 @@ def _get_device_preference(device_id: str, pref_name: str) -> bool | None:
     """
     try:
         from services.supabase_client import get_supabase
+
         sb = get_supabase()
         resp = (
-            sb.table("devices")
-            .select(pref_name)
-            .eq("device_id", device_id)
-            .execute()
+            sb.table("devices").select(pref_name).eq("device_id", device_id).execute()
         )
         rows: list[dict] = resp.data  # type: ignore[assignment]
         if rows and pref_name in rows[0] and rows[0][pref_name] is not None:
             return bool(rows[0][pref_name])
     except Exception as e:
-        logger.warning("디바이스 설정 조회 실패 (device=%s, pref=%s): %s", device_id, pref_name, e)
+        logger.warning(
+            "디바이스 설정 조회 실패 (device=%s, pref=%s): %s", device_id, pref_name, e
+        )
 
     return None  # 조회 실패 시 None → 기본 허용
 
 
-def get_devices_with_preference(pref_name: str, value: bool = True) -> list[dict[str, str]]:
+def get_devices_with_preference(
+    pref_name: str, value: bool = True
+) -> list[dict[str, str]]:
     """특정 알림 설정이 활성화된 디바이스 목록을 조회한다.
 
     Args:
@@ -272,18 +288,20 @@ def get_devices_with_preference(pref_name: str, value: bool = True) -> list[dict
 
     try:
         from services.supabase_client import get_supabase
+
         sb = get_supabase()
         query = (
-            sb.table("devices")
-            .select("device_id, push_token")
-            .neq("push_token", "")
+            sb.table("devices").select("device_id, push_token").neq("push_token", "")
         )
         query = query.eq(pref_name, value)
         resp = query.execute()
         rows: list[dict] = resp.data  # type: ignore[assignment]
         if rows:
             results = [
-                {"device_id": str(row["device_id"]), "push_token": str(row["push_token"])}
+                {
+                    "device_id": str(row["device_id"]),
+                    "push_token": str(row["push_token"]),
+                }
                 for row in rows
                 if row.get("push_token")
             ]
@@ -291,7 +309,8 @@ def get_devices_with_preference(pref_name: str, value: bool = True) -> list[dict
     except Exception as e:
         logger.warning(
             "Supabase 설정 기반 디바이스 조회 실패 (pref=%s), 전체 fallback: %s",
-            pref_name, e,
+            pref_name,
+            e,
         )
 
     # Fallback: 인메모리 토큰 (설정 필터 불가, 전체 반환)
@@ -312,6 +331,7 @@ def _get_push_token(device_id: str) -> str | None:
     """
     try:
         from services.supabase_client import get_supabase
+
         sb = get_supabase()
         resp = (
             sb.table("devices")
@@ -338,6 +358,7 @@ def _get_all_device_tokens() -> list[dict[str, str]]:
 
     try:
         from services.supabase_client import get_supabase
+
         sb = get_supabase()
         resp = (
             sb.table("devices")
@@ -348,7 +369,10 @@ def _get_all_device_tokens() -> list[dict[str, str]]:
         rows_all: list[dict] = resp.data  # type: ignore[assignment]
         if rows_all:
             results = [
-                {"device_id": str(row["device_id"]), "push_token": str(row["push_token"])}
+                {
+                    "device_id": str(row["device_id"]),
+                    "push_token": str(row["push_token"]),
+                }
                 for row in rows_all
                 if row.get("push_token")
             ]
@@ -371,8 +395,11 @@ def _remove_invalid_token(device_id: str) -> None:
     """
     try:
         from services.supabase_client import get_supabase
+
         sb = get_supabase()
-        sb.table("devices").update({"push_token": ""}).eq("device_id", device_id).execute()
+        sb.table("devices").update({"push_token": ""}).eq(
+            "device_id", device_id
+        ).execute()
         logger.info("만료/무효 토큰 제거: %s", device_id)
     except Exception as e:
         logger.warning("Supabase 토큰 제거 실패: %s", e)
@@ -408,7 +435,9 @@ async def send_push(
     if not _init_firebase():
         logger.info(
             "푸시 알림 (Firebase 미설정, 로그만): device=%s, title='%s', body='%s'",
-            device_id, title, body,
+            device_id,
+            title,
+            body,
         )
         return True
 
@@ -450,11 +479,19 @@ async def send_push(
         error_str = str(e)
 
         # 만료되거나 유효하지 않은 토큰 처리
-        if any(keyword in error_str.lower() for keyword in [
-            "not-registered", "invalid-registration", "invalid-argument",
-            "registration-token-not-registered", "sender-id-mismatch",
-        ]):
-            logger.warning("무효/만료 토큰 감지, 제거: device=%s, error=%s", device_id, e)
+        if any(
+            keyword in error_str.lower()
+            for keyword in [
+                "not-registered",
+                "invalid-registration",
+                "invalid-argument",
+                "registration-token-not-registered",
+                "sender-id-mismatch",
+            ]
+        ):
+            logger.warning(
+                "무효/만료 토큰 감지, 제거: device=%s, error=%s", device_id, e
+            )
             _remove_invalid_token(device_id)
         else:
             logger.error("FCM 전송 실패: device=%s, error=%s", device_id, e)
@@ -489,7 +526,8 @@ async def send_briefing_push(
     if pref_value is False:
         logger.info(
             "브리핑 푸시 스킵 (설정 비활성): device=%s, type=%s",
-            device_id, briefing_type,
+            device_id,
+            briefing_type,
         )
         return False
 
@@ -541,12 +579,16 @@ async def send_bulk_briefing_push(
         except Exception as e:
             logger.error(
                 "벌크 푸시 실패: device=%s, error=%s",
-                device["device_id"], e,
+                device["device_id"],
+                e,
             )
             failed += 1
 
     logger.info(
         "벌크 브리핑 푸시 완료: type=%s, total=%d, success=%d, failed=%d",
-        briefing_type, total, success, failed,
+        briefing_type,
+        total,
+        success,
+        failed,
     )
     return {"total": total, "success": success, "failed": failed}

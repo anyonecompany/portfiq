@@ -23,6 +23,7 @@ class NewsItem {
   final String sourceUrl;
   final DateTime publishedAt;
   final List<EtfImpact> impacts;
+  final bool isMock;
 
   const NewsItem({
     required this.id,
@@ -34,6 +35,7 @@ class NewsItem {
     required this.sourceUrl,
     required this.publishedAt,
     required this.impacts,
+    this.isMock = false,
   });
 
   /// Highest impact level among all ETF impacts for sort ordering.
@@ -48,8 +50,15 @@ class NewsItem {
 class EtfChange {
   final String ticker;
   final double changePercent;
+  final String direction;
+  final String cause;
 
-  const EtfChange({required this.ticker, required this.changePercent});
+  const EtfChange({
+    required this.ticker,
+    required this.changePercent,
+    this.direction = 'flat',
+    this.cause = '',
+  });
 }
 
 /// Briefing type — morning or night.

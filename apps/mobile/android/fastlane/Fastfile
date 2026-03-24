@@ -1,0 +1,29 @@
+default_platform(:android)
+
+platform :android do
+  desc "Internal test track에 업로드"
+  lane :internal do
+    upload_to_play_store(
+      track: 'internal',
+      aab: '../build/app/outputs/bundle/release/app-release.aab',
+      json_key_data: ENV['PLAY_STORE_JSON_KEY'],
+      package_name: ENV['ANDROID_PACKAGE_NAME'] || 'com.portfiq.app',
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Production 배포"
+  lane :production do
+    upload_to_play_store(
+      track: 'production',
+      aab: '../build/app/outputs/bundle/release/app-release.aab',
+      json_key_data: ENV['PLAY_STORE_JSON_KEY'],
+      package_name: ENV['ANDROID_PACKAGE_NAME'] || 'com.portfiq.app',
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+end

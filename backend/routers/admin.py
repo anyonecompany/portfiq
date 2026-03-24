@@ -4,8 +4,6 @@
 배포 관련 엔드포인트는 ceo/cto 역할만 접근 가능하다.
 """
 
-from __future__ import annotations
-
 import logging
 from datetime import date, timedelta
 from typing import Any
@@ -26,6 +24,7 @@ router = APIRouter()
 # ──────────────────────────────────────────────
 # Request / Response Schemas
 # ──────────────────────────────────────────────
+
 
 class PushSendRequest(BaseModel):
     """푸시 발송 요청 스키마."""
@@ -74,6 +73,7 @@ class DeployExecuteRequest(BaseModel):
 # 0. Trigger News Collection (수동 트리거)
 # ──────────────────────────────────────────────
 
+
 @router.post("/trigger-collection")
 async def trigger_collection(
     admin: dict[str, Any] = Depends(get_current_admin),
@@ -105,6 +105,7 @@ async def trigger_collection(
 # 1. Dashboard KPI
 # ──────────────────────────────────────────────
 
+
 @router.get("/dashboard")
 async def get_dashboard(
     admin: dict[str, Any] = Depends(get_current_admin),
@@ -130,6 +131,7 @@ async def get_dashboard(
 # ──────────────────────────────────────────────
 # 2. Funnel Analysis
 # ──────────────────────────────────────────────
+
 
 @router.get("/funnel")
 async def get_funnel(
@@ -171,6 +173,7 @@ async def get_funnel(
 # 3. Cohort Retention
 # ──────────────────────────────────────────────
 
+
 @router.get("/retention")
 async def get_retention(
     weeks: int = Query(8, ge=1, le=12, description="코호트 주 수 (1-12)"),
@@ -198,6 +201,7 @@ async def get_retention(
 # 4. User Statistics
 # ──────────────────────────────────────────────
 
+
 @router.get("/users/stats")
 async def get_user_statistics(
     admin: dict[str, Any] = Depends(get_current_admin),
@@ -223,6 +227,7 @@ async def get_user_statistics(
 # ──────────────────────────────────────────────
 # 5. User List (Paginated)
 # ──────────────────────────────────────────────
+
 
 @router.get("/users")
 async def list_users(
@@ -252,6 +257,7 @@ async def list_users(
 # ──────────────────────────────────────────────
 # 6. Event Explorer
 # ──────────────────────────────────────────────
+
 
 @router.get("/events")
 async def get_events(
@@ -296,6 +302,7 @@ async def get_events(
 # ──────────────────────────────────────────────
 # 6.5. Push Logs (기간별 통계)
 # ──────────────────────────────────────────────
+
 
 @router.get("/push")
 async def get_push_stats(
@@ -345,7 +352,6 @@ async def get_push_stats(
             sent = int(row.get("sent_count", 0) or 0)
             delivered = int(row.get("received_count", 0) or 0)
             opened = int(row.get("tapped_count", 0) or 0)
-            ctr = round(float(row.get("ctr", 0) or 0) * 100, 1)
             push_type = row.get("push_type", "unknown")
 
             total_sent += sent
@@ -427,6 +433,7 @@ async def get_push_stats(
 # 7. Push Send
 # ──────────────────────────────────────────────
 
+
 @router.post("/push/send")
 @limiter.limit(RATE_PUSH_SEND)
 async def send_push(
@@ -467,6 +474,7 @@ async def send_push(
 # 7.5. Test Push (디버깅 / QA용)
 # ──────────────────────────────────────────────
 
+
 @router.post("/test-push")
 async def test_push(
     body: TestPushRequest,
@@ -483,7 +491,11 @@ async def test_push(
     Returns:
         발송 성공 여부와 상세 정보.
     """
-    from services.push_service import send_push_to_token, _firebase_initialized, _firebase_app
+    from services.push_service import (
+        send_push_to_token,
+        _firebase_initialized,
+        _firebase_app,
+    )
 
     try:
         success = await send_push_to_token(
@@ -497,7 +509,9 @@ async def test_push(
             "success": success,
             "firebase_initialized": _firebase_initialized,
             "firebase_active": _firebase_app is not None,
-            "device_token": f"{body.device_token[:20]}..." if len(body.device_token) > 20 else body.device_token,
+            "device_token": f"{body.device_token[:20]}..."
+            if len(body.device_token) > 20
+            else body.device_token,
             "title": body.title,
             "body": body.body,
             "message": "푸시 발송 성공" if success else "푸시 발송 실패",
@@ -513,6 +527,7 @@ async def test_push(
 # ──────────────────────────────────────────────
 # 8. Deploy Status
 # ──────────────────────────────────────────────
+
 
 @router.get("/deploy/status/{run_id}")
 async def get_deploy_status(
@@ -549,6 +564,7 @@ async def get_deploy_status(
 # 9. Deploy Approval (ceo/cto only)
 # ──────────────────────────────────────────────
 
+
 @router.post("/deploy/approve")
 @limiter.limit(RATE_DEPLOY)
 async def approve_deploy(
@@ -568,6 +584,7 @@ async def approve_deploy(
     sb = None
     try:
         from services.supabase_client import get_supabase
+
         sb = get_supabase()
     except Exception as e:
         logger.error("Supabase 연결 실패: %s", e)
@@ -647,15 +664,18 @@ async def approve_deploy(
 
     # 승인 기록
     from datetime import datetime, timezone
+
     now = datetime.now(timezone.utc).isoformat()
 
-    sb.table("deploy_approvals").insert({
-        "release_id": body.release_id,
-        "role": role,
-        "approved_by": email,
-        "totp_verified": True,
-        "approved_at": now,
-    }).execute()
+    sb.table("deploy_approvals").insert(
+        {
+            "release_id": body.release_id,
+            "role": role,
+            "approved_by": email,
+            "totp_verified": True,
+            "approved_at": now,
+        }
+    ).execute()
 
     # 전체 승인 상태 확인
     all_approvals_resp = (
@@ -669,19 +689,21 @@ async def approve_deploy(
     approvals_complete = "ceo" in approved_roles and "cto" in approved_roles
 
     if approvals_complete:
-        sb.table("deploy_releases").update(
-            {"status": "approved"}
-        ).eq("release_id", body.release_id).execute()
+        sb.table("deploy_releases").update({"status": "approved"}).eq(
+            "release_id", body.release_id
+        ).execute()
 
     # 응답 구성
     approval_list = []
     for r in ("ceo", "cto"):
         match = next((a for a in approvals if a["role"] == r), None)
-        approval_list.append({
-            "role": r,
-            "approved": match is not None,
-            "approved_at": match["approved_at"] if match else None,
-        })
+        approval_list.append(
+            {
+                "role": r,
+                "approved": match is not None,
+                "approved_at": match["approved_at"] if match else None,
+            }
+        )
 
     missing = [r for r in ("ceo", "cto") if r not in approved_roles]
     if approvals_complete:
@@ -704,6 +726,7 @@ async def approve_deploy(
 # ──────────────────────────────────────────────
 # 10. Deploy Execute (ceo/cto only)
 # ──────────────────────────────────────────────
+
 
 @router.post("/deploy/execute")
 @limiter.limit(RATE_DEPLOY)
@@ -728,6 +751,7 @@ async def execute_deploy(
         )
 
     from services.supabase_client import get_supabase
+
     sb = get_supabase()
     email = admin.get("email", "")
 
@@ -810,11 +834,15 @@ async def execute_deploy(
 
             result = subprocess.run(
                 [
-                    "gh", "api",
+                    "gh",
+                    "api",
                     f"repos/{github_repo}/actions/workflows/{workflow_id}/dispatches",
-                    "-f", "ref=main",
-                    "-f", f"inputs[environment]={body.target_environment}",
-                    "-f", f"inputs[release_id]={body.release_id}",
+                    "-f",
+                    "ref=main",
+                    "-f",
+                    f"inputs[environment]={body.target_environment}",
+                    "-f",
+                    f"inputs[release_id]={body.release_id}",
                 ],
                 capture_output=True,
                 text=True,
@@ -827,9 +855,11 @@ async def execute_deploy(
                 # 최신 run ID 조회
                 runs_result = subprocess.run(
                     [
-                        "gh", "api",
+                        "gh",
+                        "api",
                         f"repos/{github_repo}/actions/runs",
-                        "--jq", ".workflow_runs[0].id",
+                        "--jq",
+                        ".workflow_runs[0].id",
                     ],
                     capture_output=True,
                     text=True,
@@ -844,19 +874,21 @@ async def execute_deploy(
         github_run_id = "dry-run"
 
     # deploy_history 기록
-    sb.table("deploy_history").insert({
-        "release_id": body.release_id,
-        "github_run_id": github_run_id,
-        "status": "deploying",
-        "triggered_by": email,
-        "target_environment": body.target_environment,
-        "started_at": now,
-    }).execute()
+    sb.table("deploy_history").insert(
+        {
+            "release_id": body.release_id,
+            "github_run_id": github_run_id,
+            "status": "deploying",
+            "triggered_by": email,
+            "target_environment": body.target_environment,
+            "started_at": now,
+        }
+    ).execute()
 
     # 릴리즈 상태 업데이트
-    sb.table("deploy_releases").update(
-        {"status": "deploying"}
-    ).eq("release_id", body.release_id).execute()
+    sb.table("deploy_releases").update({"status": "deploying"}).eq(
+        "release_id", body.release_id
+    ).execute()
 
     return {
         "release_id": body.release_id,
@@ -871,6 +903,7 @@ async def execute_deploy(
 # ──────────────────────────────────────────────
 # 11. Admin Login
 # ──────────────────────────────────────────────
+
 
 @router.post("/auth/login")
 @limiter.limit(RATE_LOGIN)
@@ -923,6 +956,7 @@ async def admin_login(
 # 12. Admin Logout
 # ──────────────────────────────────────────────
 
+
 @router.post("/auth/logout")
 async def admin_logout(response: Response) -> dict[str, str]:
     """로그아웃. HttpOnly 쿠키를 삭제한다.
@@ -940,6 +974,7 @@ async def admin_logout(response: Response) -> dict[str, str]:
 # ──────────────────────────────────────────────
 # 13. Cache Management
 # ──────────────────────────────────────────────
+
 
 @router.post("/cache/clear")
 async def clear_cache(

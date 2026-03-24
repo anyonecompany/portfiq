@@ -77,12 +77,13 @@ class Step4PushPermission extends StatelessWidget {
                   EventTracker.instance.track('push_permission_granted', properties: {
                     'context': 'onboarding',
                   });
+                  onGranted();
                 } else {
                   EventTracker.instance.track('push_permission_denied', properties: {
                     'context': 'onboarding',
                   });
+                  onDenied();
                 }
-                onGranted();
               },
               child: const Text('알림 받기'),
             ),

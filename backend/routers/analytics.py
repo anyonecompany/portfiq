@@ -27,7 +27,10 @@ async def track_events_batch(
     """
     device_id = x_device_id or body.device_id
     if not device_id:
-        raise HTTPException(status_code=400, detail="X-Device-ID header or device_id in body is required")
+        raise HTTPException(
+            status_code=400,
+            detail="X-Device-ID header or device_id in body is required",
+        )
 
     events_data = [e.model_dump() for e in body.events]
     count = await analytics_service.store_events(device_id, events_data)

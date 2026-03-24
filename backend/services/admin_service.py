@@ -24,7 +24,10 @@ async def _get_event_summary(sb: Any, target_date: str | None) -> list[dict[str,
         sb.table("events")
         .select("event_name")
         .gte("event_timestamp", target_date)
-        .lt("event_timestamp", (date.fromisoformat(target_date) + timedelta(days=1)).isoformat())
+        .lt(
+            "event_timestamp",
+            (date.fromisoformat(target_date) + timedelta(days=1)).isoformat(),
+        )
         .execute()
     )
     counts: dict[str, int] = {}
@@ -36,7 +39,9 @@ async def _get_event_summary(sb: Any, target_date: str | None) -> list[dict[str,
 
     return [
         {"name": event_name, "count": count}
-        for event_name, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))[:5]
+        for event_name, count in sorted(
+            counts.items(), key=lambda item: (-item[1], item[0])
+        )[:5]
     ]
 
 
@@ -92,9 +97,29 @@ def _build_etf_distribution(
     }
 
 
+def _zeroed_dashboard(today: date) -> dict[str, Any]:
+    """Supabase 미연결 시 반환할 zeroed 대시보드."""
+    zero_kpi = {"value": 0, "change_pct": 0.0, "direction": "flat"}
+    return {
+        "date": today.isoformat(),
+        "kpis": {
+            "dau": zero_kpi,
+            "d7_retention": zero_kpi,
+            "new_installs": zero_kpi,
+            "onboarding_conversion": zero_kpi,
+            "briefings_generated": zero_kpi,
+            "push_open_rate": zero_kpi,
+        },
+        "dau_trend": [],
+        "event_summary": [],
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
 # ──────────────────────────────────────────────
 # 1. Dashboard KPI
 # ──────────────────────────────────────────────
+
 
 async def get_dashboard_stats() -> dict[str, Any]:
     """대시보드 KPI 통계를 반환한다.
@@ -106,9 +131,14 @@ async def get_dashboard_stats() -> dict[str, Any]:
     Returns:
         KPI 데이터 딕셔너리 (dau, d7_retention, new_installs 등).
     """
-    sb = get_supabase()
     today = date.today()
     yesterday = today - timedelta(days=1)
+
+    try:
+        sb = get_supabase()
+    except Exception as e:
+        logger.warning("Supabase 초기화 실패, zeroed 대시보드 반환: %s", e)
+        return _zeroed_dashboard(today)
 
     try:
         metrics_resp = (
@@ -167,7 +197,9 @@ async def get_dashboard_stats() -> dict[str, Any]:
         }
 
     return {
-        "date": latest_data.get("metric_date") or latest_data.get("date") or today.isoformat(),
+        "date": latest_data.get("metric_date")
+        or latest_data.get("date")
+        or today.isoformat(),
         "kpis": {
             "dau": _kpi("dau"),
             "d7_retention": _kpi("d7_retention", is_pct=True),
@@ -247,7 +279,9 @@ async def get_dashboard_stats() -> dict[str, Any]:
             }
             for row in reversed(rows[:7])
         ],
-        "event_summary": await _safe_event_summary(sb, latest_data.get("metric_date") or latest_data.get("date")),
+        "event_summary": await _safe_event_summary(
+            sb, latest_data.get("metric_date") or latest_data.get("date")
+        ),
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -260,8 +294,16 @@ FUNNEL_STEPS = [
     {"step": 1, "name": "app_opened", "event_name": "app_opened"},
     {"step": 2, "name": "onboarding_started", "event_name": "onboarding_started"},
     {"step": 3, "name": "etf_registered", "event_name": "etf_registered"},
-    {"step": 4, "name": "aha_moment_feed_viewed", "event_name": "aha_moment_feed_viewed"},
-    {"step": 5, "name": "push_permission_granted", "event_name": "push_permission_granted"},
+    {
+        "step": 4,
+        "name": "aha_moment_feed_viewed",
+        "event_name": "aha_moment_feed_viewed",
+    },
+    {
+        "step": 5,
+        "name": "push_permission_granted",
+        "event_name": "push_permission_granted",
+    },
     {"step": 6, "name": "onboarding_completed", "event_name": "onboarding_completed"},
     {"step": 7, "name": "day7_return", "event_name": "day7_return"},
 ]
@@ -313,13 +355,15 @@ async def get_funnel_data(
                 .select("device_id, event_timestamp")
                 .eq("event_name", "session_started")
                 .gte("event_timestamp", start_str)
-                .lte("event_timestamp", (end_date + timedelta(days=7)).isoformat() + "T23:59:59Z")
+                .lte(
+                    "event_timestamp",
+                    (end_date + timedelta(days=7)).isoformat() + "T23:59:59Z",
+                )
                 .execute()
             )
             session_rows = session_resp.data or []
             first_open_by_device = {
-                row["device_id"]: row["event_timestamp"]
-                for row in app_opened_rows
+                row["device_id"]: row["event_timestamp"] for row in app_opened_rows
             }
             returned_devices = set()
             for row in session_rows:
@@ -343,23 +387,31 @@ async def get_funnel_data(
             )
             count = len({row["device_id"] for row in (resp.data or [])})
 
-        pct_of_total = round((count / total_installs * 100), 1) if total_installs > 0 else 0.0
+        pct_of_total = (
+            round((count / total_installs * 100), 1) if total_installs > 0 else 0.0
+        )
 
         # 이전 단계와의 drop-off
         if steps_result:
             prev_count = steps_result[-1]["count"]
-            drop_off = round(((prev_count - count) / prev_count * 100), 1) if prev_count > 0 else 0.0
+            drop_off = (
+                round(((prev_count - count) / prev_count * 100), 1)
+                if prev_count > 0
+                else 0.0
+            )
         else:
             drop_off = 0.0
 
-        steps_result.append({
-            "step": step_num,
-            "name": step_def["name"],
-            "event_name": event_name,
-            "count": count,
-            "pct_of_total": pct_of_total,
-            "drop_off_pct": drop_off,
-        })
+        steps_result.append(
+            {
+                "step": step_num,
+                "name": step_def["name"],
+                "event_name": event_name,
+                "count": count,
+                "pct_of_total": pct_of_total,
+                "drop_off_pct": drop_off,
+            }
+        )
 
     return {
         "start_date": start_str,
@@ -372,6 +424,7 @@ async def get_funnel_data(
 # ──────────────────────────────────────────────
 # 3. Cohort Retention
 # ──────────────────────────────────────────────
+
 
 async def get_retention_data(weeks: int = 8) -> dict[str, Any]:
     """주간 코호트 리텐션 매트릭스를 반환한다.
@@ -442,18 +495,22 @@ async def get_retention_data(weeks: int = 8) -> dict[str, Any]:
                     active = 0
 
             rate = round((active / cohort_size) * 100, 1)
-            retention_list.append({
-                "week": wk,
-                "active": active,
-                "rate": rate,
-            })
+            retention_list.append(
+                {
+                    "week": wk,
+                    "active": active,
+                    "rate": rate,
+                }
+            )
 
-        cohorts.append({
-            "cohort_week": cohort_week_label,
-            "cohort_start": cohort_start.isoformat(),
-            "cohort_size": cohort_size,
-            "retention": retention_list,
-        })
+        cohorts.append(
+            {
+                "cohort_week": cohort_week_label,
+                "cohort_start": cohort_start.isoformat(),
+                "cohort_size": cohort_size,
+                "retention": retention_list,
+            }
+        )
 
     return {
         "weeks": weeks,
@@ -465,6 +522,7 @@ async def get_retention_data(weeks: int = 8) -> dict[str, Any]:
 # ──────────────────────────────────────────────
 # 4. User Statistics
 # ──────────────────────────────────────────────
+
 
 async def get_user_stats() -> dict[str, Any]:
     """유저 통계를 반환한다.
@@ -479,7 +537,9 @@ async def get_user_stats() -> dict[str, Any]:
     # 총 설치 수
     install_resp = sb.table("devices").select("device_id", count="exact").execute()
     install_rows = install_resp.data or []
-    total_installs = install_resp.count if install_resp.count is not None else len(install_rows)
+    total_installs = (
+        install_resp.count if install_resp.count is not None else len(install_rows)
+    )
 
     # 7일/30일 활성 사용자
     d7 = (today - timedelta(days=7)).isoformat()
@@ -510,8 +570,12 @@ async def get_user_stats() -> dict[str, Any]:
         .neq("push_token", "")
         .execute()
     )
-    push_enabled = push_resp.count if push_resp.count is not None else len(push_resp.data or [])
-    push_pct = round((push_enabled / total_installs) * 100, 1) if total_installs > 0 else 0.0
+    push_enabled = (
+        push_resp.count if push_resp.count is not None else len(push_resp.data or [])
+    )
+    push_pct = (
+        round((push_enabled / total_installs) * 100, 1) if total_installs > 0 else 0.0
+    )
 
     # 플랫폼 분포
     platform_resp = sb.table("devices").select("platform").execute()
@@ -522,18 +586,20 @@ async def get_user_stats() -> dict[str, Any]:
 
     platform_breakdown = []
     for p, cnt in sorted(platform_counts.items(), key=lambda x: -x[1]):
-        platform_breakdown.append({
-            "platform": p,
-            "count": cnt,
-            "pct": round((cnt / total_installs) * 100, 1) if total_installs > 0 else 0.0,
-        })
+        platform_breakdown.append(
+            {
+                "platform": p,
+                "count": cnt,
+                "pct": round((cnt / total_installs) * 100, 1)
+                if total_installs > 0
+                else 0.0,
+            }
+        )
 
     # 인기 ETF (상위 10)
     top_etfs: list[dict[str, Any]] = []
     try:
-        top_etf_resp = (
-            sb.rpc("get_top_etfs", {"p_limit": 10}).execute()
-        )
+        top_etf_resp = sb.rpc("get_top_etfs", {"p_limit": 10}).execute()
         if top_etf_resp.data:
             top_etfs = top_etf_resp.data
     except Exception:
@@ -556,11 +622,13 @@ async def get_user_stats() -> dict[str, Any]:
                     .execute()
                 )
                 name = name_resp.data[0]["name"] if name_resp.data else ticker
-                top_etfs.append({
-                    "ticker": ticker,
-                    "name": name,
-                    "registered_count": cnt,
-                })
+                top_etfs.append(
+                    {
+                        "ticker": ticker,
+                        "name": name,
+                        "registered_count": cnt,
+                    }
+                )
         except Exception as e:
             logger.warning("인기 ETF 조회 실패: %s", e)
 
@@ -583,6 +651,7 @@ async def get_user_stats() -> dict[str, Any]:
 # ──────────────────────────────────────────────
 # 5. User List (Paginated)
 # ──────────────────────────────────────────────
+
 
 async def get_users(page: int = 1, size: int = 20) -> dict[str, Any]:
     """유저 목록을 페이지네이션으로 반환한다.
@@ -622,6 +691,7 @@ async def get_users(page: int = 1, size: int = 20) -> dict[str, Any]:
 # ──────────────────────────────────────────────
 # 6. Event Explorer
 # ──────────────────────────────────────────────
+
 
 async def get_events(
     limit: int = 100,
@@ -684,6 +754,7 @@ async def get_events(
 # 7. Push Send
 # ──────────────────────────────────────────────
 
+
 async def send_admin_push(
     target: str,
     title: str,
@@ -718,7 +789,9 @@ async def send_admin_push(
                 else:
                     failed += 1
             except Exception as e:
-                logger.error("관리자 푸시 실패: device=%s, error=%s", device["device_id"], e)
+                logger.error(
+                    "관리자 푸시 실패: device=%s, error=%s", device["device_id"], e
+                )
                 failed += 1
         return {"total": total, "success": success, "failed": failed}
     else:
@@ -734,6 +807,7 @@ async def send_admin_push(
 # ──────────────────────────────────────────────
 # 8. Deploy Status
 # ──────────────────────────────────────────────
+
 
 async def get_deploy_status(run_id: str) -> dict[str, Any] | None:
     """배포 상태를 조회한다.

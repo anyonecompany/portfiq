@@ -143,19 +143,59 @@ _KEYWORD_ETF_MAP: dict[str, list[str]] = {
     "암호화폐": ["IBIT", "BITO"],
 }
 
-_LEVEL_THRESHOLDS = {"high": 3, "medium": 2, "low": 1}
+_LEVEL_THRESHOLDS = {"high": 2, "medium": 1, "low": 0}
 
 # 키워드 기반 direction fallback
 _POSITIVE_KEYWORDS = [
-    "상승", "호조", "성장", "급등", "반등", "최고", "호재", "수혜",
-    "surge", "rally", "gain", "rise", "jump", "soar", "record high",
-    "beat", "exceed", "outperform", "bullish", "upgrade",
+    "상승",
+    "호조",
+    "성장",
+    "급등",
+    "반등",
+    "최고",
+    "호재",
+    "수혜",
+    "surge",
+    "rally",
+    "gain",
+    "rise",
+    "jump",
+    "soar",
+    "record high",
+    "beat",
+    "exceed",
+    "outperform",
+    "bullish",
+    "upgrade",
 ]
 _NEGATIVE_KEYWORDS = [
-    "하락", "급락", "폭락", "악재", "위기", "손실", "둔화", "우려",
-    "리스크", "제재", "규제", "관세", "파산", "디폴트",
-    "drop", "fall", "plunge", "crash", "decline", "loss", "risk",
-    "tariff", "sanction", "downgrade", "bearish", "recession", "layoff",
+    "하락",
+    "급락",
+    "폭락",
+    "악재",
+    "위기",
+    "손실",
+    "둔화",
+    "우려",
+    "리스크",
+    "제재",
+    "규제",
+    "관세",
+    "파산",
+    "디폴트",
+    "drop",
+    "fall",
+    "plunge",
+    "crash",
+    "decline",
+    "loss",
+    "risk",
+    "tariff",
+    "sanction",
+    "downgrade",
+    "bearish",
+    "recession",
+    "layoff",
 ]
 
 
@@ -178,7 +218,9 @@ def _keyword_direction(text: str) -> str:
     return "neutral"
 
 
-def _keyword_classify(text: str, target_tickers: list[str] | None = None) -> list[ETFImpact]:
+def _keyword_classify(
+    text: str, target_tickers: list[str] | None = None
+) -> list[ETFImpact]:
     """Keyword-based fallback classification.
 
     Args:
@@ -197,7 +239,9 @@ def _keyword_classify(text: str, target_tickers: list[str] | None = None) -> lis
                 ticker_scores[etf] = ticker_scores.get(etf, 0) + 1
 
     results: list[ETFImpact] = []
-    for ticker, score in sorted(ticker_scores.items(), key=lambda x: x[1], reverse=True):
+    for ticker, score in sorted(
+        ticker_scores.items(), key=lambda x: x[1], reverse=True
+    ):
         if target_tickers and ticker not in target_tickers:
             continue
         if score >= _LEVEL_THRESHOLDS["high"]:
@@ -214,7 +258,9 @@ def _keyword_classify(text: str, target_tickers: list[str] | None = None) -> lis
 class ImpactService:
     """Classifies news impact on ETFs via Gemini API with keyword fallback."""
 
-    def classify(self, text: str, target_tickers: list[str] | None = None) -> list[ETFImpact]:
+    def classify(
+        self, text: str, target_tickers: list[str] | None = None
+    ) -> list[ETFImpact]:
         """Classify the impact of a piece of text on ETFs.
 
         Uses keyword-based classification (synchronous). For Gemini API
@@ -280,7 +326,7 @@ class ImpactService:
         batch_size = 10
 
         for i in range(0, len(articles), batch_size):
-            batch = articles[i:i + batch_size]
+            batch = articles[i : i + batch_size]
             batch_results = await self._batch_analyze_gemini(batch, tickers)
             if batch_results is None:
                 # Fallback to keyword for this batch
@@ -338,24 +384,28 @@ class ImpactService:
                     direction = imp.get("direction", "neutral")
                     reason = imp.get("reason", "")
                     score = {"High": 0.9, "Medium": 0.5, "Low": 0.2}.get(level, 0.1)
-                    results.append({
-                        "article_id": article_id,
-                        "ticker": ticker,
-                        "impact_score": score,
-                        "direction": direction,
-                        "affected_holdings": [],
-                        "reasoning": f"Gemini 분류: {reason}",
-                    })
+                    results.append(
+                        {
+                            "article_id": article_id,
+                            "ticker": ticker,
+                            "impact_score": score,
+                            "direction": direction,
+                            "affected_holdings": [],
+                            "reasoning": f"Gemini 분류: {reason}",
+                        }
+                    )
             else:
                 for ticker in tickers:
-                    results.append({
-                        "article_id": article_id,
-                        "ticker": ticker,
-                        "impact_score": 0.0,
-                        "direction": "neutral",
-                        "affected_holdings": [],
-                        "reasoning": "Gemini 분류: 관련 없음",
-                    })
+                    results.append(
+                        {
+                            "article_id": article_id,
+                            "ticker": ticker,
+                            "impact_score": 0.0,
+                            "direction": "neutral",
+                            "affected_holdings": [],
+                            "reasoning": "Gemini 분류: 관련 없음",
+                        }
+                    )
 
         return results
 

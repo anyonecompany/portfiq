@@ -45,8 +45,7 @@ def _convert_for_supabase(etf: dict) -> dict:
     if holdings_raw and isinstance(holdings_raw[0], dict):
         # "AAPL 8.9%" 형태로 변환
         holdings_text = [
-            f"{h.get('ticker', '')} {h.get('weight', 0)}%"
-            for h in holdings_raw
+            f"{h.get('ticker', '')} {h.get('weight', 0)}%" for h in holdings_raw
         ]
     else:
         holdings_text = [str(h) for h in holdings_raw]
@@ -78,6 +77,7 @@ def seed() -> None:
 
     # Use service_role key for write access (bypasses RLS)
     from supabase import create_client
+
     key = settings.SUPABASE_SERVICE_KEY or settings.SUPABASE_KEY
     sb = create_client(settings.SUPABASE_URL, key)
     success = 0

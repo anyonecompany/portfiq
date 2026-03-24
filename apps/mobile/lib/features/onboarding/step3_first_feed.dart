@@ -25,6 +25,7 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
   List<Animation<double>> _cardAnimations = [];
 
   bool _isLoading = true;
+  bool _hasError = false;
   List<NewsItem> _newsItems = [];
 
   @override
@@ -76,6 +77,7 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
       if (!mounted) return;
       setState(() {
         _isLoading = false;
+        _hasError = true;
       });
     }
   }
@@ -190,13 +192,46 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
                   ),
                 )
               : items.isEmpty
-                  ? const Center(
-                      child: Text(
-                        '뉴스를 불러오는 중...',
-                        style: TextStyle(
-                          color: PortfiqTheme.textSecondary,
-                          fontSize: 14,
-                        ),
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _hasError ? Icons.wifi_off_rounded : Icons.article_outlined,
+                            size: 48,
+                            color: PortfiqTheme.textTertiary,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _hasError
+                                ? '뉴스를 불러오지 못했어요'
+                                : '아직 준비된 뉴스가 없습니다',
+                            style: const TextStyle(
+                              color: PortfiqTheme.textSecondary,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          if (_hasError) ...[
+                            const SizedBox(height: 8),
+                            const Text(
+                              '네트워크를 확인하고 다시 시도해주세요',
+                              style: TextStyle(
+                                color: PortfiqTheme.textTertiary,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextButton.icon(
+                              onPressed: () {
+                                setState(() { _isLoading = true; _hasError = false; });
+                                _fetchNews();
+                              },
+                              icon: const Icon(Icons.refresh, size: 16),
+                              label: const Text('다시 시도'),
+                            ),
+                          ],
+                        ],
                       ),
                     )
                   : ListView.separated(

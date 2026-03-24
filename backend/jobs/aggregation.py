@@ -23,6 +23,7 @@ def _notify_failure(error_msg: str) -> None:
     try:
         sys.path.insert(0, os.path.expanduser("~/ai-dev-team"))
         from integrations.slack.slack_notifier import send_slack
+
         send_slack(f"⚠️ 집계 배치 실패: {error_msg}")
     except Exception:
         pass  # Slack 미사용 환경에서도 크래시 방지
@@ -63,6 +64,7 @@ async def aggregate_daily_metrics(target_date: date | None = None) -> dict[str, 
 
     try:
         from services.supabase_client import get_supabase
+
         sb = get_supabase()
 
         # ── DAU: session_started 이벤트의 고유 device_id 수 ──
@@ -155,11 +157,11 @@ async def aggregate_daily_metrics(target_date: date | None = None) -> dict[str, 
         }
 
         # UPSERT into daily_metrics
-        sb.table("daily_metrics").upsert(
-            metrics, on_conflict="date"
-        ).execute()
+        sb.table("daily_metrics").upsert(metrics, on_conflict="date").execute()
 
-        logger.info("일간 메트릭 집계 완료: %s → DAU=%d, 신규=%d", date_str, dau, new_users)
+        logger.info(
+            "일간 메트릭 집계 완료: %s → DAU=%d, 신규=%d", date_str, dau, new_users
+        )
         return metrics
 
     except Exception as e:
@@ -169,9 +171,7 @@ async def aggregate_daily_metrics(target_date: date | None = None) -> dict[str, 
         return {"date": date_str, "error": str(e)}
 
 
-async def _calc_retention(
-    sb: Any, target_date: date, days_ago: int
-) -> float:
+async def _calc_retention(sb: Any, target_date: date, days_ago: int) -> float:
     """D-N 리텐션 계산.
 
     N일 전에 session_started한 디바이스 중 오늘(target_date)에도
@@ -221,9 +221,7 @@ async def _calc_retention(
     return _safe_division(len(retained), len(cohort_devices))
 
 
-async def _calc_push_ctr(
-    sb: Any, target_date: date, push_type: str
-) -> float:
+async def _calc_push_ctr(sb: Any, target_date: date, push_type: str) -> float:
     """푸시 CTR 계산: push_tapped / push_received.
 
     Args:
@@ -247,7 +245,8 @@ async def _calc_push_ctr(
     )
     # push_type 필터: properties에 push_type이 저장되어 있다고 가정
     received = [
-        e for e in (received_resp.data or [])
+        e
+        for e in (received_resp.data or [])
         if (e.get("properties") or {}).get("push_type") == push_type
     ]
 
@@ -260,16 +259,15 @@ async def _calc_push_ctr(
         .execute()
     )
     tapped = [
-        e for e in (tapped_resp.data or [])
+        e
+        for e in (tapped_resp.data or [])
         if (e.get("properties") or {}).get("push_type") == push_type
     ]
 
     return _safe_division(len(tapped), len(received))
 
 
-async def _calc_session_metrics(
-    sb: Any, target_date: date
-) -> tuple[int, float]:
+async def _calc_session_metrics(sb: Any, target_date: date) -> tuple[int, float]:
     """세션 지표 계산: 평균 세션 시간(초) + 유저당 세션 수.
 
     session_metrics 테이블에서 해당 일자의 세션 데이터를 조회한다.

@@ -18,6 +18,7 @@ def _get_sb():
     """Lazy-load Supabase client to avoid import errors when not configured."""
     try:
         from services.supabase_client import get_supabase
+
         return get_supabase()
     except Exception as e:
         logger.warning("Supabase client unavailable: %s", e)
@@ -45,8 +46,7 @@ class AnalyticsService:
         rows = [
             {
                 "device_id": device_id,
-                "event_name": event.get("event_name")
-                or event.get("name", "unknown"),
+                "event_name": event.get("event_name") or event.get("name", "unknown"),
                 "properties": event.get("properties", {}),
                 "event_timestamp": event.get("timestamp")
                 or event.get("event_timestamp", now),
@@ -87,11 +87,7 @@ class AnalyticsService:
         sb = _get_sb()
         if sb is not None:
             try:
-                resp = (
-                    sb.table("events")
-                    .select("id", count="exact")
-                    .execute()
-                )
+                resp = sb.table("events").select("id", count="exact").execute()
                 return resp.count or 0
             except Exception as e:
                 logger.warning(
@@ -189,12 +185,7 @@ class AnalyticsService:
         sb = _get_sb()
         if sb is not None:
             try:
-                resp = (
-                    sb.table("events")
-                    .select("*")
-                    .eq("device_id", user_id)
-                    .execute()
-                )
+                resp = sb.table("events").select("*").eq("device_id", user_id).execute()
                 user_events = resp.data or []
                 return self._aggregate_stats(user_events)
             except Exception as e:

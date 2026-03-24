@@ -258,15 +258,26 @@ class MyEtfNotifier extends StateNotifier<MyEtfState> {
     await box.put('registered_etfs', updated.map((e) => e.ticker).toList());
   }
 
-  /// ETF 제거.
+  /// ETF 제거 — 로컬 + 서버 동기화.
   Future<void> removeEtf(String ticker) async {
+    final upper = ticker.toUpperCase();
     final updated =
-        state.registeredEtfs.where((e) => e.ticker != ticker).toList();
+        state.registeredEtfs.where((e) => e.ticker != upper).toList();
     state = state.copyWith(registeredEtfs: updated);
 
     // 로컬 저장
     final box = Hive.box('settings');
     await box.put('registered_etfs', updated.map((e) => e.ticker).toList());
+
+    // 서버에서도 삭제 (fire-and-forget)
+    try {
+      await ApiClient.instance.dio.delete(
+        '/api/v1/etf/unregister',
+        data: {'device_id': _deviceId, 'ticker': upper},
+      );
+    } catch (e) {
+      if (kDebugMode) print('[MyEtfProvider] ETF 삭제 API 실패 (무시): $e');
+    }
   }
 
   /// ETF 검색 — API 호출.

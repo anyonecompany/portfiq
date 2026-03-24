@@ -72,6 +72,30 @@ class NewsCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Mock data banner
+                if (item.isMock) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.auto_awesome, size: 12, color: Color(0xFFF59E0B)),
+                        SizedBox(width: 4),
+                        Text(
+                          '샘플 뉴스 — 실시간 데이터 준비 중',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFFF59E0B)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: PortfiqSpacing.space8),
+                ],
+
                 // Row 0: Sentiment icon indicator
                 _SentimentIcon(sentiment: sentiment),
                 const SizedBox(height: PortfiqSpacing.space8),

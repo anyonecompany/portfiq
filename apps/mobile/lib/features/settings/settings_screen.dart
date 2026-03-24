@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../config/constants.dart';
 import '../../config/theme.dart';
+import '../../shared/services/api_client.dart';
 import '../../shared/tracking/event_tracker.dart';
 import '../../shared/widgets/glass_card.dart';
 import '../my_etf/add_etf_sheet.dart';
@@ -63,6 +64,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _registeredEtfs.removeAt(index);
     });
     _saveToHive();
+    _syncDeleteToServer(removed.ticker);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${removed.ticker} 삭제됨'),
@@ -85,6 +87,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _saveToHive() {
     final box = Hive.box('settings');
     box.put('registered_etfs', _registeredEtfs.map((e) => e.ticker).toList());
+  }
+
+  void _syncDeleteToServer(String ticker) {
+    final box = Hive.box('settings');
+    final deviceId = box.get('device_id', defaultValue: 'unknown') as String;
+    ApiClient.instance.dio.delete(
+      '/api/v1/etf/unregister',
+      data: {'device_id': deviceId, 'ticker': ticker.toUpperCase()},
+    ).then((_) {}).catchError((e) => null);
   }
 
   void _toggleNotification(String key, bool value) {
@@ -315,44 +326,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Future<void> _pickTime(BuildContext context, {required bool isMorning}) async {
-    final prefs = ref.read(settingsProvider);
-    final initial = isMorning
-        ? TimeOfDay(hour: prefs.morningHour, minute: prefs.morningMinute)
-        : TimeOfDay(hour: prefs.nightHour, minute: prefs.nightMinute);
-
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: initial,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: PortfiqTheme.accent,
-              surface: PortfiqTheme.secondaryBg,
-              onSurface: PortfiqTheme.textPrimary,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked == null) return;
-
-    final notifier = ref.read(settingsProvider.notifier);
-    if (isMorning) {
-      notifier.setMorningTime(picked.hour, picked.minute);
-    } else {
-      notifier.setNightTime(picked.hour, picked.minute);
-    }
-
-    EventTracker.instance.track('notification_time_changed', properties: {
-      'type': isMorning ? 'morning' : 'night',
-      'hour': picked.hour,
-      'minute': picked.minute,
-    });
-  }
+  // 알림 시간은 서버에서 고정 (아침 08:35 KST, 밤 22:00 KST).
+  // 개인별 시간 설정은 현재 지원하지 않음.
 
   Widget _buildNotificationSection() {
     final prefs = ref.watch(settingsProvider);
@@ -367,7 +342,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             value: prefs.morningBriefing,
             onChanged: (v) => _toggleNotification('morning_briefing', v),
             trailing: prefs.morningBriefing
-                ? _buildTimeButton(prefs.morningTimeStr, isMorning: true)
+                ? _buildFixedTimeLabel('매일 08:35')
                 : null,
           ),
           const Divider(
@@ -381,7 +356,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             value: prefs.nightCheckpoint,
             onChanged: (v) => _toggleNotification('night_checkpoint', v),
             trailing: prefs.nightCheckpoint
-                ? _buildTimeButton(prefs.nightTimeStr, isMorning: false)
+                ? _buildFixedTimeLabel('매일 22:00')
                 : null,
           ),
           const Divider(
@@ -401,23 +376,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildTimeButton(String timeStr, {required bool isMorning}) {
-    return GestureDetector(
-      onTap: () => _pickTime(context, isMorning: isMorning),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: PortfiqTheme.accent.withAlpha(26),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          timeStr,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: PortfiqTheme.accent,
-            fontFamily: 'Pretendard',
-          ),
+  Widget _buildFixedTimeLabel(String timeStr) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: PortfiqTheme.surface,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        timeStr,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: PortfiqTheme.textSecondary,
+          fontFamily: 'Pretendard',
         ),
       ),
     );

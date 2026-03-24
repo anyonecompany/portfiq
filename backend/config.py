@@ -7,14 +7,14 @@ from dotenv import load_dotenv
 
 # Load .env from project root (try multiple levels up)
 _env_candidates = [
-    Path(__file__).resolve().parent / ".env",           # backend/.env
-    Path(__file__).resolve().parent.parent / ".env",    # portfiq/.env
+    Path(__file__).resolve().parent / ".env",  # backend/.env
+    Path(__file__).resolve().parent.parent / ".env",  # portfiq/.env
     Path(__file__).resolve().parent.parent.parent / ".env",  # projects/.env
     Path(__file__).resolve().parent.parent.parent.parent / ".env",  # ai-dev-team/.env
 ]
 for _env_path in _env_candidates:
     if _env_path.exists():
-        load_dotenv(_env_path)
+        load_dotenv(_env_path, override=True)
         break
 else:
     load_dotenv()  # fallback: default .env search
@@ -37,7 +37,9 @@ class Settings:
     SUPABASE_SERVICE_KEY: str = os.getenv("SUPABASE_SERVICE_KEY", "")
 
     # Gemini (Google AI for news translation/summarization/briefing)
-    GEMINI_API_KEY: str = os.getenv("PORTFIQ_GEMINI_API_KEY", "") or os.getenv("GEMINI_API_KEY", "")
+    GEMINI_API_KEY: str = os.getenv("PORTFIQ_GEMINI_API_KEY", "") or os.getenv(
+        "GEMINI_API_KEY", ""
+    )
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
 
     # External data APIs
@@ -49,11 +51,14 @@ class Settings:
     FCM_SERVER_KEY: str = os.getenv("FCM_SERVER_KEY", "")
     FIREBASE_SERVICE_ACCOUNT_JSON: str = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON", "")
     FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "")
-    GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
+    GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv(
+        "GOOGLE_APPLICATION_CREDENTIALS", ""
+    )
 
     # CORS
     CORS_ORIGINS: list[str] = os.getenv(
-        "CORS_ORIGINS", "http://localhost:3000,http://localhost:8080,https://portfiq-admin.vercel.app,https://admin-seven-nu-34.vercel.app"
+        "CORS_ORIGINS",
+        "http://localhost:3000,http://localhost:8080,https://portfiq-admin.vercel.app,https://admin-seven-nu-34.vercel.app",
     ).split(",")
 
     # Briefing schedule

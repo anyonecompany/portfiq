@@ -43,9 +43,15 @@ async def get_preferences(
         if rows:
             row = rows[0]
             return {
-                "morning_briefing": row.get("morning_briefing", True) if row.get("morning_briefing") is not None else True,
-                "night_checkpoint": row.get("night_checkpoint", True) if row.get("night_checkpoint") is not None else True,
-                "urgent_news": row.get("urgent_news", False) if row.get("urgent_news") is not None else False,
+                "morning_briefing": row.get("morning_briefing", True)
+                if row.get("morning_briefing") is not None
+                else True,
+                "night_checkpoint": row.get("night_checkpoint", True)
+                if row.get("night_checkpoint") is not None
+                else True,
+                "urgent_news": row.get("urgent_news", False)
+                if row.get("urgent_news") is not None
+                else False,
             }
     except Exception as e:
         logger.warning("Supabase 기기 설정 조회 실패: %s", e)
@@ -87,10 +93,16 @@ async def update_preferences(
             on_conflict="device_id",
         ).execute()
 
-        logger.info("알림 설정 저장: device=%s, prefs=%s", device_id, prefs.model_dump())
+        logger.info(
+            "알림 설정 저장: device=%s, prefs=%s", device_id, prefs.model_dump()
+        )
         return {"success": True, **prefs.model_dump()}
 
     except Exception as e:
-        logger.warning("Supabase 설정 저장 실패, 인메모리 fallback 사용: device=%s, error=%s", device_id, e)
+        logger.warning(
+            "Supabase 설정 저장 실패, 인메모리 fallback 사용: device=%s, error=%s",
+            device_id,
+            e,
+        )
         _PREFERENCE_FALLBACKS[device_id] = prefs.model_dump()
         return {"success": True, **prefs.model_dump(), "is_fallback": True}
