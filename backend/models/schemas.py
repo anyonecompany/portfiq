@@ -148,6 +148,7 @@ class HealthResponse(BaseModel):
     status: str
     version: str
     timestamp: str
+    supabase_service_key_configured: bool = True
 
 
 # ──────────────────────────────────────────────

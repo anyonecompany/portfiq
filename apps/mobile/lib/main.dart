@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:uuid/uuid.dart';
 import 'config/app_config.dart';
 import 'shared/services/api_client.dart';
 import 'shared/services/push_service.dart';
@@ -53,8 +54,8 @@ Future<(String, bool)> _getDeviceId() async {
   final box = Hive.box('settings');
   var id = box.get('device_id') as String?;
   var isFirstOpen = false;
-  if (id == null) {
-    id = DateTime.now().microsecondsSinceEpoch.toRadixString(36);
+  if (id == null || id.isEmpty) {
+    id = const Uuid().v4();
     await box.put('device_id', id);
     isFirstOpen = true;
   }

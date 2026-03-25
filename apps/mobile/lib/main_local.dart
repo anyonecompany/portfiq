@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:uuid/uuid.dart';
 import 'config/app_config.dart';
 import 'shared/services/api_client.dart';
 import 'shared/services/push_service.dart';
@@ -18,8 +19,8 @@ void main() async {
   final settingsBox = Hive.box('settings');
   var deviceId = settingsBox.get('device_id') as String?;
   var isFirstOpen = false;
-  if (deviceId == null) {
-    deviceId = 'local-${DateTime.now().millisecondsSinceEpoch}';
+  if (deviceId == null || deviceId.isEmpty) {
+    deviceId = const Uuid().v4();
     await settingsBox.put('device_id', deviceId);
     isFirstOpen = true;
   }

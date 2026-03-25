@@ -26,6 +26,7 @@ class Settings:
     # Environment
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "local")
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
+    APP_VERSION: str = os.getenv("APP_VERSION", "1.0.0")
 
     # Server
     HOST: str = os.getenv("HOST", "0.0.0.0")  # nosec B104 — intentional for container deployment

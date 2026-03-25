@@ -54,6 +54,12 @@ async def lifespan(app: FastAPI):
         settings.BRIEFING_NIGHT_HOUR,
     )
 
+    # SUPABASE_SERVICE_KEY 설정 확인 (뉴스 수집/시그널 파이프라인 필수)
+    if not settings.SUPABASE_SERVICE_KEY:
+        logger.warning(
+            "SUPABASE_SERVICE_KEY 미설정 — 뉴스 수집/시그널 파이프라인 비활성화"
+        )
+
     # GEMINI_API_KEY 설정 확인 (Fly.io 디버깅용)
     if settings.GEMINI_API_KEY:
         masked = settings.GEMINI_API_KEY[:8] + "..." + settings.GEMINI_API_KEY[-4:]
@@ -90,7 +96,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Portfiq API",
     description="AI-powered ETF briefing backend",
-    version="1.0.0",
+    version=settings.APP_VERSION,
     lifespan=lifespan,
 )
 
@@ -128,7 +134,11 @@ app.include_router(calendar.router, prefix="/api/v1/calendar", tags=["Calendar"]
 @app.get("/health", tags=["Health"])
 async def health_root() -> dict:
     """Lightweight health check for Railway / load balancer probes."""
-    return {"status": "ok", "version": "1.0.0", "environment": settings.ENVIRONMENT}
+    return {
+        "status": "ok",
+        "version": settings.APP_VERSION,
+        "environment": settings.ENVIRONMENT,
+    }
 
 
 @app.get("/api/health", response_model=HealthResponse, tags=["Health"])
@@ -140,6 +150,7 @@ async def health_check() -> HealthResponse:
     logger.debug("Health check — events stored: %d", event_count)
     return HealthResponse(
         status="ok",
-        version="1.0.0",
+        version=settings.APP_VERSION,
         timestamp=datetime.now(timezone.utc).isoformat(),
+        supabase_service_key_configured=bool(settings.SUPABASE_SERVICE_KEY),
     )

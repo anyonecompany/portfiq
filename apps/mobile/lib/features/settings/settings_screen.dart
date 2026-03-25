@@ -226,7 +226,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   final index = entry.key;
                   final etf = entry.value;
                   return Dismissible(
-                    key: ValueKey('${etf.ticker}_$index'),
+                    key: ValueKey(etf.ticker),
                     direction: DismissDirection.endToStart,
                     onDismissed: (_) => _removeEtf(index),
                     background: Container(
