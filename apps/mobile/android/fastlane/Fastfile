@@ -7,7 +7,7 @@ platform :android do
       track: 'internal',
       aab: '../build/app/outputs/bundle/release/app-release.aab',
       json_key_data: ENV['PLAY_STORE_JSON_KEY'],
-      package_name: ENV['ANDROID_PACKAGE_NAME'] || 'com.portfiq.app',
+      package_name: ENV['ANDROID_PACKAGE_NAME'] || 'com.anyonecompany.portfiq',
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true
@@ -20,7 +20,7 @@ platform :android do
       track: 'production',
       aab: '../build/app/outputs/bundle/release/app-release.aab',
       json_key_data: ENV['PLAY_STORE_JSON_KEY'],
-      package_name: ENV['ANDROID_PACKAGE_NAME'] || 'com.portfiq.app',
+      package_name: ENV['ANDROID_PACKAGE_NAME'] || 'com.anyonecompany.portfiq',
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true
