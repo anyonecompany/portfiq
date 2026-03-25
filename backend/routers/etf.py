@@ -138,9 +138,20 @@ def _utc_now_iso() -> str:
 @router.get("/{ticker}/price")
 async def get_price(ticker: str) -> dict:
     """ETF 현재가 및 등락률."""
+    from fastapi import HTTPException
     from services.price_service import get_etf_price
 
     price_data = await get_etf_price(ticker.upper())
+
+    # mock 데이터 + 유니버스 미등록 티커 → 404
+    if price_data.get("is_mock"):
+        from services.etf_service import _ETF_MASTER
+
+        if ticker.upper() not in _ETF_MASTER:
+            raise HTTPException(
+                status_code=404, detail=f"ETF not found: {ticker.upper()}"
+            )
+
     return price_data
 
 
