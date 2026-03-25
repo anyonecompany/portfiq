@@ -12,6 +12,7 @@ class MyEtfState {
   final bool isLoading;
   final bool isSearching;
   final bool isRefreshingPrices;
+  final bool isUsingDefaultEtfs;
   final DateTime? lastPriceUpdate;
   final String? error;
 
@@ -21,6 +22,7 @@ class MyEtfState {
     this.isLoading = false,
     this.isSearching = false,
     this.isRefreshingPrices = false,
+    this.isUsingDefaultEtfs = false,
     this.lastPriceUpdate,
     this.error,
   });
@@ -31,6 +33,7 @@ class MyEtfState {
     bool? isLoading,
     bool? isSearching,
     bool? isRefreshingPrices,
+    bool? isUsingDefaultEtfs,
     DateTime? lastPriceUpdate,
     String? error,
   }) {
@@ -40,6 +43,7 @@ class MyEtfState {
       isLoading: isLoading ?? this.isLoading,
       isSearching: isSearching ?? this.isSearching,
       isRefreshingPrices: isRefreshingPrices ?? this.isRefreshingPrices,
+      isUsingDefaultEtfs: isUsingDefaultEtfs ?? this.isUsingDefaultEtfs,
       lastPriceUpdate: lastPriceUpdate ?? this.lastPriceUpdate,
       error: error,
     );
@@ -61,9 +65,9 @@ class MyEtfNotifier extends StateNotifier<MyEtfState> {
     try {
       // 등록된 ETF 티커 목록은 로컬 Hive에서 관리
       final box = Hive.box('settings');
-      final tickers =
-          (box.get('registered_etfs') as List<dynamic>?)?.cast<String>() ??
-              kDefaultEtfs; // 기본 3개
+      final stored = box.get('registered_etfs') as List<dynamic>?;
+      final usingDefault = stored == null || stored.isEmpty;
+      final tickers = usingDefault ? kDefaultEtfs : stored.cast<String>();
 
       // 1) ETF 상세 정보를 개별 조회
       final etfs = <EtfInfo>[];
@@ -78,6 +82,7 @@ class MyEtfNotifier extends StateNotifier<MyEtfState> {
       state = state.copyWith(
         registeredEtfs: withPrices,
         isLoading: false,
+        isUsingDefaultEtfs: usingDefault,
         lastPriceUpdate: DateTime.now(),
       );
     } catch (e) {
@@ -284,7 +289,7 @@ class MyEtfNotifier extends StateNotifier<MyEtfState> {
     if (etf == null) return;
 
     final updated = [...state.registeredEtfs, etf];
-    state = state.copyWith(registeredEtfs: updated);
+    state = state.copyWith(registeredEtfs: updated, isUsingDefaultEtfs: false);
 
     // 로컬 저장
     final box = Hive.box('settings');

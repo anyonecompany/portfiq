@@ -193,8 +193,7 @@ class _MyEtfScreenState extends ConsumerState<MyEtfScreen>
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  final ticker =
-                      controller.text.trim().toUpperCase();
+                  final ticker = controller.text.trim().toUpperCase();
                   if (ticker.isNotEmpty) {
                     Navigator.of(sheetContext).pop();
                     context.push('/company/$ticker');
@@ -257,6 +256,13 @@ class _MyEtfScreenState extends ConsumerState<MyEtfScreen>
                       child: ListView(
                         padding: const EdgeInsets.all(16),
                         children: [
+                          // 기본 ETF 안내 배너
+                          if (state.isUsingDefaultEtfs)
+                            _DefaultEtfBanner(
+                              onSettingsTap: () => _openAddSheet(),
+                            ),
+                          if (state.isUsingDefaultEtfs)
+                            const SizedBox(height: 12),
                           // Weekly share button
                           _WeeklyShareButton(
                             isSharing: _isSharing,
@@ -524,7 +530,11 @@ class _EtfCard extends StatelessWidget {
         : isPositive
             ? PortfiqTheme.positive
             : PortfiqTheme.negative;
-    final sign = isZero ? '' : isPositive ? '+' : '';
+    final sign = isZero
+        ? ''
+        : isPositive
+            ? '+'
+            : '';
 
     return PressableCard(
       onTap: onTap,
@@ -565,10 +575,10 @@ class _EtfCard extends StatelessWidget {
                       Text(
                         '\u20a9${_formatKrw(etf.priceKrw!)}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontFamily: 'Pretendard',
-                          fontSize: 12,
-                        ),
+                              color: Colors.white.withValues(alpha: 0.5),
+                              fontFamily: 'Pretendard',
+                              fontSize: 12,
+                            ),
                       ),
                   ],
                 ),
@@ -613,6 +623,79 @@ class _EtfCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// 기본 ETF 사용 중 안내 배너.
+class _DefaultEtfBanner extends StatelessWidget {
+  final VoidCallback onSettingsTap;
+
+  const _DefaultEtfBanner({required this.onSettingsTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: PortfiqTheme.accent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: PortfiqTheme.accent.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.info_outline_rounded,
+            size: 18,
+            color: PortfiqTheme.accent,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '등록된 ETF가 없어 기본 ETF를 표시하고 있어요',
+                  style: PortfiqTypography.body.copyWith(
+                    color: PortfiqTheme.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '내 ETF를 등록하면 맞춤 브리핑을 받을 수 있어요',
+                  style: PortfiqTypography.caption.copyWith(
+                    color: PortfiqTheme.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: onSettingsTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: PortfiqTheme.accent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'ETF 등록',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
