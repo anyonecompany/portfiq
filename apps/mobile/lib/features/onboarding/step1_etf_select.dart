@@ -84,21 +84,23 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
           .map((r) => (r as Map<String, dynamic>)['ticker'] as String? ?? '')
           .where((t) => t.isNotEmpty)
           .toList();
-      if (mounted)
+      if (mounted) {
         setState(() {
           _searchResults = results;
           _isSearching = false;
         });
+      }
     } catch (e) {
       if (kDebugMode) print('[Step1] API 검색 실패, 로컬 fallback: $e');
       // Fallback to local filtering
       final q = query.toUpperCase();
       final results = _fallbackEtfs.where((etf) => etf.contains(q)).toList();
-      if (mounted)
+      if (mounted) {
         setState(() {
           _searchResults = results;
           _isSearching = false;
         });
+      }
     }
   }
 
@@ -266,38 +268,52 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
               padding: const EdgeInsets.only(bottom: 32),
               child: SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: notifier.canProceed
-                      ? () {
-                          final tickers = state.selectedEtfs;
-                          // Hive 즉시 저장
-                          final box = Hive.box('settings');
-                          box.put('registered_etfs', tickers);
-                          // 다음 화면 즉시 진행 (API 응답 안 기다림)
-                          widget.onNext();
-                          // API는 백그라운드 fire-and-forget
-                          final deviceId = box.get('device_id') as String?;
-                          ApiClient.instance
-                              .post(
-                                '/api/v1/etf/register',
-                                data: {
-                                  'device_id': deviceId,
-                                  'tickers': tickers,
-                                },
-                              )
-                              .then((_) {})
-                              .catchError((_) {});
-                          // 이벤트 트래킹도 백그라운드
-                          EventTracker.instance.track(
-                            'etf_registered',
-                            properties: {
-                              'tickers': tickers,
-                              'count': tickers.length,
-                            },
+                child: GestureDetector(
+                  onTap: notifier.canProceed
+                      ? null
+                      : () {
+                          HapticFeedback.lightImpact();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('ETF를 1개 이상 선택해주세요'),
+                              duration: Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating,
+                            ),
                           );
-                        }
-                      : null,
-                  child: const Text('완료'),
+                        },
+                  child: ElevatedButton(
+                    onPressed: notifier.canProceed
+                        ? () {
+                            final tickers = state.selectedEtfs;
+                            // Hive 즉시 저장
+                            final box = Hive.box('settings');
+                            box.put('registered_etfs', tickers);
+                            // 다음 화면 즉시 진행 (API 응답 안 기다림)
+                            widget.onNext();
+                            // API는 백그라운드 fire-and-forget
+                            final deviceId = box.get('device_id') as String?;
+                            ApiClient.instance
+                                .post(
+                                  '/api/v1/etf/register',
+                                  data: {
+                                    'device_id': deviceId,
+                                    'tickers': tickers,
+                                  },
+                                )
+                                .then((_) {})
+                                .catchError((_) {});
+                            // 이벤트 트래킹도 백그라운드
+                            EventTracker.instance.track(
+                              'etf_registered',
+                              properties: {
+                                'tickers': tickers,
+                                'count': tickers.length,
+                              },
+                            );
+                          }
+                        : null,
+                    child: const Text('완료'),
+                  ),
                 ),
               ),
             ),

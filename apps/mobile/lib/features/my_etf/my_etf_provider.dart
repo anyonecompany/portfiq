@@ -216,7 +216,21 @@ class MyEtfNotifier extends StateNotifier<MyEtfState> {
       );
     } catch (e) {
       if (kDebugMode) print('[MyEtfProvider] ETF 상세 조회 실패 ($ticker): $e');
-      return _mockEtfMap[ticker.toUpperCase()];
+      // mock fallback — 가격은 null로 (실가격처럼 보이지 않도록)
+      final mock = _mockEtfMap[ticker.toUpperCase()];
+      if (mock == null) return null;
+      return EtfInfo(
+        ticker: mock.ticker,
+        name: mock.name,
+        nameKr: mock.nameKr,
+        category: mock.category,
+        expenseRatio: mock.expenseRatio,
+        description: mock.description,
+        topHoldings: mock.topHoldings,
+        currentPrice: null,
+        changePct: null,
+        changeAmount: null,
+      );
     }
   }
 
@@ -259,7 +273,21 @@ class MyEtfNotifier extends StateNotifier<MyEtfState> {
       );
     } catch (e) {
       if (kDebugMode) print('[MyEtfProvider] ETF 상세 조회 실패 ($ticker): $e');
-      return _mockEtfMap[ticker.toUpperCase()];
+      // mock fallback — 가격은 null로 (실가격처럼 보이지 않도록)
+      final mock = _mockEtfMap[ticker.toUpperCase()];
+      if (mock == null) return null;
+      return EtfInfo(
+        ticker: mock.ticker,
+        name: mock.name,
+        nameKr: mock.nameKr,
+        category: mock.category,
+        expenseRatio: mock.expenseRatio,
+        description: mock.description,
+        topHoldings: mock.topHoldings,
+        currentPrice: null,
+        changePct: null,
+        changeAmount: null,
+      );
     }
   }
 

@@ -26,6 +26,8 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
 
   bool _isLoading = true;
   bool _hasError = false;
+  bool _loadFailed = false;
+  int _retryCount = 0;
   List<NewsItem> _newsItems = [];
 
   @override
@@ -78,6 +80,8 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
       setState(() {
         _isLoading = false;
         _hasError = true;
+        _loadFailed = true;
+        _retryCount += 1;
       });
     }
   }
@@ -197,15 +201,15 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            _hasError ? Icons.wifi_off_rounded : Icons.article_outlined,
+                            _hasError
+                                ? Icons.wifi_off_rounded
+                                : Icons.article_outlined,
                             size: 48,
                             color: PortfiqTheme.textTertiary,
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            _hasError
-                                ? '뉴스를 불러오지 못했어요'
-                                : '아직 준비된 뉴스가 없습니다',
+                            _hasError ? '뉴스를 불러오지 못했어요' : '아직 준비된 뉴스가 없습니다',
                             style: const TextStyle(
                               color: PortfiqTheme.textSecondary,
                               fontSize: 15,
@@ -224,7 +228,10 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
                             const SizedBox(height: 16),
                             TextButton.icon(
                               onPressed: () {
-                                setState(() { _isLoading = true; _hasError = false; });
+                                setState(() {
+                                  _isLoading = true;
+                                  _hasError = false;
+                                });
                                 _fetchNews();
                               },
                               icon: const Icon(Icons.refresh, size: 16),
@@ -245,7 +252,10 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
                         final animIndex = index < _cardAnimations.length
                             ? index
                             : _cardAnimations.length - 1;
-                        if (animIndex < 0) return _NewsCard(item: item, selectedEtfs: selectedEtfs);
+                        if (animIndex < 0) {
+                          return _NewsCard(
+                              item: item, selectedEtfs: selectedEtfs);
+                        }
                         return FadeTransition(
                           opacity: _cardAnimations[animIndex],
                           child: SlideTransition(
@@ -268,8 +278,23 @@ class _Step3FirstFeedState extends ConsumerState<Step3FirstFeed>
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: widget.onShowPushSheet,
-              child: const Text('시작하기'),
+              onPressed: _loadFailed && _retryCount < 2
+                  ? () {
+                      setState(() {
+                        _isLoading = true;
+                        _hasError = false;
+                        _loadFailed = false;
+                      });
+                      _fetchNews();
+                    }
+                  : widget.onShowPushSheet,
+              child: Text(
+                _loadFailed && _retryCount < 2
+                    ? '다시 시도'
+                    : _loadFailed
+                        ? '건너뛰고 시작하기'
+                        : '시작하기',
+              ),
             ),
           ),
         ),
@@ -331,8 +356,7 @@ class _NewsCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: impactColor.withAlpha(26),
                   borderRadius: BorderRadius.circular(4),
@@ -382,8 +406,7 @@ class _NewsCard extends StatelessWidget {
             children: item.impacts.map((impact) {
               final isUserEtf = selectedEtfs.contains(impact.etfTicker);
               return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: isUserEtf
                       ? PortfiqTheme.accent.withAlpha(26)

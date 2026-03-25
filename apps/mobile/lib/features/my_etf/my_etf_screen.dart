@@ -568,10 +568,21 @@ class _EtfCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '\$${etf.currentPrice?.toStringAsFixed(2) ?? '-'}',
+                      etf.currentPrice != null
+                          ? '\$${etf.currentPrice!.toStringAsFixed(2)}'
+                          : '-',
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
-                    if (etf.priceKrw != null)
+                    if (etf.currentPrice == null)
+                      const Text(
+                        '실시간 연결 중',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: PortfiqTheme.textTertiary,
+                          fontFamily: 'Pretendard',
+                        ),
+                      )
+                    else if (etf.priceKrw != null)
                       Text(
                         '\u20a9${_formatKrw(etf.priceKrw!)}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
