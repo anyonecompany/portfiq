@@ -61,9 +61,9 @@ class MyEtfNotifier extends StateNotifier<MyEtfState> {
     try {
       // 등록된 ETF 티커 목록은 로컬 Hive에서 관리
       final box = Hive.box('settings');
-      final tickers = (box.get('registered_etfs') as List<dynamic>?)
-              ?.cast<String>() ??
-          kDefaultEtfs; // 기본 3개
+      final tickers =
+          (box.get('registered_etfs') as List<dynamic>?)?.cast<String>() ??
+              kDefaultEtfs; // 기본 3개
 
       // 1) ETF 상세 정보를 개별 조회
       final etfs = <EtfInfo>[];
@@ -83,7 +83,11 @@ class MyEtfNotifier extends StateNotifier<MyEtfState> {
     } catch (e) {
       if (kDebugMode) print('[MyEtfProvider] 로드 실패, mock 사용: $e');
       state = state.copyWith(
-        registeredEtfs: [_mockEtfMap['QQQ']!, _mockEtfMap['VOO']!, _mockEtfMap['SCHD']!],
+        registeredEtfs: [
+          _mockEtfMap['QQQ']!,
+          _mockEtfMap['VOO']!,
+          _mockEtfMap['SCHD']!
+        ],
         isLoading: false,
         lastPriceUpdate: DateTime.now(),
       );
@@ -147,22 +151,51 @@ class MyEtfNotifier extends StateNotifier<MyEtfState> {
   }
 
   /// ETF 상세 정보만 조회 (가격 제외 — batch로 별도 처리).
+  /// 상세 조회 후 개별 price API를 추가 호출하여 price 필드를 병합한다.
+  /// price 조회 실패는 non-fatal — batch 가격 갱신에서 보완된다.
   Future<EtfInfo?> _fetchEtfDetailOnly(String ticker) async {
     try {
-      final detailResp =
-          await ApiClient.instance.get('/api/v1/etf/${ticker.toUpperCase()}/detail');
-      final d = detailResp.data as Map<String, dynamic>;
+      final detailResp = await ApiClient.instance
+          .get('/api/v1/etf/${ticker.toUpperCase()}/detail');
+      final detail =
+          Map<String, dynamic>.from(detailResp.data as Map<String, dynamic>);
 
-      final holdings = _parseHoldings(d['top_holdings']);
+      // 개별 price API로 가격 병합 (미등록 ETF 가격 미표시 버그 방지)
+      try {
+        final priceResp = await ApiClient.instance
+            .get('/api/v1/etf/${ticker.toUpperCase()}/price');
+        final priceData = priceResp.data as Map<String, dynamic>;
+        detail['price'] = priceData['price'];
+        detail['change_pct'] = priceData['change_pct'];
+        detail['change_amt'] = priceData['change_amt'];
+        if (priceData['price_krw'] != null) {
+          detail['price_krw'] = priceData['price_krw'];
+        }
+        if (priceData['change_amt_krw'] != null) {
+          detail['change_amt_krw'] = priceData['change_amt_krw'];
+        }
+      } catch (e) {
+        // price 조회 실패는 non-fatal — batch 가격 갱신에서 보완됨
+        if (kDebugMode) {
+          print('[MyEtfProvider] ETF 가격 조회 실패 ($ticker), batch로 보완 예정: $e');
+        }
+      }
+
+      final holdings = _parseHoldings(detail['top_holdings']);
 
       return EtfInfo(
-        ticker: d['ticker'] as String? ?? ticker,
-        name: d['name'] as String? ?? '',
-        nameKr: d['name_kr'] as String? ?? d['name'] as String? ?? '',
-        category: d['category'] as String? ?? '',
-        expenseRatio: (d['expense_ratio'] as num?)?.toDouble() ?? 0.0,
-        description: d['description'] as String? ?? '',
+        ticker: detail['ticker'] as String? ?? ticker,
+        name: detail['name'] as String? ?? '',
+        nameKr: detail['name_kr'] as String? ?? detail['name'] as String? ?? '',
+        category: detail['category'] as String? ?? '',
+        expenseRatio: (detail['expense_ratio'] as num?)?.toDouble() ?? 0.0,
+        description: detail['description'] as String? ?? '',
         topHoldings: holdings,
+        currentPrice: (detail['price'] as num?)?.toDouble(),
+        changePct: (detail['change_pct'] as num?)?.toDouble(),
+        changeAmount: (detail['change_amt'] as num?)?.toDouble(),
+        priceKrw: (detail['price_krw'] as num?)?.toInt(),
+        changeAmountKrw: (detail['change_amt_krw'] as num?)?.toInt(),
       );
     } catch (e) {
       if (kDebugMode) print('[MyEtfProvider] ETF 상세 조회 실패 ($ticker): $e');
@@ -173,8 +206,8 @@ class MyEtfNotifier extends StateNotifier<MyEtfState> {
   /// ETF 상세 + 가격 조회 (단일 — addEtf 등에서 사용).
   Future<EtfInfo?> _fetchEtfDetail(String ticker) async {
     try {
-      final detailResp =
-          await ApiClient.instance.get('/api/v1/etf/${ticker.toUpperCase()}/detail');
+      final detailResp = await ApiClient.instance
+          .get('/api/v1/etf/${ticker.toUpperCase()}/detail');
       final d = detailResp.data as Map<String, dynamic>;
 
       // 가격 조회
@@ -182,8 +215,8 @@ class MyEtfNotifier extends StateNotifier<MyEtfState> {
       double? changePct;
       double? changeAmt;
       try {
-        final priceResp =
-            await ApiClient.instance.get('/api/v1/etf/${ticker.toUpperCase()}/price');
+        final priceResp = await ApiClient.instance
+            .get('/api/v1/etf/${ticker.toUpperCase()}/price');
         final p = priceResp.data as Map<String, dynamic>;
         price = (p['price'] as num?)?.toDouble();
         changePct = (p['change_pct'] as num?)?.toDouble();
@@ -364,10 +397,15 @@ final myEtfProvider = StateNotifierProvider<MyEtfNotifier, MyEtfState>((ref) {
 // ---------------------------------------------------------------------------
 
 const _qqq = EtfInfo(
-  ticker: 'QQQ', name: 'Invesco QQQ Trust', nameKr: '인베스코 QQQ 트러스트',
-  category: '대형 성장주', expenseRatio: 0.20,
+  ticker: 'QQQ',
+  name: 'Invesco QQQ Trust',
+  nameKr: '인베스코 QQQ 트러스트',
+  category: '대형 성장주',
+  expenseRatio: 0.20,
   description: '나스닥 100 지수를 추종하는 대표적인 기술주 중심 ETF.',
-  currentPrice: 487.52, changePct: 1.8, changeAmount: 8.62,
+  currentPrice: 487.52,
+  changePct: 1.8,
+  changeAmount: 8.62,
   topHoldings: [
     EtfHolding(name: 'Apple Inc.', ticker: 'AAPL', weight: 8.9),
     EtfHolding(name: 'Microsoft Corp.', ticker: 'MSFT', weight: 8.1),
@@ -376,10 +414,15 @@ const _qqq = EtfInfo(
 );
 
 const _voo = EtfInfo(
-  ticker: 'VOO', name: 'Vanguard S&P 500 ETF', nameKr: '뱅가드 S&P 500 ETF',
-  category: '대형 혼합', expenseRatio: 0.03,
+  ticker: 'VOO',
+  name: 'Vanguard S&P 500 ETF',
+  nameKr: '뱅가드 S&P 500 ETF',
+  category: '대형 혼합',
+  expenseRatio: 0.03,
   description: 'S&P 500 지수를 추종하는 저비용 인덱스 ETF.',
-  currentPrice: 523.18, changePct: 0.6, changeAmount: 3.12,
+  currentPrice: 523.18,
+  changePct: 0.6,
+  changeAmount: 3.12,
   topHoldings: [
     EtfHolding(name: 'Apple Inc.', ticker: 'AAPL', weight: 7.2),
     EtfHolding(name: 'Microsoft Corp.', ticker: 'MSFT', weight: 6.8),
@@ -388,10 +431,15 @@ const _voo = EtfInfo(
 );
 
 const _schd = EtfInfo(
-  ticker: 'SCHD', name: 'Schwab U.S. Dividend Equity ETF', nameKr: '슈왑 미국 배당주 ETF',
-  category: '배당 성장', expenseRatio: 0.06,
+  ticker: 'SCHD',
+  name: 'Schwab U.S. Dividend Equity ETF',
+  nameKr: '슈왑 미국 배당주 ETF',
+  category: '배당 성장',
+  expenseRatio: 0.06,
   description: '높은 배당 수익률과 배당 성장률을 가진 미국 대형주에 투자.',
-  currentPrice: 82.45, changePct: -0.3, changeAmount: -0.25,
+  currentPrice: 82.45,
+  changePct: -0.3,
+  changeAmount: -0.25,
   topHoldings: [
     EtfHolding(name: 'Cisco Systems', ticker: 'CSCO', weight: 4.5),
     EtfHolding(name: 'Chevron Corp.', ticker: 'CVX', weight: 4.3),
@@ -400,93 +448,175 @@ const _schd = EtfInfo(
 );
 
 const _tqqq = EtfInfo(
-  ticker: 'TQQQ', name: 'ProShares UltraPro QQQ', nameKr: '프로셰어즈 울트라프로 QQQ',
-  category: '레버리지 3x', expenseRatio: 0.86,
+  ticker: 'TQQQ',
+  name: 'ProShares UltraPro QQQ',
+  nameKr: '프로셰어즈 울트라프로 QQQ',
+  category: '레버리지 3x',
+  expenseRatio: 0.86,
   description: '나스닥 100 지수의 일일 수익률을 3배로 추종.',
-  currentPrice: 68.93, changePct: 5.4, changeAmount: 3.53,
+  currentPrice: 68.93,
+  changePct: 5.4,
+  changeAmount: 3.53,
 );
 
 const _soxl = EtfInfo(
-  ticker: 'SOXL', name: 'Direxion Daily Semicond. Bull 3X', nameKr: '디렉시온 반도체 3배 ETF',
-  category: '레버리지 3x', expenseRatio: 0.76,
+  ticker: 'SOXL',
+  name: 'Direxion Daily Semicond. Bull 3X',
+  nameKr: '디렉시온 반도체 3배 ETF',
+  category: '레버리지 3x',
+  expenseRatio: 0.76,
   description: 'ICE 반도체 지수의 일일 수익률을 3배로 추종.',
-  currentPrice: 32.17, changePct: -2.1, changeAmount: -0.69,
+  currentPrice: 32.17,
+  changePct: -2.1,
+  changeAmount: -0.69,
 );
 
 const _jepi = EtfInfo(
-  ticker: 'JEPI', name: 'JPMorgan Equity Premium Income', nameKr: 'JP모건 프리미엄 인컴 ETF',
-  category: '커버드콜', expenseRatio: 0.35,
+  ticker: 'JEPI',
+  name: 'JPMorgan Equity Premium Income',
+  nameKr: 'JP모건 프리미엄 인컴 ETF',
+  category: '커버드콜',
+  expenseRatio: 0.35,
   description: 'S&P 500 대형주에 투자하며 월배당을 추구하는 ETF.',
-  currentPrice: 57.82, changePct: 0.2, changeAmount: 0.12,
+  currentPrice: 57.82,
+  changePct: 0.2,
+  changeAmount: 0.12,
 );
 
 // Additional mock ETFs for offline fallback search
 const _spy = EtfInfo(
-  ticker: 'SPY', name: 'SPDR S&P 500 ETF Trust', nameKr: 'S&P 500 추종 ETF (SPDR)',
-  category: '대형주', expenseRatio: 0.09,
+  ticker: 'SPY',
+  name: 'SPDR S&P 500 ETF Trust',
+  nameKr: 'S&P 500 추종 ETF (SPDR)',
+  category: '대형주',
+  expenseRatio: 0.09,
 );
 const _ivv = EtfInfo(
-  ticker: 'IVV', name: 'iShares Core S&P 500 ETF', nameKr: 'S&P 500 추종 ETF (iShares)',
-  category: '대형주', expenseRatio: 0.03,
+  ticker: 'IVV',
+  name: 'iShares Core S&P 500 ETF',
+  nameKr: 'S&P 500 추종 ETF (iShares)',
+  category: '대형주',
+  expenseRatio: 0.03,
 );
 const _vti = EtfInfo(
-  ticker: 'VTI', name: 'Vanguard Total Stock Market ETF', nameKr: '미국 전체 주식시장 ETF',
-  category: '대형주', expenseRatio: 0.03,
+  ticker: 'VTI',
+  name: 'Vanguard Total Stock Market ETF',
+  nameKr: '미국 전체 주식시장 ETF',
+  category: '대형주',
+  expenseRatio: 0.03,
 );
 const _arkk = EtfInfo(
-  ticker: 'ARKK', name: 'ARK Innovation ETF', nameKr: 'ARK 혁신 성장 ETF',
-  category: '기술주', expenseRatio: 0.75,
+  ticker: 'ARKK',
+  name: 'ARK Innovation ETF',
+  nameKr: 'ARK 혁신 성장 ETF',
+  category: '기술주',
+  expenseRatio: 0.75,
 );
 const _tlt = EtfInfo(
-  ticker: 'TLT', name: 'iShares 20+ Year Treasury Bond ETF', nameKr: '미국 장기국채 ETF',
-  category: '채권', expenseRatio: 0.15,
+  ticker: 'TLT',
+  name: 'iShares 20+ Year Treasury Bond ETF',
+  nameKr: '미국 장기국채 ETF',
+  category: '채권',
+  expenseRatio: 0.15,
 );
 const _gld = EtfInfo(
-  ticker: 'GLD', name: 'SPDR Gold Shares', nameKr: '금 현물 ETF',
-  category: '원자재', expenseRatio: 0.40,
+  ticker: 'GLD',
+  name: 'SPDR Gold Shares',
+  nameKr: '금 현물 ETF',
+  category: '원자재',
+  expenseRatio: 0.40,
 );
 const _xle = EtfInfo(
-  ticker: 'XLE', name: 'Energy Select Sector SPDR Fund', nameKr: '에너지 섹터 ETF',
-  category: '에너지', expenseRatio: 0.09,
+  ticker: 'XLE',
+  name: 'Energy Select Sector SPDR Fund',
+  nameKr: '에너지 섹터 ETF',
+  category: '에너지',
+  expenseRatio: 0.09,
 );
 const _soxx = EtfInfo(
-  ticker: 'SOXX', name: 'iShares Semiconductor ETF', nameKr: '반도체 섹터 ETF',
-  category: '반도체', expenseRatio: 0.35,
+  ticker: 'SOXX',
+  name: 'iShares Semiconductor ETF',
+  nameKr: '반도체 섹터 ETF',
+  category: '반도체',
+  expenseRatio: 0.35,
 );
 const _smh = EtfInfo(
-  ticker: 'SMH', name: 'VanEck Semiconductor ETF', nameKr: '반도체 섹터 ETF (VanEck)',
-  category: '반도체', expenseRatio: 0.35,
+  ticker: 'SMH',
+  name: 'VanEck Semiconductor ETF',
+  nameKr: '반도체 섹터 ETF (VanEck)',
+  category: '반도체',
+  expenseRatio: 0.35,
 );
 const _jepq = EtfInfo(
-  ticker: 'JEPQ', name: 'JPMorgan Nasdaq Equity Premium Income', nameKr: '나스닥 커버드콜 ETF',
-  category: '배당', expenseRatio: 0.35,
+  ticker: 'JEPQ',
+  name: 'JPMorgan Nasdaq Equity Premium Income',
+  nameKr: '나스닥 커버드콜 ETF',
+  category: '배당',
+  expenseRatio: 0.35,
 );
 const _ibit = EtfInfo(
-  ticker: 'IBIT', name: 'iShares Bitcoin Trust ETF', nameKr: '비트코인 현물 ETF',
-  category: '암호화폐', expenseRatio: 0.25,
+  ticker: 'IBIT',
+  name: 'iShares Bitcoin Trust ETF',
+  nameKr: '비트코인 현물 ETF',
+  category: '암호화폐',
+  expenseRatio: 0.25,
 );
 const _xlk = EtfInfo(
-  ticker: 'XLK', name: 'Technology Select Sector SPDR Fund', nameKr: '기술 섹터 ETF',
-  category: '기술주', expenseRatio: 0.09,
+  ticker: 'XLK',
+  name: 'Technology Select Sector SPDR Fund',
+  nameKr: '기술 섹터 ETF',
+  category: '기술주',
+  expenseRatio: 0.09,
 );
 const _kweb = EtfInfo(
-  ticker: 'KWEB', name: 'KraneShares CSI China Internet ETF', nameKr: '중국 인터넷 ETF',
-  category: '중국', expenseRatio: 0.69,
+  ticker: 'KWEB',
+  name: 'KraneShares CSI China Internet ETF',
+  nameKr: '중국 인터넷 ETF',
+  category: '중국',
+  expenseRatio: 0.69,
 );
 const _dia = EtfInfo(
-  ticker: 'DIA', name: 'SPDR Dow Jones Industrial Average ETF', nameKr: '다우존스 30 추종 ETF',
-  category: '대형주', expenseRatio: 0.16,
+  ticker: 'DIA',
+  name: 'SPDR Dow Jones Industrial Average ETF',
+  nameKr: '다우존스 30 추종 ETF',
+  category: '대형주',
+  expenseRatio: 0.16,
 );
 
 final Map<String, EtfInfo> _mockEtfMap = {
-  'QQQ': _qqq, 'VOO': _voo, 'SCHD': _schd,
-  'TQQQ': _tqqq, 'SOXL': _soxl, 'JEPI': _jepi,
-  'SPY': _spy, 'IVV': _ivv, 'VTI': _vti, 'ARKK': _arkk,
-  'TLT': _tlt, 'GLD': _gld, 'XLE': _xle, 'SOXX': _soxx,
-  'SMH': _smh, 'JEPQ': _jepq, 'IBIT': _ibit, 'XLK': _xlk,
-  'KWEB': _kweb, 'DIA': _dia,
+  'QQQ': _qqq,
+  'VOO': _voo,
+  'SCHD': _schd,
+  'TQQQ': _tqqq,
+  'SOXL': _soxl,
+  'JEPI': _jepi,
+  'SPY': _spy,
+  'IVV': _ivv,
+  'VTI': _vti,
+  'ARKK': _arkk,
+  'TLT': _tlt,
+  'GLD': _gld,
+  'XLE': _xle,
+  'SOXX': _soxx,
+  'SMH': _smh,
+  'JEPQ': _jepq,
+  'IBIT': _ibit,
+  'XLK': _xlk,
+  'KWEB': _kweb,
+  'DIA': _dia,
 };
 
 final List<EtfInfo> _allMockEtfs = _mockEtfMap.values.toList();
 
-final List<EtfInfo> _popularMock = [_qqq, _voo, _schd, _tqqq, _soxl, _jepi, _spy, _soxx, _jepq, _ibit];
+final List<EtfInfo> _popularMock = [
+  _qqq,
+  _voo,
+  _schd,
+  _tqqq,
+  _soxl,
+  _jepi,
+  _spy,
+  _soxx,
+  _jepq,
+  _ibit
+];

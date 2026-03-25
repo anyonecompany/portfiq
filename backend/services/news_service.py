@@ -180,7 +180,8 @@ RSS_FEEDS_EN: list[tuple[str, str]] = [
         "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=19836768",
         "CNBC Earnings",
     ),
-    ("https://feeds.reuters.com/reuters/businessNews", "Reuters Business"),
+    # Reuters RSS disabled — feeds.reuters.com DNS expired (2026-03)
+    # ("https://feeds.reuters.com/reuters/businessNews", "Reuters Business"),
 ]
 
 RSS_FEEDS_KR: list[tuple[str, str]] = []

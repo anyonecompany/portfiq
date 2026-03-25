@@ -41,8 +41,10 @@ void main() async {
     }
   }
 
-  // FCM 푸시 서비스 초기화
-  await PushService.instance.initialize();
+  // FCM 푸시 서비스 초기화 (웹에서는 Firebase push 미지원)
+  if (!kIsWeb) {
+    await PushService.instance.initialize();
+  }
 
   runApp(const PortfiqApp());
 }

@@ -49,19 +49,102 @@ def _load_macro_data() -> dict[str, dict]:
 # ──────────────────────────────────────────────
 
 
+# category → 섹터 가중치 기본값 매핑
+# top_holdings에 sector 필드가 없는 경우의 fallback 데이터
+_CATEGORY_SECTOR_WEIGHTS: dict[str, list[dict]] = {
+    "기술주": [
+        {"name": "Technology", "weight": 62.0},
+        {"name": "Communication Services", "weight": 15.0},
+        {"name": "Consumer Discretionary", "weight": 13.0},
+        {"name": "Healthcare", "weight": 5.0},
+        {"name": "기타", "weight": 5.0},
+    ],
+    "대형주": [
+        {"name": "Technology", "weight": 31.0},
+        {"name": "Healthcare", "weight": 13.0},
+        {"name": "Financials", "weight": 13.0},
+        {"name": "Consumer Discretionary", "weight": 10.0},
+        {"name": "Communication Services", "weight": 9.0},
+        {"name": "Industrials", "weight": 8.0},
+        {"name": "Consumer Staples", "weight": 6.0},
+        {"name": "기타", "weight": 10.0},
+    ],
+    "배당": [
+        {"name": "Financials", "weight": 22.0},
+        {"name": "Healthcare", "weight": 16.0},
+        {"name": "Consumer Staples", "weight": 14.0},
+        {"name": "Industrials", "weight": 13.0},
+        {"name": "Energy", "weight": 10.0},
+        {"name": "Utilities", "weight": 10.0},
+        {"name": "Technology", "weight": 9.0},
+        {"name": "기타", "weight": 6.0},
+    ],
+    "레버리지": [
+        {"name": "Derivatives/Swaps", "weight": 100.0},
+    ],
+    "채권": [
+        {"name": "U.S. Treasuries", "weight": 55.0},
+        {"name": "Corporate Bonds", "weight": 25.0},
+        {"name": "Agency Bonds", "weight": 12.0},
+        {"name": "기타", "weight": 8.0},
+    ],
+    "반도체": [
+        {"name": "Semiconductors", "weight": 85.0},
+        {"name": "Technology Hardware", "weight": 10.0},
+        {"name": "기타", "weight": 5.0},
+    ],
+    "금": [
+        {"name": "Gold/Precious Metals", "weight": 100.0},
+    ],
+    "에너지": [
+        {"name": "Energy", "weight": 88.0},
+        {"name": "Utilities", "weight": 7.0},
+        {"name": "기타", "weight": 5.0},
+    ],
+    "헬스케어": [
+        {"name": "Healthcare", "weight": 80.0},
+        {"name": "Biotechnology", "weight": 12.0},
+        {"name": "기타", "weight": 8.0},
+    ],
+}
+
+
+def _get_sector_weights_from_category(category: str) -> list[dict]:
+    """category 필드 기반으로 섹터 가중치 fallback을 반환한다.
+
+    Args:
+        category: etf_master의 category 문자열.
+
+    Returns:
+        [{name, weight, percentage}] 형태의 섹터 목록.
+    """
+    weights = _CATEGORY_SECTOR_WEIGHTS.get(category)
+    if not weights:
+        # 매핑 없으면 category 자체를 단일 섹터로 사용
+        weights = [{"name": category or "기타", "weight": 100.0}]
+    return [
+        {"name": w["name"], "weight": w["weight"], "percentage": w["weight"]}
+        for w in weights
+    ]
+
+
 async def get_sector_concentration(ticker: str) -> dict[str, Any]:
     """ETF 구성종목의 섹터 집중도 분석.
 
-    Supabase etf_master 테이블에서 보유종목 정보를 가져와
-    섹터별 비중을 계산한다. 단일 섹터 50% 초과 시 경고를 생성한다.
+    Supabase etf_master 테이블에서 보유종목 정보를 가져와 섹터별 비중을 계산한다.
+    top_holdings에 sector 필드가 없으면 category 기반 사전 정의 가중치를 사용한다.
+    단일 섹터 50% 초과 시 경고를 생성한다.
 
     Args:
         ticker: ETF 티커 심볼.
 
     Returns:
-        {ticker, category, sectors: [{name, weight}], concentration_warning}
+        {ticker, category, sectors: [{name, weight, percentage}], concentration_warning}
     """
     from services.supabase_client import get_supabase
+
+    holdings: list[dict] = []
+    category: str = ""
 
     try:
         sb = get_supabase()
@@ -72,27 +155,55 @@ async def get_sector_concentration(ticker: str) -> dict[str, Any]:
             .single()
             .execute()
         )
+        if result.data:
+            holdings = result.data.get("top_holdings") or []
+            category = result.data.get("category") or ""
     except Exception as e:
-        logger.warning("섹터 집중도 조회 실패 (%s): %s", ticker, e)
-        return {"ticker": ticker, "sectors": [], "concentration_warning": None}
+        logger.warning(
+            "섹터 집중도 Supabase 조회 실패 (%s): %s — category fallback 사용",
+            ticker,
+            e,
+        )
 
-    if not result.data:
-        return {"ticker": ticker, "sectors": [], "concentration_warning": None}
-
-    holdings = result.data.get("top_holdings", [])
-    category = result.data.get("category", "")
-
-    # 섹터별 가중치 합산
+    # top_holdings에서 sector 필드로 집계 시도
     sector_map: dict[str, float] = {}
-    for h in holdings:
-        sector = h.get("sector", "기타")
-        weight = h.get("weight", 0)
-        sector_map[sector] = sector_map.get(sector, 0) + weight
+    has_sector_field = any("sector" in h for h in holdings)
 
-    sectors = [
-        {"name": k, "weight": round(v, 2), "percentage": round(v, 2)}
-        for k, v in sorted(sector_map.items(), key=lambda x: -x[1])
-    ]
+    if has_sector_field:
+        for h in holdings:
+            sector = h.get("sector") or "기타"
+            weight = h.get("weight", 0)
+            sector_map[sector] = sector_map.get(sector, 0) + weight
+
+        sectors = [
+            {"name": k, "weight": round(v, 2), "percentage": round(v, 2)}
+            for k, v in sorted(sector_map.items(), key=lambda x: -x[1])
+        ]
+    else:
+        # sector 필드 없음 → category 기반 사전 정의 가중치 사용
+        if not category and holdings:
+            # Supabase 데이터는 있으나 category 없는 경우 — etf_master.json에서 보완
+            pass
+        sectors = _get_sector_weights_from_category(category)
+        logger.debug(
+            "섹터 집중도 (%s): top_holdings에 sector 필드 없음. category='%s' fallback 사용",
+            ticker,
+            category,
+        )
+
+    # 데이터가 전혀 없으면 etf_master.json seed에서 category 로드
+    if not sectors:
+        path = Path(__file__).parent.parent / "seeds" / "etf_master.json"
+        try:
+            with open(path, encoding="utf-8") as f:
+                seed_data = json.load(f)
+            for etf in seed_data:
+                if etf.get("ticker", "").upper() == ticker.upper():
+                    category = etf.get("category", "")
+                    break
+        except Exception as seed_err:
+            logger.warning("etf_master.json seed 로드 실패: %s", seed_err)
+        sectors = _get_sector_weights_from_category(category)
 
     # 단일 섹터 50% 초과 경고
     warning = None

@@ -19,7 +19,9 @@ class PushService {
   /// Firebase Messaging 초기화 + 토큰 등록.
   ///
   /// 앱 시작 시 한 번 호출. Firebase 미설정 시 로그만 남기고 스킵.
+  /// 웹 빌드에서는 Firebase push가 지원되지 않으므로 즉시 반환.
   Future<void> initialize() async {
+    if (kIsWeb) return; // Firebase push not supported on web
     try {
       _messaging = FirebaseMessaging.instance;
 
@@ -48,7 +50,8 @@ class PushService {
       }
 
       if (kDebugMode) {
-        print('[PushService] Initialized, token: ${_currentToken?.substring(0, 20)}...');
+        print(
+            '[PushService] Initialized, token: ${_currentToken?.substring(0, 20)}...');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -76,8 +79,9 @@ class PushService {
         provisional: false,
       );
 
-      final granted = settings.authorizationStatus == AuthorizationStatus.authorized ||
-          settings.authorizationStatus == AuthorizationStatus.provisional;
+      final granted =
+          settings.authorizationStatus == AuthorizationStatus.authorized ||
+              settings.authorizationStatus == AuthorizationStatus.provisional;
 
       if (granted) {
         // 권한 획득 후 토큰 재등록 (iOS에서는 권한 후 토큰이 바뀔 수 있음)
