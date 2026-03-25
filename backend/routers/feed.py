@@ -5,8 +5,9 @@ Supabase 시그널 파이프라인 데이터를 우선 조회하고,
 """
 
 import logging
+import os
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Header, HTTPException, Query
 
 from services.news_service import news_service
 from services.etf_service import etf_service
@@ -15,6 +16,8 @@ from services.signal_feed_service import get_signal_feed, get_latest_signal_feed
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+_INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY", "")
 
 
 @router.get("")
@@ -88,15 +91,32 @@ async def get_latest_feed(
 
 
 @router.post("/refresh")
-async def refresh_feed() -> dict:
-    """Clear all caches and regenerate news + briefings.
+async def refresh_feed(
+    x_internal_key: str | None = Header(None, alias="X-Internal-Key"),
+) -> dict:
+    """Clear all caches and regenerate news + briefings. Requires internal API key.
 
     Clears: TTL cache, news cache, briefing cache.
     Then triggers fresh news collection + translation + briefing generation.
+
+    Args:
+        x_internal_key: 내부 API 키 (X-Internal-Key 헤더).
+
+    Returns:
+        클리어된 캐시 수, 수집된 뉴스 수, 브리핑 생성 결과.
+
+    Raises:
+        HTTPException: 403 — 유효하지 않거나 누락된 API 키.
     """
-    from services.cache import clear_cache
-    from services.briefing_service import briefing_service
+    if not _INTERNAL_API_KEY or x_internal_key != _INTERNAL_API_KEY:
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden: invalid or missing API key",
+        )
+
     import services.briefing_service as bs
+    from services.briefing_service import briefing_service
+    from services.cache import clear_cache
 
     # 1. Clear all caches
     cleared = clear_cache()

@@ -132,7 +132,9 @@ class EventBatchRequest(BaseModel):
     """Batch of analytics events from a device."""
 
     device_id: str | None = None
-    events: list[EventItem]
+    events: list[EventItem] = Field(
+        ..., max_length=100, description="최대 100개 이벤트"
+    )
 
 
 # ──────────────────────────────────────────────

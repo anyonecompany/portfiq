@@ -68,15 +68,16 @@ class Settings:
 
     # Admin
     ADMIN_JWT_SECRET: str = os.getenv("ADMIN_JWT_SECRET", "")
-    ADMIN_ALLOWED_EMAILS: list[str] = os.getenv(
-        "ADMIN_ALLOWED_EMAILS",
-        "hyeonsong@anyonecompany.kr,geonyong@anyonecompany.kr",
-    ).split(",")
+    ADMIN_ALLOWED_EMAILS: list[str] = [
+        e.strip() for e in os.getenv("ADMIN_ALLOWED_EMAILS", "").split(",") if e.strip()
+    ]
 
-    # Admin role mapping (email → role)
+    # Admin role mapping (email → role). 형식: "email:role,email:role"
+    # 예: ADMIN_ROLE_MAP=hyeonsong@anyonecompany.kr:cto,geonyong@anyonecompany.kr:ceo
     ADMIN_ROLE_MAP: dict[str, str] = {
-        "hyeonsong@anyonecompany.kr": "cto",
-        "geonyong@anyonecompany.kr": "ceo",
+        pair.split(":", 1)[0].strip(): pair.split(":", 1)[1].strip()
+        for pair in os.getenv("ADMIN_ROLE_MAP", "").split(",")
+        if ":" in pair and pair.strip()
     }
 
     # Deploy (GitHub Actions)

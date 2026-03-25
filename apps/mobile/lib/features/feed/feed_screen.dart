@@ -161,12 +161,21 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                       PortfiqSpacing.space24,
                     ),
                     // +1 for briefing, +1 for section header, +1 for loading indicator at bottom
+                    // +1 for mock banner (when all items are mock)
                     itemCount: feedState.newsItems.length +
                         2 +
-                        (feedState.isLoadingMore ? 1 : 0),
+                        (feedState.isLoadingMore ? 1 : 0) +
+                        (_isAllMock(feedState) ? 1 : 0),
                     itemBuilder: (context, index) {
+                      // Mock banner at the very top (index 0 when all items are mock)
+                      final mockOffset = _isAllMock(feedState) ? 1 : 0;
+                      if (_isAllMock(feedState) && index == 0) {
+                        return _buildMockBanner();
+                      }
+                      final adjustedIndex = index - mockOffset;
+
                       // First item: Briefing card
-                      if (index == 0) {
+                      if (adjustedIndex == 0) {
                         final briefing = feedState.briefing;
                         if (briefing == null) return const SizedBox.shrink();
                         return _buildStaggeredItem(
@@ -185,7 +194,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                       }
 
                       // Second item: Section header
-                      if (index == 1) {
+                      if (adjustedIndex == 1) {
                         return _buildStaggeredItem(
                           index: 1,
                           child: _buildSectionHeader(),
@@ -193,7 +202,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                       }
 
                       // Loading indicator at the very bottom
-                      if (index == feedState.newsItems.length + 2) {
+                      if (adjustedIndex == feedState.newsItems.length + 2) {
                         return const Padding(
                           padding: EdgeInsets.symmetric(vertical: 24),
                           child: Center(
@@ -210,25 +219,25 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                       }
 
                       // News cards
-                      final item = feedState.newsItems[index - 2];
+                      final item = feedState.newsItems[adjustedIndex - 2];
 
                       // Track viewport entry for news cards
-                      if (index > _maxScrolledIndex) {
-                        _maxScrolledIndex = index;
+                      if (adjustedIndex > _maxScrolledIndex) {
+                        _maxScrolledIndex = adjustedIndex;
                         EventTracker.instance
                             .track('news_card_viewed', properties: {
                           'news_id': item.id,
-                          'position': index - 2,
+                          'position': adjustedIndex - 2,
                         });
                         EventTracker.instance
                             .track('feed_scrolled_depth', properties: {
-                          'max_index': index - 2,
+                          'max_index': adjustedIndex - 2,
                           'total_items': feedState.newsItems.length,
                         });
                       }
 
                       return _buildStaggeredItem(
-                        index: index,
+                        index: adjustedIndex,
                         child: Padding(
                           padding: const EdgeInsets.only(
                             bottom: PortfiqSpacing.space12,
@@ -250,6 +259,43 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                     },
                   ),
                 ),
+    );
+  }
+
+  /// Returns true when every item in the feed is a mock item.
+  bool _isAllMock(FeedState feedState) {
+    if (feedState.newsItems.isEmpty) return false;
+    return feedState.newsItems.every((item) => item.isMock);
+  }
+
+  /// Banner shown at the top of the feed when all items are mock data.
+  Widget _buildMockBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border:
+            Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.wifi_off_rounded, size: 16, color: Color(0xFFF59E0B)),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '실시간 데이터 연결 중... 샘플 데이터입니다',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFFF59E0B),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

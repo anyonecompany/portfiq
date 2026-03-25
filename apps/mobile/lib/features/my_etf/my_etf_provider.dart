@@ -87,12 +87,24 @@ class MyEtfNotifier extends StateNotifier<MyEtfState> {
       );
     } catch (e) {
       if (kDebugMode) print('[MyEtfProvider] 로드 실패, mock 사용: $e');
+      // mock 가격을 null로 설정 — 실시간 가격처럼 보이지 않도록
+      final mockEtfs =
+          [_mockEtfMap['QQQ']!, _mockEtfMap['VOO']!, _mockEtfMap['SCHD']!]
+              .map((etf) => EtfInfo(
+                    ticker: etf.ticker,
+                    name: etf.name,
+                    nameKr: etf.nameKr,
+                    category: etf.category,
+                    expenseRatio: etf.expenseRatio,
+                    description: etf.description,
+                    topHoldings: etf.topHoldings,
+                    currentPrice: null,
+                    changePct: null,
+                    changeAmount: null,
+                  ))
+              .toList();
       state = state.copyWith(
-        registeredEtfs: [
-          _mockEtfMap['QQQ']!,
-          _mockEtfMap['VOO']!,
-          _mockEtfMap['SCHD']!
-        ],
+        registeredEtfs: mockEtfs,
         isLoading: false,
         lastPriceUpdate: DateTime.now(),
       );
