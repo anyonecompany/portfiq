@@ -30,10 +30,30 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
 
   // Fallback list for offline search
   static const List<String> _fallbackEtfs = [
-    'QQQ', 'VOO', 'SCHD', 'TQQQ', 'SOXL', 'JEPI',
-    'SPY', 'IVV', 'VTI', 'ARKK', 'XLK', 'XLF',
-    'SOXX', 'KWEB', 'VGT', 'IEFA', 'EEM', 'GLD',
-    'TLT', 'HYG', 'LQD', 'VNQ', 'DIA', 'IWM',
+    'QQQ',
+    'VOO',
+    'SCHD',
+    'TQQQ',
+    'SOXL',
+    'JEPI',
+    'SPY',
+    'IVV',
+    'VTI',
+    'ARKK',
+    'XLK',
+    'XLF',
+    'SOXX',
+    'KWEB',
+    'VGT',
+    'IEFA',
+    'EEM',
+    'GLD',
+    'TLT',
+    'HYG',
+    'LQD',
+    'VNQ',
+    'DIA',
+    'IWM',
   ];
 
   List<String> get _filteredEtfs {
@@ -64,13 +84,21 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
           .map((r) => (r as Map<String, dynamic>)['ticker'] as String? ?? '')
           .where((t) => t.isNotEmpty)
           .toList();
-      if (mounted) setState(() { _searchResults = results; _isSearching = false; });
+      if (mounted)
+        setState(() {
+          _searchResults = results;
+          _isSearching = false;
+        });
     } catch (e) {
       if (kDebugMode) print('[Step1] API 검색 실패, 로컬 fallback: $e');
       // Fallback to local filtering
       final q = query.toUpperCase();
       final results = _fallbackEtfs.where((etf) => etf.contains(q)).toList();
-      if (mounted) setState(() { _searchResults = results; _isSearching = false; });
+      if (mounted)
+        setState(() {
+          _searchResults = results;
+          _isSearching = false;
+        });
     }
   }
 
@@ -119,7 +147,10 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
                   _searchApi(value);
                 });
               } else {
-                setState(() { _searchResults = []; _isSearching = false; });
+                setState(() {
+                  _searchResults = [];
+                  _isSearching = false;
+                });
               }
             },
             style: const TextStyle(color: PortfiqTheme.textPrimary),
@@ -145,8 +176,10 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
                       child: Padding(
                         padding: EdgeInsets.all(16),
                         child: SizedBox(
-                          width: 20, height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: PortfiqTheme.accent),
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: PortfiqTheme.accent),
                         ),
                       ),
                     ),
@@ -169,7 +202,8 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
                           ticker: ticker,
                           selected: selected,
                           onTap: () {
-                            EventTracker.instance.track('etf_chip_selected', properties: {
+                            EventTracker.instance
+                                .track('etf_chip_selected', properties: {
                               'ticker': ticker,
                               'source': 'search_result',
                             });
@@ -198,7 +232,8 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
                         ticker: ticker,
                         selected: selected,
                         onTap: () {
-                          EventTracker.instance.track('etf_chip_selected', properties: {
+                          EventTracker.instance
+                              .track('etf_chip_selected', properties: {
                             'ticker': ticker,
                             'source': 'popular_chip',
                           });
@@ -233,8 +268,26 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: notifier.canProceed
-                      ? () async {
+                      ? () {
                           final tickers = state.selectedEtfs;
+                          // Hive 즉시 저장
+                          final box = Hive.box('settings');
+                          box.put('registered_etfs', tickers);
+                          // 다음 화면 즉시 진행 (API 응답 안 기다림)
+                          widget.onNext();
+                          // API는 백그라운드 fire-and-forget
+                          final deviceId = box.get('device_id') as String?;
+                          ApiClient.instance
+                              .post(
+                                '/api/v1/etf/register',
+                                data: {
+                                  'device_id': deviceId,
+                                  'tickers': tickers,
+                                },
+                              )
+                              .then((_) {})
+                              .catchError((_) {});
+                          // 이벤트 트래킹도 백그라운드
                           EventTracker.instance.track(
                             'etf_registered',
                             properties: {
@@ -242,28 +295,6 @@ class _Step1EtfSelectState extends ConsumerState<Step1EtfSelect> {
                               'count': tickers.length,
                             },
                           );
-
-                          // Hive에 registered_etfs 저장
-                          final box = Hive.box('settings');
-                          await box.put('registered_etfs', tickers);
-
-                          // POST /api/v1/etf/register (실패해도 onNext 진행)
-                          final deviceId = box.get('device_id') as String?;
-                          try {
-                            await ApiClient.instance.post(
-                              '/api/v1/etf/register',
-                              data: {
-                                'device_id': deviceId,
-                                'tickers': tickers,
-                              },
-                            );
-                          } catch (e) {
-                            if (kDebugMode) {
-                              print('[Step1EtfSelect] ETF register API failed: $e');
-                            }
-                          }
-
-                          widget.onNext();
                         }
                       : null,
                   child: const Text('완료'),
@@ -325,9 +356,8 @@ class _EtfChip extends StatelessWidget {
                 fontFamily: 'Pretendard',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: selected
-                    ? PortfiqTheme.accent
-                    : PortfiqTheme.textSecondary,
+                color:
+                    selected ? PortfiqTheme.accent : PortfiqTheme.textSecondary,
               ),
             ),
             if (selected) ...[
